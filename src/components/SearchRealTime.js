@@ -8,6 +8,7 @@ const SearchRealTime = () => {
   const [flash, setFlash] = useState(false);
   const [devices, setDevices] = useState([]); // قائمة الأجهزة
   const [selectedDeviceId, setSelectedDeviceId] = useState(null); // الكاميرا المختارة
+  const [selectedStudent, setSelectedStudent] = useState(null); // معلومات الطالب المحدد
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -85,11 +86,14 @@ const SearchRealTime = () => {
   const sendImageToServer = async (imageBlob) => {
     const formData = new FormData();
     formData.append("image", imageBlob, "image.jpg");
+    formData.append("threshold", 0.8);
+    formData.append("limit", 5);
+
     setImageResults([]);
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/detect_face",
+        "http://127.0.0.1:8080/vectors/vectors/search",
         formData,
         {
           headers: {
@@ -97,15 +101,12 @@ const SearchRealTime = () => {
           },
         }
       );
-      console.log(response);
-      console.log(response.data.status);
 
-      if (response.data.status === "success") {
-        console.log("sdfadf");
-        const faceData = response.data || {};
-        setImageResults((prevResults) => [...prevResults, faceData]);
+      if (response.status === 200 && response.data.results) {
+        const faceData = response.data.results;
+        setImageResults(faceData);
       } else {
-        console.error("Face detection failed:", response.data.message);
+        console.error("Face detection failed:", response);
       }
     } catch (error) {
       console.error("Error in sending image:", error);
@@ -114,37 +115,37 @@ const SearchRealTime = () => {
     }
   };
 
+  const fetchStudentInfo = async (studentId) => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8080/students/info?number=${studentId}`
+      );
+      if (response.status === 200) {
+        setSelectedStudent(response.data);
+      } else {
+        console.error("Failed to fetch student info:", response);
+      }
+    } catch (error) {
+      console.error("Error fetching student info:", error);
+    }
+  };
+
+  const handleRowClick = (studentId) => {
+    fetchStudentInfo(studentId);
+  };
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "20px",
-        border: "1px solid #ccc",
-        borderRadius: "10px",
-        boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-      }}
-    >
+    <div className="flex flex-col items-center p-5 border border-gray-300 rounded-lg shadow-md">
       {/* قائمة الكاميرات */}
       <div className="mt-4">
-        <label
-          htmlFor="camera-select"
-          className="mr-2"
-          style={{ fontSize: "18px" }}
-        >
+        <label htmlFor="camera-select" className="mr-2 text-lg">
           اختر الكاميرا:
         </label>
         <select
           id="camera-select"
           onChange={(e) => setSelectedDeviceId(e.target.value)}
           value={selectedDeviceId || ""}
-          style={{
-            padding: "10px",
-            fontSize: "16px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-          }}
+          className="p-2 text-base border border-gray-300 rounded"
         >
           {devices.map((device) => (
             <option key={device.deviceId} value={device.deviceId}>
@@ -160,7 +161,6 @@ const SearchRealTime = () => {
           <button
             onClick={startCamera}
             className="p-2 bg-green-500 text-white rounded"
-            style={{ padding: "10px", fontSize: "16px", borderRadius: "5px" }}
           >
             فتح الكاميرا
           </button>
@@ -168,7 +168,6 @@ const SearchRealTime = () => {
           <button
             onClick={stopCamera}
             className="p-2 bg-red-500 text-white rounded ml-4"
-            style={{ padding: "10px", fontSize: "16px", borderRadius: "5px" }}
           >
             إغلاق الكاميرا
           </button>
@@ -180,112 +179,80 @@ const SearchRealTime = () => {
           <button
             onClick={captureImage}
             className="p-2 bg-blue-500 text-white rounded"
-            style={{ padding: "10px", fontSize: "16px", borderRadius: "5px" }}
           >
             التقاط صورة
           </button>
         )}
       </div>
 
-      <div
-        style={{
-          position: "relative",
-          padding: "20px",
-          border: "1px solid #ccc",
-          borderRadius: "10px",
-          boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-        }}
-      >
+      <div className="relative p-5 border border-gray-300 rounded-lg shadow-md mt-4">
         <video ref={videoRef} width="640" height="480" autoPlay />
         <canvas
           ref={canvasRef}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-          className="w-40 h-40"
+          className="absolute top-0 left-0 pointer-events-none z-10 w-40 h-40"
         />
 
         {flash && (
-          <div
-            style={{
-              position: "absolute",
-              backgroundColor: "white",
-              opacity: 0.5,
-              zIndex: 10,
-            }}
-          ></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-white opacity-50 z-20"></div>
         )}
 
-        {loading && <p style={{ fontSize: "18px" }}>جاري التحميل...</p>}
+        {loading && <p className="text-lg">جاري التحميل...</p>}
       </div>
 
       <div className="mt-4 flex w-full justify-center">
-        {imageResults.length > 0 ? (
-          imageResults.map((result, index) => (
-            <div
-              key={index}
-              style={{
-                padding: "20px",
-                border: "1px solid #ccc",
-                borderRadius: "10px",
-                boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-                marginBottom: "10px",
-                textAlign: "center",
-              }}
-            >
-              <h3 style={{ fontSize: "20px" }}>نتيجة {index + 1}</h3>
+        {imageResults.length > 0 && (
+          <div className="w-full max-w-4xl">
+            <h2 className="text-xl font-bold mb-4">نتائج البحث:</h2>
+            <div className="flex gap-8">
+              <table className="w-2/3 border border-gray-300 rounded-lg overflow-hidden">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-3 text-left">اسم الطالب</th>
+                    <th className="p-3 text-left">الكلية</th>
+                    <th className="p-3 text-left">درجة التشابه</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {imageResults.map((result, index) => (
+                    <tr
+                      key={index}
+                      onClick={() => handleRowClick(result.student_id)}
+                      className="cursor-pointer hover:bg-gray-50"
+                    >
+                      <td className="p-3 border-t border-gray-300">
+                        {result.student_id}
+                      </td>
+                      <td className="p-3 border-t border-gray-300">
+                        {result.college}
+                      </td>
+                      <td className="p-3 border-t border-gray-300">
+                        {(result.similarity * 100).toFixed(2)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-              {/* عرض الصورة إذا كانت موجودة */}
-              {result.image ? (
-                <img
-                  className="p-10 "
-                  src={result.image}
-                  alt={`Result ${index + 1}`}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    borderRadius: "10px",
-                    marginBottom: "10px",
-                  }}
-                />
-              ) : (
-                <p style={{ fontSize: "16px" }}>لا توجد صورة.</p>
-              )}
-
-              {/* عرض اسم الشخص إذا كان موجودًا */}
-              {result.name && (
-                <p style={{ fontSize: "16px", margin: "5px 0" }}>
-                  <strong>الاسم:</strong> {result.name}
-                </p>
-              )}
-
-              {/* عرض النقاط إذا كانت موجودة */}
-              {result.points && result.points.length > 0 && (
-                <div style={{ fontSize: "16px", marginTop: "10px" }}>
-                  <strong>النقاط:</strong>
-                  <ul
-                    style={{
-                      padding: "0",
-                      listStyleType: "none",
-                      margin: "10px 0",
-                    }}
-                  >
-                    {result.points.map((point, i) => (
-                      <li key={i}>
-                        ({point.x}, {point.y})
-                      </li>
-                    ))}
-                  </ul>
+              {selectedStudent && (
+                <div className="w-1/3 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                  <h3 className="text-lg font-bold mb-4">معلومات الطالب</h3>
+                  <p>
+                    <strong>الكلية:</strong> {selectedStudent.College}
+                  </p>
+                  <p>
+                    <strong>رقم القيد:</strong> {selectedStudent.Number}
+                  </p>
+                  <p>
+                    <strong>مسار الصورة:</strong> {selectedStudent.ImagePath}
+                  </p>
+                  <img
+                    src={`http://127.0.0.1:8080/static/${selectedStudent.ImagePath}`}
+                    alt="Student"
+                  />
                 </div>
               )}
             </div>
-          ))
-        ) : (
-          <p style={{ fontSize: "18px" }}>لا توجد نتائج بعد.</p>
+          </div>
         )}
       </div>
     </div>

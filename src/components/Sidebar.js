@@ -68,7 +68,7 @@ const Sidebar = () => {
             }`
           }
         >
-          Real Time
+          search Real Time
         </NavLink>
       </nav>
     </aside>
