@@ -30,7 +30,7 @@ const Sidebar = () => {
         >
           Student
         </NavLink>
-        <NavLink
+        {/* <NavLink
           to="/exam"
           className={({ isActive }) =>
             `block p-2 rounded-lg ${
@@ -39,8 +39,8 @@ const Sidebar = () => {
           }
         >
           Exam
-        </NavLink>
-        <NavLink
+        </NavLink> */}
+        {/* <NavLink
           to="/compare-image"
           className={({ isActive }) =>
             `block p-2 rounded-lg ${
@@ -49,8 +49,8 @@ const Sidebar = () => {
           }
         >
           Compare Image
-        </NavLink>
-        <NavLink
+        </NavLink> */}
+        {/* <NavLink
           to="/search-image"
           className={({ isActive }) =>
             `block p-2 rounded-lg ${
@@ -59,7 +59,7 @@ const Sidebar = () => {
           }
         >
           Search Image
-        </NavLink>
+        </NavLink> */}
         <NavLink
           to="/camera"
           className={({ isActive }) =>
