@@ -4,11 +4,14 @@ import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import SearchAddBar from "../components/SearchAddBar";
 import { Button } from "../shared/Button";
+import { Pagination } from "../shared/Pagination";
 
 const StudentList = () => {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // عدد العناصر في كل صفحة
   const location = useLocation();
 
   // دالة لتحويل المصفوفة إلى كائنات تحتوي على مفاتيح محددة
@@ -62,6 +65,20 @@ const StudentList = () => {
       student.Number.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredStudents(filtered);
+    setCurrentPage(1); // العودة إلى الصفحة الأولى بعد البحث
+  };
+
+  // حساب البيانات المعروضة في الصفحة الحالية
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredStudents.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  // تغيير الصفحة
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
   return (
@@ -128,7 +145,7 @@ const StudentList = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredStudents.map((student) => (
+                  {currentItems.map((student) => (
                     <tr key={student.student_id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <img
@@ -169,6 +186,14 @@ const StudentList = () => {
               </table>
             </div>
           </div>
+        </div>
+        {/* Pagination */}
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredStudents.length / itemsPerPage)}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
     </div>
