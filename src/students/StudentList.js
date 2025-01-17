@@ -10,11 +10,29 @@ const StudentList = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const location = useLocation();
 
+  // دالة لتحويل المصفوفة إلى كائنات تحتوي على مفاتيح محددة
+  const mapStudents = (data) => {
+    return data.map((student) => ({
+      student_id: student[0],
+      name: student[1],
+      Number: student[2],
+      College: student[3],
+      Level: student[4],
+      Specialization: student[5],
+      status: student[6],
+      ImagePath: student[7],
+      date: student[8],
+    }));
+  };
+
   const fetchStudents = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8080/api/students");
-      setStudents(response.data);
-      setFilteredStudents(response.data); // لتحديث القائمة المفلترة أيضًا
+      const response = await axios.get("http://127.0.0.1:8080/students");
+      if (response.status === 200) {
+        const mappedStudents = mapStudents(response.data);
+        setStudents(mappedStudents);
+        setFilteredStudents(mappedStudents); // لتحديث القائمة المفلترة أيضًا
+      }
     } catch (error) {
       console.error("Failed to fetch students", error);
     }
@@ -49,45 +67,103 @@ const StudentList = () => {
     <div className="flex-col">
       <Header page="Student" />
       <div>
-        {/* title of page */}
+        {/* عنوان الصفحة */}
         <SearchAddBar onSearch={handleSearch} onAdd="طالب " />
       </div>
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-200 rounded-lg shadow-md">
-        {successMessage && (
-          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-            {successMessage}
+      <div className="mt-2 flex flex-col">
+        <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      الصورة
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      الاسم
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      رقم القيد
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      الكلية
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      المستوى
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      التخصص
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      الإجراءات
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredStudents.map((student) => (
+                    <tr key={student.student_id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <img
+                          src={`http://127.0.0.1:8080/static/${student.ImagePath}`}
+                          alt={student.Number}
+                          className="w-10 h-10 rounded-full"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {student.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {student.Number}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {student.College}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {student.Level}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {student.Specialization}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button className="text-indigo-600 hover:text-indigo-900">
+                          تعديل
+                        </button>
+                        <button className="ml-2 text-red-600 hover:text-red-900">
+                          حذف
+                        </button>
+                        <button className="ml-2 text-gray-600 hover:text-gray-900">
+                          حذف (vector)
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-
-        <h2 className="text-2xl font-bold mb-4">Student List</h2>
-        <ul className="space-y-4">
-          {filteredStudents.map((student) => (
-            <li
-              key={student.StudentID}
-              className="p-4 border-b border-gray-200 flex items-start"
-            >
-              <img
-                src={student.ImagePath}
-                alt={student.Number}
-                className="w-16 h-16 rounded-full mr-4"
-              />
-              <div className="flex flex-1 gap-4 border-spacing-2 justify-between text-center items-center font-semibold">
-                <p>
-                  <strong>Number:</strong> {student.Number}
-                </p>
-                <p>
-                  <strong>College:</strong> {student.College}
-                </p>
-                <p>
-                  <strong>Level:</strong> {student.Level}
-                </p>
-                <p>
-                  <strong>Specialization:</strong> {student.Specialization}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
