@@ -1,8 +1,10 @@
+// src/components/StudentList.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import SearchAddBar from "../components/SearchAddBar";
+import { Button } from "../shared/Button";
 
 const StudentList = () => {
   const [students, setStudents] = useState([]);
@@ -147,15 +149,15 @@ const StudentList = () => {
                         {student.Specialization}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-indigo-600 hover:text-indigo-900">
+                        <Button className="text-indigo-600 hover:text-indigo-900">
                           تعديل
-                        </button>
-                        <button className="ml-2 text-red-600 hover:text-red-900">
+                        </Button>
+                        <Button className="ml-2 text-red-600 hover:text-red-900">
                           حذف
-                        </button>
-                        <button className="ml-2 text-gray-600 hover:text-gray-900">
+                        </Button>
+                        <Button className="ml-2 text-gray-600 hover:text-gray-900">
                           حذف (vector)
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
