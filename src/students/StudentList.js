@@ -1,5 +1,4 @@
-// src/components/StudentList.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
@@ -27,18 +26,18 @@ const StudentList = () => {
     }));
   };
 
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     try {
       const response = await axios.get("http://127.0.0.1:8080/students");
       if (response.status === 200) {
         const mappedStudents = mapStudents(response.data);
         setStudents(mappedStudents);
-        setFilteredStudents(mappedStudents); // لتحديث القائمة المفلترة أيضًا
+        setFilteredStudents(mappedStudents);
       }
     } catch (error) {
       console.error("Failed to fetch students", error);
     }
-  };
+  }, []);
 
   // إعداد الرسالة الأولية من التنقل
   useEffect(() => {
@@ -55,7 +54,7 @@ const StudentList = () => {
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [fetchStudents]);
 
   // دالة البحث
   const handleSearch = (query) => {
@@ -72,6 +71,11 @@ const StudentList = () => {
         {/* عنوان الصفحة */}
         <SearchAddBar onSearch={handleSearch} onAdd="طالب " />
       </div>
+      {successMessage && (
+        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+          {successMessage}
+        </div>
+      )}
       <div className="mt-2 flex flex-col">
         <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
