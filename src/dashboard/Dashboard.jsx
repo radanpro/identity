@@ -9,7 +9,7 @@ const Dashboard = () => {
       <Header page="Dashboard" />
       <div className="flex flex-col items-center justify-center h-screen bg-gray-200">
         <h1 className="text-3xl mb-4">Dashboard</h1>
-        <Link to="/monitoring" className="p-2 bg-green-500 text-white">
+        <Link to="/camera" className="p-2 bg-green-500 text-white">
           Go to Monitoring
         </Link>
       </div>
