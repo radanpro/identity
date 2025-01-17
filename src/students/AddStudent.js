@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import CameraCaptureOnly from "../components/CameraCaptureOnly";
 import Header from "../components/Header";
+import { Button } from "../shared/Button"; // استيراد مكون Button
 
 const AddStudent = () => {
   const [number, setRegistrationNumber] = useState("");
@@ -10,6 +11,7 @@ const AddStudent = () => {
   const [college, setCollege] = useState("");
   const [level, setLevel] = useState("");
   const [specialization, setSpecialization] = useState("");
+  const [gender, setGender] = useState(0); // 0 for female, 1 for male
   const [image, setImage] = useState(null);
   const [useCamera, setUseCamera] = useState(false);
   const navigate = useNavigate();
@@ -23,15 +25,16 @@ const AddStudent = () => {
     }
 
     const formData = new FormData();
-    formData.append("number", number);
-    formData.append("name", name);
-    formData.append("college", college);
-    formData.append("level", level);
-    formData.append("specialization", specialization);
-    formData.append("image_file", image);
+    formData.append("StudentName", name);
+    formData.append("Number", number);
+    formData.append("College", college);
+    formData.append("Level", level);
+    formData.append("Specialization", specialization);
+    formData.append("Gender", gender);
+    formData.append("image", image); // تأكد من أن الاسم يتوافق مع ما يتوقعه الخادم
 
     try {
-      await axios.post("http://localhost:8000/api/add_student", formData, {
+      await axios.post("http://127.0.0.1:8001/students/add", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -114,26 +117,30 @@ const AddStudent = () => {
             onChange={(e) => setSpecialization(e.target.value)}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <select
+            value={gender}
+            onChange={(e) => setGender(parseInt(e.target.value))}
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={0}>Female</option>
+            <option value={1}>Male</option>
+          </select>
 
           <div className="flex gap-4 mb-4">
-            <button
+            <Button
               type="button"
               onClick={handleCameraToggle}
-              className={`w-1/2 p-2 rounded ${
-                !useCamera ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+              className={`w-1/2 ${!useCamera ? "bg-blue-500" : "bg-gray-200"}`}
             >
               Choose Image
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleCameraToggle}
-              className={`w-1/2 p-2 rounded ${
-                useCamera ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
+              className={`w-1/2 ${useCamera ? "bg-blue-500" : "bg-gray-200"}`}
             >
               Use Camera
-            </button>
+            </Button>
           </div>
 
           {!useCamera && (
@@ -148,12 +155,12 @@ const AddStudent = () => {
             <CameraCaptureOnly setCapturedImage={handleCapturedImage} />
           )}
 
-          <button
+          <Button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300"
+            className="w-full bg-blue-500 hover:bg-blue-600"
           >
             Add Student
-          </button>
+          </Button>
         </form>
       </div>
     </div>

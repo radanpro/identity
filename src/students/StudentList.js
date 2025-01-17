@@ -31,7 +31,7 @@ const StudentList = () => {
 
   const fetchStudents = useCallback(async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8080/students");
+      const response = await axios.get("http://127.0.0.1:8001/students");
       if (response.status === 200) {
         const mappedStudents = mapStudents(response.data);
         setStudents(mappedStudents);
@@ -149,7 +149,7 @@ const StudentList = () => {
                     <tr key={student.student_id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <img
-                          src={`http://127.0.0.1:8080/static/${student.ImagePath}`}
+                          src={`http://127.0.0.1:8001/static/${student.ImagePath}`}
                           alt={student.Number}
                           className="w-10 h-10 rounded-full"
                         />

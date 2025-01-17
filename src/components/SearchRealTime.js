@@ -93,7 +93,7 @@ const SearchRealTime = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8080/vectors/vectors/search",
+        "http://127.0.0.1:8001/vectors/vectors/search",
         formData,
         {
           headers: {
@@ -118,7 +118,7 @@ const SearchRealTime = () => {
   const fetchStudentInfo = async (studentId) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8080/students/info?number=${studentId}`
+        `http://127.0.0.1:8001/students/info?number=${studentId}`
       );
       if (response.status === 200) {
         setSelectedStudent(response.data);
@@ -246,7 +246,7 @@ const SearchRealTime = () => {
                     <strong>مسار الصورة:</strong> {selectedStudent.ImagePath}
                   </p>
                   <img
-                    src={`http://127.0.0.1:8080/static/${selectedStudent.ImagePath}`}
+                    src={`http://127.0.0.1:8001/static/${selectedStudent.ImagePath}`}
                     alt="Student"
                   />
                 </div>
