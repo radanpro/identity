@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AddStudent from "./students/AddStudent";
 import StudentList from "./students/StudentList";
