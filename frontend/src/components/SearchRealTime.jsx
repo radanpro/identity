@@ -49,7 +49,7 @@ const SearchRealTime = () => {
     }
   };
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (cameraActive) {
       const stream = videoRef.current.srcObject;
       const tracks = stream.getTracks();
@@ -57,7 +57,7 @@ const SearchRealTime = () => {
       videoRef.current.srcObject = null;
       setCameraActive(false);
     }
-  };
+  }, [cameraActive]);
 
   const captureImage = useCallback(async () => {
     if (videoRef.current && canvasRef.current) {
@@ -91,6 +91,7 @@ const SearchRealTime = () => {
 
         setImageResults([]);
         setLoading(true);
+        stopCamera();
         try {
           const response = await axios.post(
             "http://127.0.0.1:8080/vectors/vectors/search",
@@ -118,7 +119,7 @@ const SearchRealTime = () => {
 
       await sendImageToServer(blob);
     }
-  }, []);
+  }, [stopCamera]);
 
   const fetchAllStudentsInfo = async (faceData) => {
     const studentsInfoPromises = faceData.map(async (result) => {
