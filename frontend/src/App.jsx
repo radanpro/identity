@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AddStudent from "./students/AddStudent";
 import StudentList from "./students/StudentList";
+import VectorsList from "./vectors/VectorList";
 import CompareImage from "./components/CompareImage";
 import SearchImage from "./components/SearchImage";
 import SearchRealTime from "./components/SearchRealTime";
@@ -23,6 +24,7 @@ function App() {
                 element={<SearchRealTime setCapturedImage={() => {}} />}
               />
               <Route path="/search-image" element={<SearchImage />} />
+              <Route path="/vectors" element={<VectorsList />} />
             </Route>
           </Routes>
         </div>

@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
@@ -7,6 +6,8 @@ const Sidebar = () => {
   const isStudentActive =
     location.pathname.startsWith("/students") ||
     location.pathname.startsWith("/add-student");
+
+  const isVectorActive = location.pathname.startsWith("/vectors");
 
   return (
     <aside className="w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg">
@@ -29,6 +30,14 @@ const Sidebar = () => {
           }`}
         >
           Student
+        </NavLink>
+        <NavLink
+          to="/vectors"
+          className={`block p-2 rounded-lg ${
+            isVectorActive ? "bg-blue-600 text-white" : "text-gray-700"
+          }`}
+        >
+          vectors
         </NavLink>
         {/* <NavLink
           to="/exam"
