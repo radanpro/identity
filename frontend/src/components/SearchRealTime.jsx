@@ -13,6 +13,8 @@ const SearchRealTime = () => {
   const [devices, setDevices] = useState([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
   const [studentsInfo, setStudentsInfo] = useState([]);
+  const [threshold, setThreshold] = useState(0.5); // حالة لتخزين قيمة threshold
+  const [limit, setLimit] = useState(5); // حالة لتخزين قيمة limit
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -86,8 +88,8 @@ const SearchRealTime = () => {
       const sendImageToServer = async (imageBlob) => {
         const formData = new FormData();
         formData.append("image", imageBlob, "image.jpg");
-        formData.append("threshold", 0.5);
-        formData.append("limit", 5);
+        formData.append("threshold", threshold);
+        formData.append("limit", limit);
 
         setImageResults([]);
         setLoading(true);
@@ -119,7 +121,7 @@ const SearchRealTime = () => {
 
       await sendImageToServer(blob);
     }
-  }, [stopCamera]);
+  }, [stopCamera, limit, threshold]);
 
   const fetchAllStudentsInfo = async (faceData) => {
     const studentsInfoPromises = faceData.map(async (result) => {
@@ -157,13 +159,52 @@ const SearchRealTime = () => {
         stopCamera={stopCamera}
         captureImage={captureImage}
       />
-
-      <CameraView
-        videoRef={videoRef}
-        canvasRef={canvasRef}
-        flash={flash}
-        loading={loading}
-      />
+      <div className="flex justify-around w-full m-4 p-4 border border-sky-300 shadow-md shadow-sky-100 rounded-lg ">
+        <div className="flex-1 mt-4 mr-3  relative p-5 border border-gray-300 rounded-lg shadow-md">
+          {/* قائمة منسدلة لـ threshold */}
+          <div className="mt-4">
+            <label htmlFor="threshold-select" className="mr-2 text-lg">
+              اختر قيمة Threshold:
+            </label>
+            <select
+              id="threshold-select"
+              value={threshold}
+              onChange={(e) => setThreshold(parseFloat(e.target.value))}
+              className="p-2 border border-gray-300  w-full text-center text-xl rounded-md flex "
+            >
+              {Array.from({ length: 11 }, (_, i) => i * 0.1).map((value) => (
+                <option key={value} value={value}>
+                  {value.toFixed(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* قائمة منسدلة لـ limit */}
+          <div className="mt-4">
+            <label htmlFor="limit-select" className="mr-2 text-lg">
+              اختر قيمة Limit:
+            </label>
+            <select
+              id="limit-select"
+              value={limit}
+              onChange={(e) => setLimit(parseInt(e.target.value))}
+              className="p-2 border border-gray-300 w-full text-center text-xl rounded-md flex "
+            >
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <CameraView
+          videoRef={videoRef}
+          canvasRef={canvasRef}
+          flash={flash}
+          loading={loading}
+        />
+      </div>
 
       <SearchResults imageResults={imageResults} studentsInfo={studentsInfo} />
     </div>

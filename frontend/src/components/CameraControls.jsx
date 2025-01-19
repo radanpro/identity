@@ -11,7 +11,7 @@ const CameraControls = ({
       {!cameraActive ? (
         <button
           onClick={startCamera}
-          className="p-2 bg-green-500 text-white rounded"
+          className="p-2 px-6 bg-green-500 text-white rounded text-base"
         >
           فتح الكاميرا
         </button>
