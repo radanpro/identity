@@ -8,7 +8,7 @@ const SearchRealTime = () => {
   const [flash, setFlash] = useState(false);
   const [devices, setDevices] = useState([]); // قائمة الأجهزة
   const [selectedDeviceId, setSelectedDeviceId] = useState(null); // الكاميرا المختارة
-  const [selectedStudent, setSelectedStudent] = useState(null); // معلومات الطالب المحدد
+  const [studentsInfo, setStudentsInfo] = useState([]); // معلومات جميع الطلاب
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -55,7 +55,7 @@ const SearchRealTime = () => {
     }
   };
 
-  const captureImage = useCallback(() => {
+  const captureImage = useCallback(async () => {
     if (videoRef.current && canvasRef.current) {
       const videoWidth = videoRef.current.videoWidth;
       const videoHeight = videoRef.current.videoHeight;
@@ -79,59 +79,64 @@ const SearchRealTime = () => {
       }
       const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
 
-      sendImageToServer(blob);
-    }
-  }, []);
+      // نقل sendImageToServer هنا
+      const sendImageToServer = async (imageBlob) => {
+        const formData = new FormData();
+        formData.append("image", imageBlob, "image.jpg");
+        formData.append("threshold", 0.5);
+        formData.append("limit", 5);
 
-  const sendImageToServer = async (imageBlob) => {
-    const formData = new FormData();
-    formData.append("image", imageBlob, "image.jpg");
-    formData.append("threshold", 0.5);
-    formData.append("limit", 5);
+        setImageResults([]);
+        setLoading(true);
+        try {
+          const response = await axios.post(
+            "http://127.0.0.1:8080/vectors/vectors/search",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
 
-    setImageResults([]);
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:8080/vectors/vectors/search",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          if (response.status === 200 && response.data.results) {
+            const faceData = response.data.results;
+            setImageResults(faceData);
+            fetchAllStudentsInfo(faceData);
+          } else {
+            console.error("Face detection failed:", response);
+          }
+        } catch (error) {
+          console.error("Error in sending image:", error);
+        } finally {
+          setLoading(false);
         }
-      );
+      };
 
-      if (response.status === 200 && response.data.results) {
-        const faceData = response.data.results;
-        setImageResults(faceData);
-      } else {
-        console.error("Face detection failed:", response);
-      }
-    } catch (error) {
-      console.error("Error in sending image:", error);
-    } finally {
-      setLoading(false);
+      await sendImageToServer(blob);
     }
-  };
+  }, []); // لم تعد بحاجة إلى إضافة sendImageToServer كمُعتمَدية
 
-  const fetchStudentInfo = async (studentId) => {
-    try {
-      const response = await axios.get(
-        `http://127.0.0.1:8080/students/info?number=${studentId}`
-      );
-      if (response.status === 200) {
-        setSelectedStudent(response.data);
-      } else {
-        console.error("Failed to fetch student info:", response);
+  const fetchAllStudentsInfo = async (faceData) => {
+    const studentsInfoPromises = faceData.map(async (result) => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8080/students/info?number=${result.student_id}`
+        );
+        if (response.status === 200) {
+          return response.data;
+        } else {
+          console.error("Failed to fetch student info:", response);
+          return null;
+        }
+      } catch (error) {
+        console.error("Error fetching student info:", error);
+        return null;
       }
-    } catch (error) {
-      console.error("Error fetching student info:", error);
-    }
-  };
+    });
 
-  const handleRowClick = (studentId) => {
-    fetchStudentInfo(studentId);
+    const studentsInfo = await Promise.all(studentsInfoPromises);
+    setStudentsInfo(studentsInfo.filter((info) => info !== null));
   };
 
   return (
@@ -214,11 +219,7 @@ const SearchRealTime = () => {
                 </thead>
                 <tbody>
                   {imageResults.map((result, index) => (
-                    <tr
-                      key={index}
-                      onClick={() => handleRowClick(result.student_id)}
-                      className="cursor-pointer hover:bg-gray-50"
-                    >
+                    <tr key={index} className="hover:bg-gray-50">
                       <td className="p-3 border-t border-gray-300">
                         {result.student_id}
                       </td>
@@ -233,24 +234,27 @@ const SearchRealTime = () => {
                 </tbody>
               </table>
 
-              {selectedStudent && (
-                <div className="w-1/3 p-4 border border-gray-300 rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-bold mb-4">معلومات الطالب</h3>
-                  <p>
-                    <strong>الكلية:</strong> {selectedStudent.College}
-                  </p>
-                  <p>
-                    <strong>رقم القيد:</strong> {selectedStudent.Number}
-                  </p>
-                  <p>
-                    <strong>مسار الصورة:</strong>
-                  </p>
-                  <img
-                    src={`http://127.0.0.1:8001/static/${selectedStudent.ImagePath}`}
-                    alt="Student"
-                  />
-                </div>
-              )}
+              <div className="w-1/3 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-bold mb-4">معلومات الطلاب</h3>
+                {studentsInfo.map((student, index) => (
+                  <div key={index} className="mb-4">
+                    <p>
+                      <strong>الكلية:</strong> {student.College}
+                    </p>
+                    <p>
+                      <strong>رقم القيد:</strong> {student.Number}
+                    </p>
+                    <p>
+                      <strong>مسار الصورة:</strong>
+                    </p>
+                    <img
+                      src={`http://127.0.0.1:8080/static/${student.ImagePath}`}
+                      alt="Student"
+                      className="mt-2"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
