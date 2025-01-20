@@ -7,6 +7,7 @@ import SearchImage from "./components/SearchImage";
 import SearchRealTime from "./components/SearchRealTime";
 import Layout from "./Layout";
 import Dashboard from "./dashboard/Dashboard";
+import AddVector from "./vectors/AddVector";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
               />
               <Route path="/search-image" element={<SearchImage />} />
               <Route path="/vectors" element={<VectorsList />} />
+              <Route path="/add-vector" element={<AddVector />} />
             </Route>
           </Routes>
         </div>

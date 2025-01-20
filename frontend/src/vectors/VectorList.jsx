@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import VectorSearchBar from "./components/VectorSearchBar";
 import VectorTable from "./components/VectorTable";
@@ -13,7 +13,7 @@ const VectorList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const location = useLocation();
-
+  const navigate = useNavigate();
   const fetchVectors = useCallback(async () => {
     try {
       const response = await axios.get("http://127.0.0.1:8080/vectors/vectors");
@@ -85,6 +85,9 @@ const VectorList = () => {
       setSuccessMessage("حدث خطأ أثناء التحقق من المتجهات.");
     }
   };
+  const handleAddVector = () => {
+    navigate("/add-vector");
+  };
 
   return (
     <div className="flex-col">
@@ -94,6 +97,7 @@ const VectorList = () => {
           onSearch={handleSearch}
           onAdd="متجه"
           onVerifyAll={handleVerifyAllVectors}
+          onAddVector={handleAddVector}
         />
         {successMessage && (
           <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">

@@ -7,7 +7,9 @@ const Sidebar = () => {
     location.pathname.startsWith("/students") ||
     location.pathname.startsWith("/add-student");
 
-  const isVectorActive = location.pathname.startsWith("/vectors");
+  const isVectorActive =
+    location.pathname.startsWith("/vectors") ||
+    location.pathname.startsWith("/add-vector");
 
   return (
     <aside className="w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg">

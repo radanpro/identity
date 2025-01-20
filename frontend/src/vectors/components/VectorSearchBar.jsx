@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-const VectorSearchBar = ({ onSearch, onAdd, onVerifyAll }) => {
+const VectorSearchBar = ({ onSearch, onAdd, onVerifyAll, onAddVector }) => {
   return (
     <div className="flex justify-between items-center mb-4">
       <input
@@ -17,7 +17,7 @@ const VectorSearchBar = ({ onSearch, onAdd, onVerifyAll }) => {
           التحقق من جميع المتجهات
         </button>
         <button
-          onClick={onAdd}
+          onClick={onAddVector}
           className="bg-blue-500 text-white font-bold py-2 px-4 rounded-md ml-2 hover:bg-blue-600 transition duration-300"
         >
           إضافة {onAdd} جديد
@@ -31,6 +31,7 @@ VectorSearchBar.propTypes = {
   onSearch: PropTypes.func.isRequired,
   onAdd: PropTypes.string.isRequired,
   onVerifyAll: PropTypes.func.isRequired,
+  onAddVector: PropTypes.func.isRequired,
 };
 
 export default VectorSearchBar;
