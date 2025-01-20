@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 const Header = ({ page, onToggleSidebar }) => {
   return (
-    <header className="flex justify-between items-center m-1 p-4 border-b bg-sky-50 shadow-md rounded-md">
+    <header className="flex justify-between items-center m-1 p-4 border-b bg-sky-50 shadow-md rounded-md lg:pb-10">
       <div className="flex items-center space-x-4">
         {/* زر فتح الـ Sidebar */}
         <button
@@ -37,7 +37,7 @@ const Header = ({ page, onToggleSidebar }) => {
 
 Header.propTypes = {
   page: PropTypes.string.isRequired,
-  onToggleSidebar: PropTypes.func.isRequired, // تأكد من أن onToggleSidebar مطلوب
+  onToggleSidebar: PropTypes.func.isRequired,
 };
 
 export default Header;

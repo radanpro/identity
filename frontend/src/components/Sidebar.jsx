@@ -14,9 +14,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   return (
     <aside
-      className={`w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg transform transition-transform duration-300 ${
+      className={`w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg transform transition-transform duration-300 fixed ${
         isOpen ? "translate-x-0" : "-translate-x-full"
-      } fixed lg:relative lg:translate-x-0 z-50`}
+      } lg:translate-x-0 z-50`}
     >
       <div className="text-2xl font-bold mb-8">AI Exam</div>
       <button

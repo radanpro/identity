@@ -23,14 +23,15 @@ const Layout = () => {
 
   // دالة لتبديل حالة الـ Sidebar
   const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev); // استخدام القيمة السابقة لتحديث الحالة
+    setIsSidebarOpen((prev) => !prev);
   };
 
   return (
-    <div className="flex">
+    <div>
+      {/* Sidebar ثابت */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <main className="flex-1">
-        {/* تمرير onToggleSidebar إلى Header عبر Outlet */}
+      {/* الـ main مع تعديل لتعويض مساحة الـ Sidebar */}
+      <main className="ml-0 lg:ml-64 transition-margin duration-300">
         <Outlet context={{ onToggleSidebar: toggleSidebar }} />
       </main>
     </div>
