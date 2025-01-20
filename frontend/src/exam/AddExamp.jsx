@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import CameraCaptureOnly from "../components/CameraCaptureOnly";
 import Header from "../components/Header";
 
@@ -13,6 +13,7 @@ const AddExam = () => {
   const [image, setImage] = useState(null);
   const [useCamera, setUseCamera] = useState(false);
   const navigate = useNavigate();
+  const { onToggleSidebar } = useOutletContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,7 +76,7 @@ const AddExam = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Dashboard" />
+      <Header page="Dashboard" onToggleSidebar={onToggleSidebar} />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Add New Student</h2>
         <form onSubmit={handleSubmit} className="space-y-4">

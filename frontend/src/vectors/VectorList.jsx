@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import Header from "../components/Header";
 import VectorSearchBar from "./components/VectorSearchBar";
 import VectorTable from "./components/VectorTable";
@@ -14,6 +14,8 @@ const VectorList = () => {
   const [itemsPerPage] = useState(10);
   const location = useLocation();
   const navigate = useNavigate();
+  const { onTangleSidebar } = useOutletContext();
+
   const fetchVectors = useCallback(async () => {
     try {
       const response = await axios.get("http://127.0.0.1:8080/vectors/vectors");
@@ -91,7 +93,7 @@ const VectorList = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Vectors" />
+      <Header page="Vectors" onTangleSidebar={onTangleSidebar} />
       <div className="p-4">
         <VectorSearchBar
           onSearch={handleSearch}

@@ -5,8 +5,10 @@ import Header from "../components/Header";
 import SearchAddBar from "../components/SearchAddBar";
 import { Button } from "../shared/Button";
 import { Pagination } from "../shared/Pagination";
+import { useOutletContext } from "react-router-dom";
 
 const StudentList = () => {
+  const { onTangleSidebar } = useOutletContext();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -83,7 +85,7 @@ const StudentList = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Student" />
+      <Header page="Student" onToggleSidebar={onTangleSidebar} />
       <div>
         {/* عنوان الصفحة */}
         <SearchAddBar onSearch={handleSearch} onAdd="طالب " />

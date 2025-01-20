@@ -1,12 +1,21 @@
-import React from "react";
-import { Bell, User } from "lucide-react";
+import { Bell, User, Menu } from "lucide-react";
+import PropTypes from "prop-types";
 
-const Header = ({ page }) => {
+const Header = ({ page, onToggleSidebar }) => {
   return (
     <header className="flex justify-between items-center m-1 p-4 border-b bg-sky-50 shadow-md rounded-md">
-      <div>
-        <p className="text-sm text-gray-500">Page / {page}</p>
-        <h1 className="text-xl font-bold text-gray-800">{page}</h1>
+      <div className="flex items-center space-x-4">
+        {/* زر فتح الـ Sidebar */}
+        <button
+          onClick={onToggleSidebar}
+          className="lg:hidden text-gray-600 hover:text-gray-900"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <div>
+          <p className="text-sm text-gray-500">Page / {page}</p>
+          <h1 className="text-xl font-bold text-gray-800">{page}</h1>
+        </div>
       </div>
 
       {/* الجهة اليمنى */}
@@ -24,6 +33,10 @@ const Header = ({ page }) => {
       </div>
     </header>
   );
+};
+
+Header.propTypes = {
+  page: PropTypes.string.isRequired,
 };
 
 export default Header;

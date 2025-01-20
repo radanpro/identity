@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import CameraCaptureOnly from "../components/CameraCaptureOnly";
 import Header from "../components/Header";
 import { Button } from "../shared/Button"; // استيراد مكون Button
 
 const AddStudent = () => {
+  const { onToggleSidebar } = useOutletContext();
   const [number, setRegistrationNumber] = useState("");
   const [name, setName] = useState("");
   const [college, setCollege] = useState("");
@@ -78,7 +79,7 @@ const AddStudent = () => {
 
   return (
     <div className="flex-col">
-      <Header page="add-student" />
+      <Header page="add-student" onToggleSidebar={onToggleSidebar} />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Add New Student</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
