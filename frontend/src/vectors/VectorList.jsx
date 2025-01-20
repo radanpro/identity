@@ -14,7 +14,7 @@ const VectorList = () => {
   const [itemsPerPage] = useState(10);
   const location = useLocation();
   const navigate = useNavigate();
-  const { onTangleSidebar } = useOutletContext();
+  const { onToggleSidebar } = useOutletContext();
 
   const fetchVectors = useCallback(async () => {
     try {
@@ -93,7 +93,7 @@ const VectorList = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Vectors" onTangleSidebar={onTangleSidebar} />
+      <Header page="Vectors" onToggleSidebar={onToggleSidebar} />
       <div className="p-4">
         <VectorSearchBar
           onSearch={handleSearch}

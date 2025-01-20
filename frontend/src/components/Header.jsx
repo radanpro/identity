@@ -37,6 +37,7 @@ const Header = ({ page, onToggleSidebar }) => {
 
 Header.propTypes = {
   page: PropTypes.string.isRequired,
+  onToggleSidebar: PropTypes.func.isRequired, // تأكد من أن onToggleSidebar مطلوب
 };
 
 export default Header;

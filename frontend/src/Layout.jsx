@@ -19,16 +19,19 @@ const Layout = () => {
     handleResize(); // تعيين الحالة الأولية
 
     return () => window.removeEventListener("resize", handleResize);
-  }, [setIsSidebarOpen]);
+  }, []);
+
   // دالة لتبديل حالة الـ Sidebar
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen((prev) => !prev); // استخدام القيمة السابقة لتحديث الحالة
   };
+
   return (
     <div className="flex">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <main className="flex-1">
-        <Outlet context={toggleSidebar} />
+        {/* تمرير onToggleSidebar إلى Header عبر Outlet */}
+        <Outlet context={{ onToggleSidebar: toggleSidebar }} />
       </main>
     </div>
   );

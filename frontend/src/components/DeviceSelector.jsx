@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 
 const DeviceSelector = ({ devices, selectedDeviceId, setSelectedDeviceId }) => {
   return (
-    <div className="mt-4">
+    <div className="mt-4 text-center justify-center items-center">
       <label htmlFor="camera-select" className="mr-2 text-lg">
         اختر الكاميرا:
       </label>

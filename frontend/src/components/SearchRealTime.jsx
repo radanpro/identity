@@ -4,8 +4,11 @@ import CameraControls from "./CameraControls";
 import CameraView from "./CameraView";
 import SearchResults from "./SearchResults";
 import DeviceSelector from "./DeviceSelector";
+import Header from "./Header";
+import { useOutletContext } from "react-router-dom";
 
 const SearchRealTime = () => {
+  const { onToggleSidebar } = useOutletContext();
   const [loading, setLoading] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [imageResults, setImageResults] = useState([]);
@@ -128,7 +131,8 @@ const SearchRealTime = () => {
   }, [stopCamera, limit, threshold]);
 
   return (
-    <div className="flex flex-col items-center p-5 border border-gray-300 rounded-lg shadow-md">
+    <div className="flex flex-col  p-5 border border-gray-300 rounded-lg shadow-md">
+      <Header page="Search Real Time" onToggleSidebar={onToggleSidebar} />
       <DeviceSelector
         devices={devices}
         selectedDeviceId={selectedDeviceId}

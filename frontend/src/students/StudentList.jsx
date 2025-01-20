@@ -8,7 +8,7 @@ import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 
 const StudentList = () => {
-  const { onTangleSidebar } = useOutletContext();
+  const { onToggleSidebar } = useOutletContext();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -85,7 +85,7 @@ const StudentList = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Student" onToggleSidebar={onTangleSidebar} />
+      <Header page="Student" onToggleSidebar={onToggleSidebar} />
       <div>
         {/* عنوان الصفحة */}
         <SearchAddBar onSearch={handleSearch} onAdd="طالب " />

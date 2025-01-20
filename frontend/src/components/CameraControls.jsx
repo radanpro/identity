@@ -7,7 +7,7 @@ const CameraControls = ({
   captureImage,
 }) => {
   return (
-    <div className="mt-4">
+    <div className="mt-4  text-center">
       {!cameraActive ? (
         <button
           onClick={startCamera}
