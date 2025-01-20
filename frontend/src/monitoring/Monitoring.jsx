@@ -1,5 +1,4 @@
 // frontend/src/components/Monitoring.jsx
-import React from "react";
 
 const Monitoring = () => {
   return (

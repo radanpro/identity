@@ -12,7 +12,6 @@ const SearchRealTime = () => {
   const [flash, setFlash] = useState(false);
   const [devices, setDevices] = useState([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
-  const [studentsInfo, setStudentsInfo] = useState([]);
   const [threshold, setThreshold] = useState(0.5);
   const [limit, setLimit] = useState(5);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -94,7 +93,6 @@ const SearchRealTime = () => {
 
         // إعادة تعيين الحالات قبل بدء البحث الجديد
         setImageResults([]);
-        setStudentsInfo([]);
         setErrorMessage(null);
 
         setLoading(true);
@@ -111,9 +109,7 @@ const SearchRealTime = () => {
           );
 
           if (response.status === 200 && response.data.results) {
-            const faceData = response.data.results;
-            setImageResults(faceData);
-            fetchAllStudentsInfo(faceData);
+            setImageResults(response.data.results);
           } else {
             setErrorMessage(response.data.message || "No results found.");
           }
@@ -130,28 +126,6 @@ const SearchRealTime = () => {
       await sendImageToServer(blob);
     }
   }, [stopCamera, limit, threshold]);
-
-  const fetchAllStudentsInfo = async (faceData) => {
-    const studentsInfoPromises = faceData.map(async (result) => {
-      try {
-        const response = await axios.get(
-          `http://127.0.0.1:8080/students/info?number=${result.student_id}`
-        );
-        if (response.status === 200) {
-          return response.data;
-        } else {
-          console.error("Failed to fetch student info:", response);
-          return null;
-        }
-      } catch (error) {
-        console.error("Error fetching student info:", error);
-        return null;
-      }
-    });
-
-    const studentsInfo = await Promise.all(studentsInfoPromises);
-    setStudentsInfo(studentsInfo.filter((info) => info !== null));
-  };
 
   return (
     <div className="flex flex-col items-center p-5 border border-gray-300 rounded-lg shadow-md">
@@ -216,11 +190,7 @@ const SearchRealTime = () => {
       </div>
 
       {/* تمرير errorMessage إلى SearchResults */}
-      <SearchResults
-        imageResults={imageResults}
-        studentsInfo={studentsInfo}
-        errorMessage={errorMessage}
-      />
+      <SearchResults imageResults={imageResults} errorMessage={errorMessage} />
     </div>
   );
 };
