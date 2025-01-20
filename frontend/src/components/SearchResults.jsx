@@ -1,9 +1,15 @@
 import PropTypes from "prop-types";
 
-const SearchResults = ({ imageResults, studentsInfo }) => {
+const SearchResults = ({ imageResults, studentsInfo, errorMessage }) => {
   return (
     <div className="mt-4 flex w-full justify-center">
-      {imageResults.length > 0 && (
+      {errorMessage && ( // عرض رسالة الخطأ إذا كانت موجودة
+        <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+          {errorMessage}
+        </div>
+      )}
+
+      {imageResults.length > 0 ? (
         <div className="w-full max-w-4xl">
           <h2 className="text-xl font-bold mb-4">نتائج البحث:</h2>
           <div className="flex gap-8">
@@ -55,6 +61,12 @@ const SearchResults = ({ imageResults, studentsInfo }) => {
             </div>
           </div>
         </div>
+      ) : (
+        !errorMessage && ( // عرض رسالة إذا لم تكن هناك نتائج
+          <div className="bg-yellow-100 text-yellow-700 p-4 mb-4 rounded-md">
+            لا توجد نتائج للعرض.
+          </div>
+        )
       )}
     </div>
   );
@@ -63,6 +75,7 @@ const SearchResults = ({ imageResults, studentsInfo }) => {
 SearchResults.propTypes = {
   imageResults: PropTypes.array.isRequired,
   studentsInfo: PropTypes.array.isRequired,
+  errorMessage: PropTypes.string, // إضافة PropTypes لـ errorMessage
 };
 
 export default SearchResults;

@@ -13,8 +13,9 @@ const SearchRealTime = () => {
   const [devices, setDevices] = useState([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
   const [studentsInfo, setStudentsInfo] = useState([]);
-  const [threshold, setThreshold] = useState(0.5); // حالة لتخزين قيمة threshold
-  const [limit, setLimit] = useState(5); // حالة لتخزين قيمة limit
+  const [threshold, setThreshold] = useState(0.5);
+  const [limit, setLimit] = useState(5);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -91,7 +92,11 @@ const SearchRealTime = () => {
         formData.append("threshold", threshold);
         formData.append("limit", limit);
 
+        // إعادة تعيين الحالات قبل بدء البحث الجديد
         setImageResults([]);
+        setStudentsInfo([]);
+        setErrorMessage(null);
+
         setLoading(true);
         stopCamera();
         try {
@@ -110,10 +115,13 @@ const SearchRealTime = () => {
             setImageResults(faceData);
             fetchAllStudentsInfo(faceData);
           } else {
-            console.error("Face detection failed:", response);
+            setErrorMessage(response.data.message || "No results found.");
           }
         } catch (error) {
-          console.error("Error in sending image:", error);
+          setErrorMessage(
+            error.response?.data?.message ||
+              "An error occurred while searching."
+          );
         } finally {
           setLoading(false);
         }
@@ -197,6 +205,7 @@ const SearchRealTime = () => {
               ))}
             </select>
           </div>
+          <div>TODO:[Search by college or all ...etc]</div>
         </div>
         <CameraView
           videoRef={videoRef}
@@ -206,7 +215,12 @@ const SearchRealTime = () => {
         />
       </div>
 
-      <SearchResults imageResults={imageResults} studentsInfo={studentsInfo} />
+      {/* تمرير errorMessage إلى SearchResults */}
+      <SearchResults
+        imageResults={imageResults}
+        studentsInfo={studentsInfo}
+        errorMessage={errorMessage}
+      />
     </div>
   );
 };
