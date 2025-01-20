@@ -11,10 +11,10 @@ const SearchResults = ({ imageResults, errorMessage }) => {
 
       {imageResults.length > 0 ? (
         <div className="w-full max-w-6xl">
-          <h2 className="text-2xl font-bold mb-4 text-center ">نتائج البحث</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center">نتائج البحث</h2>
           <div className="flex gap-6">
             {/* الجهة اليسرى: بيانات الطالب */}
-            <div className="w-1/2 p-2  border border-gray-300 rounded-lg bg-gray-50 text-center">
+            <div className="w-1/2 p-2 border border-gray-300 rounded-lg bg-gray-50 text-center">
               <h3 className="text-lg font-bold mb-4 p-4 border border-sky-200 rounded-sm shadow-md">
                 بيانات الطالب
               </h3>
@@ -24,7 +24,7 @@ const SearchResults = ({ imageResults, errorMessage }) => {
                     <img
                       src={`http://127.0.0.1:8080/static/${student.ImagePath}`}
                       alt="Student"
-                      className="w-1/2  rounded-md border-2 border-gray-300"
+                      className="w-1/2 rounded-md border-2 border-gray-300"
                     />
                     <div className="rtl">
                       <div className="flex justify-between">
@@ -66,7 +66,11 @@ const SearchResults = ({ imageResults, errorMessage }) => {
             </div>
 
             {/* الجهة اليمنى: بيانات الاختبار */}
-            <div className="w-1/2 p-4 border border-gray-300 rounded-lg bg-gray-50 text-center">
+            <div
+              className={`w-1/2 p-4 border-4 rounded-lg bg-gray-50 text-center ${
+                imageResults[0] ? "border-green-500" : "border-red-500"
+              }`}
+            >
               <h3 className="text-lg font-bold mb-4 p-4 border border-sky-200 rounded-sm shadow-md">
                 بيانات الاختبار
               </h3>
@@ -91,7 +95,8 @@ const SearchResults = ({ imageResults, errorMessage }) => {
                     <strong>التخصص:</strong> {student.Specialization}
                   </p>
                   <p>
-                    <strong>الحالة:</strong> مسموح
+                    {/* <strong>الحالة:</strong> {student.status} */}
+                    <strong>الحالة:</strong> active
                   </p>
                   <p>
                     <strong>رقم الجهاز:</strong> 5
