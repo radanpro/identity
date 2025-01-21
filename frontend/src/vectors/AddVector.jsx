@@ -41,8 +41,8 @@ const AddVector = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8080/vectors/api/students-to-vectors",
-        { student_ids: studentIds },
+        "http://127.0.0.1:3000/api/students-to-vectors",
+        studentIds,
         {
           headers: {
             "Content-Type": "application/json",

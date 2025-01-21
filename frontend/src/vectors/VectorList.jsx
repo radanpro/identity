@@ -18,7 +18,7 @@ const VectorList = () => {
 
   const fetchVectors = useCallback(async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8080/vectors/vectors");
+      const response = await axios.get("http://127.0.0.1:3000/vectors/vectors");
       if (response.status === 200) {
         setVectors(response.data);
         setFilteredVectors(response.data);
@@ -75,7 +75,7 @@ const VectorList = () => {
   const handleVerifyAllVectors = async () => {
     try {
       const response = await axios.get(
-        "http://127.0.0.1:8080/vectors/verify-all"
+        "http://127.0.0.1:3000/vectors/verify-all"
       );
       if (response.status === 200) {
         setSuccessMessage("تم التحقق من جميع المتجهات بنجاح!");

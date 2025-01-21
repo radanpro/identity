@@ -35,7 +35,7 @@ const AddStudent = () => {
     formData.append("image", image); // تأكد من أن الاسم يتوافق مع ما يتوقعه الخادم
 
     try {
-      await axios.post("http://127.0.0.1:8001/students/add", formData, {
+      await axios.post("http://127.0.0.1:3000/students/add", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
