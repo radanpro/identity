@@ -36,6 +36,7 @@ const SearchRealTime = () => {
 
   const startCamera = () => {
     if (!cameraActive && selectedDeviceId) {
+      setImageResults(false);
       navigator.mediaDevices
         .getUserMedia({
           video: {
@@ -102,7 +103,7 @@ const SearchRealTime = () => {
         stopCamera();
         try {
           const response = await axios.post(
-            "http://127.0.0.1:8080/vectors/vectors/search",
+            "http://127.0.0.1:3000/vectors/vectors/search",
             formData,
             {
               headers: {
