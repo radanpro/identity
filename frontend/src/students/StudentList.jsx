@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import SearchAddBar from "../components/SearchAddBar";
 import { Button } from "../shared/Button";
@@ -172,9 +172,12 @@ const StudentList = () => {
                         {student.Specialization}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Button className="text-indigo-600 hover:text-indigo-900">
+                        <NavLink
+                          to={`/edit-student/${student.student_id}`} // رابط التعديل مع معرف الطالب
+                          className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
+                        >
                           تعديل
-                        </Button>
+                        </NavLink>
                         <Button className="ml-2 text-red-600 hover:text-red-900">
                           حذف
                         </Button>

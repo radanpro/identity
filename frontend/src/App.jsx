@@ -5,6 +5,7 @@ import VectorsList from "./vectors/VectorList";
 import CompareImage from "./components/CompareImage";
 import SearchImage from "./components/SearchImage";
 import SearchRealTime from "./components/SearchRealTime";
+import EditStudent from "./students/EditStudent";
 import Layout from "./Layout";
 import Dashboard from "./dashboard/Dashboard";
 import AddVector from "./vectors/AddVector";
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/add-student" element={<AddStudent />} />
+              <Route path="/edit-student/:id" element={<EditStudent />} />
               <Route path="/students" element={<StudentList />} />
               <Route path="/compare-image" element={<CompareImage />} />
               <Route

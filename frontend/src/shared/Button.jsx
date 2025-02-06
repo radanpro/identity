@@ -1,5 +1,4 @@
 // src/shared/Button.js
-import React from "react";
 import { classNames } from "./Utils";
 
 export function Button({ children, className, ...rest }) {
