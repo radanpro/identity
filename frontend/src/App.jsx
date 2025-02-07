@@ -9,26 +9,32 @@ import EditStudent from "./students/EditStudent";
 import Layout from "./Layout";
 import Dashboard from "./dashboard/Dashboard";
 import AddVector from "./vectors/AddVector";
+import Login from "./login/Login";
+import MainLayout from "./root/MainLayout";
 
 function App() {
   return (
-    <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-      <div className="App ">
+    <Router>
+      <div className="App">
         <div className="p-4 rounded-sm shadow-lg">
           <Routes>
+            <Route path="/users" element={<MainLayout />}>
+              <Route path="login" element={<Login />} />
+              {/* <Route path="register" element={<Register />} /> */}
+            </Route>
             <Route path="/" element={<Layout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/add-student" element={<AddStudent />} />
-              <Route path="/edit-student/:id" element={<EditStudent />} />
-              <Route path="/students" element={<StudentList />} />
-              <Route path="/compare-image" element={<CompareImage />} />
+              <Route index element={<Dashboard />} />
+              <Route path="add-student" element={<AddStudent />} />
+              <Route path="edit-student/:id" element={<EditStudent />} />
+              <Route path="students" element={<StudentList />} />
+              <Route path="compare-image" element={<CompareImage />} />
               <Route
-                path="/camera"
+                path="camera"
                 element={<SearchRealTime setCapturedImage={() => {}} />}
               />
-              <Route path="/search-image" element={<SearchImage />} />
-              <Route path="/vectors" element={<VectorsList />} />
-              <Route path="/add-vector" element={<AddVector />} />
+              <Route path="search-image" element={<SearchImage />} />
+              <Route path="vectors" element={<VectorsList />} />
+              <Route path="add-vector" element={<AddVector />} />
             </Route>
           </Routes>
         </div>

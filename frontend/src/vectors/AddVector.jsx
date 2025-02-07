@@ -49,6 +49,7 @@ const AddVector = () => {
           },
         }
       );
+
       console.log(response.data);
 
       // تحقق من حالة الطلب وعرض الرسائل القادمة من الباك اند
