@@ -27,7 +27,7 @@ The Identity System is a user-friendly React-based frontend designed to support 
 2. **Navigate to the Project Directory:**
 
    ```bash
-   cd identity
+   cd identity/frontend
    ```
 
 3. **Install Dependencies:**
