@@ -11,6 +11,7 @@ import Dashboard from "./dashboard/Dashboard";
 import AddVector from "./vectors/AddVector";
 import Login from "./login/Login";
 import MainLayout from "./root/MainLayout";
+import AlertList from "./Alert/AlertList";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             </Route>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
+              <Route path="/alert-list" element={<AlertList />} />
               <Route path="add-student" element={<AddStudent />} />
               <Route path="edit-student/:id" element={<EditStudent />} />
               <Route path="students" element={<StudentList />} />

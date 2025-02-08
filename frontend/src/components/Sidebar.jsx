@@ -12,6 +12,10 @@ const Sidebar = ({ isOpen, onClose }) => {
     location.pathname.startsWith("/vectors") ||
     location.pathname.startsWith("/add-vector");
 
+  const isAlertActive =
+    location.pathname.startsWith("alert-list") ||
+    location.pathname.startsWith("alert-info");
+
   return (
     <aside
       className={`w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg transform transition-transform duration-300 fixed ${
@@ -63,6 +67,17 @@ const Sidebar = ({ isOpen, onClose }) => {
           search Real Time
         </NavLink>
       </nav>
+      <div className="border-t-2 border-sky-300 mt-4 pt-2">
+        <p className="text-gray-400 text-center p-3">Models</p>
+        <NavLink
+          to="alert-list"
+          className={`block p-2 rounded-lg ${
+            isAlertActive ? "bg-blue-600 text-white" : "text-gray-700"
+          }`}
+        >
+          Alerts
+        </NavLink>
+      </div>
     </aside>
   );
 };

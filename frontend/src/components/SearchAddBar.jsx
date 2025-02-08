@@ -6,7 +6,7 @@ const SearchAddBar = ({ onSearch, onAdd }) => {
       {/* حقل البحث */}
       <input
         type="text"
-        placeholder="ابحث عن طالب..."
+        placeholder={`ابحث عن ${onAdd}...`}
         onChange={(e) => onSearch(e.target.value)}
         className="border border-gray-300 rounded-md px-4 py-2 mr-4 "
       />
