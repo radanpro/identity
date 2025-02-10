@@ -13,8 +13,12 @@ const Sidebar = ({ isOpen, onClose }) => {
     location.pathname.startsWith("/add-vector");
 
   const isAlertActive =
-    location.pathname.startsWith("alert-list") ||
-    location.pathname.startsWith("alert-info");
+    location.pathname.startsWith("/alert-list") ||
+    location.pathname.startsWith("/alert-info");
+
+  const isModelActive =
+    location.pathname.startsWith("/models-list") ||
+    location.pathname.startsWith("/models-info");
 
   return (
     <aside
@@ -76,6 +80,14 @@ const Sidebar = ({ isOpen, onClose }) => {
           }`}
         >
           Alerts
+        </NavLink>
+        <NavLink
+          to="models-list"
+          className={`block p-2 rounded-lg ${
+            isModelActive ? "bg-blue-600 text-white" : "text-gray-700"
+          }`}
+        >
+          Models
         </NavLink>
       </div>
     </aside>

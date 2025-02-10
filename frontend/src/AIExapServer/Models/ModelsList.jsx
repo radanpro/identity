@@ -1,10 +1,10 @@
-import Header from "../components/Header";
+import axios from "axios";
 import { useOutletContext, useLocation } from "react-router-dom";
 import { CiGlobe } from "react-icons/ci";
 import { LuFileText } from "react-icons/lu";
-import { Pagination } from "../shared/Pagination";
+import { Pagination } from "../../shared/Pagination";
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import Header from "../../components/Header";
 import SearchAddBar from "../../components/SearchAddBar";
 
 const ModelList = () => {
@@ -68,9 +68,9 @@ const ModelList = () => {
     setCurrentPage(1);
   };
 
-  const indexOfLestItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLestItem - itemsPerPage;
-  const currentItems = filteredModels.slice(indexOfFirstItem, indexOfLestItem);
+  // const indexOfLestItem = currentPage * itemsPerPage;
+  // const indexOfFirstItem = indexOfLestItem - itemsPerPage;
+  // const currentItems = filteredModels.slice(indexOfFirstItem, indexOfLestItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -88,7 +88,7 @@ const ModelList = () => {
           {successMessage}
         </div>
       )}
-      <div className=" flex flex-col items-center justify-center h-screen bg-gray-50">
+      <div className=" flex flex-col items-center justify-center bg-gray-50">
         <div className="flex justify-center p-2 w-full ">
           <div className=" flex items-center  justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center">
             <h2 className="p-2 text-2xl text-white">Supervisors</h2>
@@ -100,10 +100,10 @@ const ModelList = () => {
           </div>
         </div>
         {/* the table */}
-        <div className="flex h-full justify-center items-center space-x-6">
-          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+        <div className="flex h-full justify-center  w-full">
+          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8 ">
             <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 ">
                 <thead className="bg-gray-50">
                   <tr>
                     <th
@@ -145,46 +145,123 @@ const ModelList = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentItems.map((model) => (
-                    <tr key={model.model_id}>
-                      {/* model info  */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <h3>192.168.1.1</h3>
-                        <h3>20-B0-D0-63-a2-26</h3>
-                        <h3>001</h3>
-                        {/* <h3>{model.model_ip}</h3>
+                  {/* {currentItems.map((model) => ( */}
+                  {/* <tr key={model.model_id}> */}
+                  <tr>
+                    {/* model info  */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <h3>192.168.1.1</h3>
+                      <h3>20-B0-D0-63-a2-26</h3>
+                      <h3>001</h3>
+                      {/* <h3>{model.model_ip}</h3>
                         <h3>{model.model_macID}</h3>
                         <h3>{model.model_number}</h3> */}
-                      </td>
-                      {/* location */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {/* <h3>{model.model_room}</h3>
+                    </td>
+                    {/* location */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.model_room}</h3>
                         <h3>{model.PC_number}</h3> */}
-                        <h3>Hall A</h3>
-                        <h3>PC number : 012 </h3>
-                      </td>
-                      {/* status */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {/* <h3>{model.status}</h3> */}
-                        <h3>Online</h3>
-                      </td>
-                      {/* Alert */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {/* <h3>{model.alert_count}</h3> */}
-                        <h3>4</h3>
-                      </td>
-                      {/* LoginDate */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {/* <h3>{model.loginDate}</h3> */}
-                        <h3>14/1/2025</h3>
-                      </td>
-                      {/* Control */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {/* <h3>{model.control}</h3> */}
-                        <h3>Delete</h3>
-                      </td>
-                    </tr>
-                  ))}
+                      <h3>Hall A</h3>
+                      <h3>PC number : 012 </h3>
+                    </td>
+                    {/* status */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.status}</h3> */}
+                      <h3>Online</h3>
+                    </td>
+                    {/* Alert */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.alert_count}</h3> */}
+                      <h3>4</h3>
+                    </td>
+                    {/* LoginDate */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.loginDate}</h3> */}
+                      <h3>14/1/2025</h3>
+                    </td>
+                    {/* Control */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.control}</h3> */}
+                      <h3>Delete</h3>
+                    </td>
+                  </tr>
+                  <tr>
+                    {/* model info  */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <h3>192.168.1.1</h3>
+                      <h3>20-B0-D0-63-a2-26</h3>
+                      <h3>001</h3>
+                      {/* <h3>{model.model_ip}</h3>
+                        <h3>{model.model_macID}</h3>
+                        <h3>{model.model_number}</h3> */}
+                    </td>
+                    {/* location */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.model_room}</h3>
+                        <h3>{model.PC_number}</h3> */}
+                      <h3>Hall A</h3>
+                      <h3>PC number : 012 </h3>
+                    </td>
+                    {/* status */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.status}</h3> */}
+                      <h3>Online</h3>
+                    </td>
+                    {/* Alert */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.alert_count}</h3> */}
+                      <h3>4</h3>
+                    </td>
+                    {/* LoginDate */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.loginDate}</h3> */}
+                      <h3>14/1/2025</h3>
+                    </td>
+                    {/* Control */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.control}</h3> */}
+                      <h3>Delete</h3>
+                    </td>
+                  </tr>
+                  <tr>
+                    {/* model info  */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <h3>192.168.1.1</h3>
+                      <h3>20-B0-D0-63-a2-26</h3>
+                      <h3>001</h3>
+                      {/* <h3>{model.model_ip}</h3>
+                        <h3>{model.model_macID}</h3>
+                        <h3>{model.model_number}</h3> */}
+                    </td>
+                    {/* location */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.model_room}</h3>
+                        <h3>{model.PC_number}</h3> */}
+                      <h3>Hall A</h3>
+                      <h3>PC number : 012 </h3>
+                    </td>
+                    {/* status */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.status}</h3> */}
+                      <h3>Online</h3>
+                    </td>
+                    {/* Alert */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.alert_count}</h3> */}
+                      <h3>4</h3>
+                    </td>
+                    {/* LoginDate */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.loginDate}</h3> */}
+                      <h3>14/1/2025</h3>
+                    </td>
+                    {/* Control */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <h3>{model.control}</h3> */}
+                      <h3>Delete</h3>
+                    </td>
+                  </tr>
+                  {/* )) } */}
                 </tbody>
               </table>
             </div>

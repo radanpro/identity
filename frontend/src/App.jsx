@@ -12,6 +12,7 @@ import AddVector from "./vectors/AddVector";
 import Login from "./login/Login";
 import MainLayout from "./root/MainLayout";
 import AlertList from "./Alert/AlertList";
+import ModelList from "./AIExapServer/Models/ModelsList";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="/alert-list" element={<AlertList />} />
+              <Route path="/models-list" element={<ModelList />} />
               <Route path="add-student" element={<AddStudent />} />
               <Route path="edit-student/:id" element={<EditStudent />} />
               <Route path="students" element={<StudentList />} />
