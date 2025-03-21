@@ -264,12 +264,12 @@ const Monitoring = () => {
       const chin = landmarks[152];
       const verticalRatio = chin.y - forehead.y;
       if (verticalRatio < -0.1) {
-        this.showAlert("الميل للأعلى!", "warning");
+        this.showAlert(" وضعية الرأس: الميل للأعلى!", "warning");
         if (this.headPositionEl)
           this.headPositionEl.textContent = "وضعية الرأس: مائل لأعلى";
         this.updateAttentionScore(true);
       } else if (verticalRatio > 0.1) {
-        this.showAlert("الميل للأسفل!", "warning");
+        this.showAlert("وضعية الرأس: الميل للأسفل!", "warning");
         if (this.headPositionEl)
           this.headPositionEl.textContent = "وضعية الرأس: مائل لأسفل";
         this.updateAttentionScore(true);
@@ -364,10 +364,10 @@ const Monitoring = () => {
         this.alert.textContent = message;
         this.alert.style.background =
           type === "danger"
-            ? "var(--danger-color)"
+            ? "bg-red-500"
             : type === "warning"
-            ? "var(--warning-color)"
-            : "var(--success-color)";
+            ? "bg-yellow-500"
+            : "#c91919";
         this.alert.style.display = "block";
         setTimeout(() => {
           this.alert.style.display = "none";
@@ -480,8 +480,8 @@ const Monitoring = () => {
         <div
           id="alert"
           ref={alertRef}
-          className="alert-badge fixed top-5 right-5 p-4 m-4 rounded text-white hidden animate-pulse"
-          style={{ backgroundColor: "var(--danger-color)" }}
+          className="alert-badge fixed top-5 right-5 p-2 m-4  text-white hidden animate-pulse rounded-xl "
+          style={{ backgroundColor: "#c91919" }}
         ></div>
 
         <div className="stats-panel grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
