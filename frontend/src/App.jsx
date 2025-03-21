@@ -13,6 +13,8 @@ import Login from "./login/Login";
 import MainLayout from "./root/MainLayout";
 import AlertList from "./Alert/AlertList";
 import ModelList from "./AIExapServer/Models/ModelsList";
+import ControlModel from "./Models/admin/ControlModel";
+import Monitoring from "./Models/Monitoring";
 
 function App() {
   return (
@@ -26,8 +28,6 @@ function App() {
             </Route>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
-              <Route path="/alert-list" element={<AlertList />} />
-              <Route path="/models-list" element={<ModelList />} />
               <Route path="add-student" element={<AddStudent />} />
               <Route path="edit-student/:id" element={<EditStudent />} />
               <Route path="students" element={<StudentList />} />
@@ -39,6 +39,11 @@ function App() {
               <Route path="search-image" element={<SearchImage />} />
               <Route path="vectors" element={<VectorsList />} />
               <Route path="add-vector" element={<AddVector />} />
+              {/* model */}
+              <Route path="/alert-list" element={<AlertList />} />
+              <Route path="/models-list" element={<ModelList />} />
+              <Route path="/control-model" element={<ControlModel />} />
+              <Route path="/monitoring-model" element={<Monitoring />} />
             </Route>
           </Routes>
         </div>

@@ -20,6 +20,10 @@ const Sidebar = ({ isOpen, onClose }) => {
     location.pathname.startsWith("/models-list") ||
     location.pathname.startsWith("/models-info");
 
+  const isControlModelActive = location.pathname.startsWith("/control-model");
+  const isMonitorModelActive =
+    location.pathname.startsWith("/monitoring-model");
+
   return (
     <aside
       className={`w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg transform transition-transform duration-300 fixed ${
@@ -88,6 +92,22 @@ const Sidebar = ({ isOpen, onClose }) => {
           }`}
         >
           Models
+        </NavLink>
+        <NavLink
+          to="control-model"
+          className={`block p-2 rounded-lg ${
+            isControlModelActive ? "bg-blue-600 text-white" : "text-gray-700"
+          }`}
+        >
+          control Model
+        </NavLink>
+        <NavLink
+          to="monitoring-model"
+          className={`block p-2 rounded-lg ${
+            isMonitorModelActive ? "bg-blue-600 text-white" : "text-gray-700"
+          }`}
+        >
+          Monitor Model
         </NavLink>
       </div>
     </aside>
