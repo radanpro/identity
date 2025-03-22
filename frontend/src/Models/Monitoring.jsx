@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Header from "../components/Header";
 import { FaceMesh } from "@mediapipe/face_mesh";
-import { Camera } from "@mediapipe/camera_utils"; // Add this import
+import { Camera } from "@mediapipe/camera_utils";
 import { Pose } from "@mediapipe/pose";
 
-// إعدادات افتراضية يمكن استبدالها من السيرفر
+// إعدادات افتراضية يمكن تعديلها من السيرفر
 const config = {
   faceMeshOptions: {
     maxNumFaces: 1,
@@ -29,6 +29,36 @@ const config = {
   attentionDecrementFactor: 5,
   attentionIncrementFactor: 1,
   noFaceDecrementFactor: 3,
+  // إعدادات التنبيهات
+  alerts: {
+    head: {
+      upThreshold: -0.5, // قيمة حركة الرأس للأعلى
+      downThreshold: 0.5, // قيمة حركة الرأس للأسفل
+      lateralThreshold: 15,
+      duration: 3000, // مدة استمرار الحركة قبل التنبيه (بالمللي ثانية)
+      enabled: {
+        up: true,
+        down: true,
+        left: true,
+        right: true,
+        forward: true,
+      },
+    },
+    mouth: {
+      threshold: 0.05, // عتبة فتح الفم
+      duration: 3000, // مدة استمرار الحالة قبل التنبيه
+      enabled: true,
+    },
+    gaze: {
+      duration: 3000, // مدة استمرار عدم التركيز قبل التنبيه
+      enabled: true,
+    },
+    headPose: {
+      neutralRange: 5,
+      smoothingFrames: 10,
+      referenceFrames: 30,
+    },
+  },
 };
 
 const Monitoring = () => {
@@ -46,7 +76,6 @@ const Monitoring = () => {
   const eventLogRef = useRef(null);
   const monitorRef = useRef(null);
 
-  // تحويل الكود الأصلي إلى كلاس داخل React باستخدام refs والمتغيرات من config
   class AdvancedMonitor {
     constructor(refs, config) {
       this.video = refs.video.current;
@@ -71,27 +100,32 @@ const Monitoring = () => {
       this.currentFocusStartTime = null;
       this.maxFocusTimes = {};
 
-      this.config = config;
+      // لتخزين أوقات التنبيه الأخيرة لكل نوع
+      this.lastAlertTimes = {
+        head: { up: 0, down: 0, left: 0, right: 0, forward: 0 },
+        mouth: 0,
+        gaze: 0,
+      };
 
-      // تهيئة النماذج
+      this.config = config;
+      this.headAngleHistory = [];
+      this.referenceAngles = null;
+      this.isCalibrating = true;
+
       this.initFaceMesh();
       this.initPose();
       this.setupEventHandlers();
     }
 
-    // تهيئة نموذج FaceMesh
     initFaceMesh() {
-      // نفترض أن FaceMesh متوفر عالمياً (من خلال السكربت الخارجي)
       this.faceMesh = new FaceMesh({
         locateFile: (file) =>
           `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
       });
-
       this.faceMesh.setOptions(this.config.faceMeshOptions);
       this.faceMesh.onResults(this.processFaceResults.bind(this));
     }
 
-    // تهيئة نموذج Pose
     initPose() {
       this.pose = new Pose({
         locateFile: (file) =>
@@ -120,13 +154,169 @@ const Monitoring = () => {
       }
     }
 
-    // استقبال نتائج FaceMesh
     processFaceResults(results) {
       this.faceResults = results;
+      if (
+        results.multiFaceLandmarks?.length > 0 &&
+        results.multiFaceTransformationMatrixes?.length > 0
+      ) {
+        const matrix = results.multiFaceTransformationMatrixes[0];
+        const angles = this.matrixToAngles(matrix);
+
+        if (this.isCalibrating) {
+          this.setReferencePosition(angles);
+        } else {
+          this.processHeadPose(angles);
+        }
+
+        this.analyzeFaceLandmarks(results.multiFaceLandmarks[0]);
+      }
       this.updateAnalysis();
     }
 
-    // استقبال نتائج Pose
+    matrixToAngles(matrix) {
+      const rotation = matrix.data;
+      const [m00, m01, m02, m10, m11, m12, m20, m21, m22] = rotation;
+
+      // تصحيح حساب الزوايا وفقًا للنظام الإحداثي الصحيح
+      const pitch =
+        Math.atan2(-m12, Math.sqrt(m22 * m22 + m02 * m02)) * (180 / Math.PI);
+      const yaw = Math.atan2(m20, m00) * (180 / Math.PI);
+      const roll = Math.atan2(m01, m11) * (180 / Math.PI);
+
+      return { pitch, yaw, roll };
+    }
+    setReferencePosition(angles) {
+      this.headAngleHistory.push(angles);
+
+      if (
+        this.headAngleHistory.length >= this.config.headPose.referenceFrames
+      ) {
+        const sum = this.headAngleHistory.reduce(
+          (acc, curr) => ({
+            pitch: acc.pitch + curr.pitch,
+            yaw: acc.yaw + curr.yaw,
+            roll: acc.roll + curr.roll,
+          }),
+          { pitch: 0, yaw: 0, roll: 0 }
+        );
+
+        this.referenceAngles = {
+          pitch: sum.pitch / this.config.headPose.referenceFrames,
+          yaw: sum.yaw / this.config.headPose.referenceFrames,
+          roll: sum.roll / this.config.headPose.referenceFrames,
+        };
+
+        this.isCalibrating = false;
+        this.headAngleHistory = [];
+        this.showAlert("المعايرة اكتملت!", "info");
+      }
+    }
+    processHeadPose(angles) {
+      this.headAngleHistory.push(angles);
+      if (this.headAngleHistory.length > this.config.headPose.smoothingFrames) {
+        this.headAngleHistory.shift();
+      }
+
+      const smoothed = this.headAngleHistory.reduce(
+        (acc, curr) => ({
+          pitch: acc.pitch + curr.pitch,
+          yaw: acc.yaw + curr.yaw,
+          roll: acc.roll + curr.roll,
+        }),
+        { pitch: 0, yaw: 0, roll: 0 }
+      );
+
+      const current = {
+        pitch:
+          smoothed.pitch / this.headAngleHistory.length -
+          this.referenceAngles.pitch,
+        yaw:
+          smoothed.yaw / this.headAngleHistory.length -
+          this.referenceAngles.yaw,
+        roll:
+          smoothed.roll / this.headAngleHistory.length -
+          this.referenceAngles.roll,
+      };
+
+      this.updateHeadPositionDisplay(current);
+      this.checkHeadPositionAlerts(current);
+    }
+    updateHeadPositionDisplay(angles) {
+      const { pitch, yaw, roll } = angles;
+      let directions = [];
+
+      if (Math.abs(pitch) > this.config.headPose.neutralRange) {
+        directions.push(
+          `${pitch > 0 ? "أسفل" : "أعلى"} (${Math.abs(pitch).toFixed(1)}°)`
+        );
+      }
+      if (Math.abs(yaw) > this.config.headPose.neutralRange) {
+        directions.push(
+          `${yaw > 0 ? "يمين" : "يسار"} (${Math.abs(yaw).toFixed(1)}°)`
+        );
+      }
+      if (Math.abs(roll) > this.config.headPose.neutralRange) {
+        directions.push(`مائل (${Math.abs(roll).toFixed(1)}°)`);
+      }
+
+      const status =
+        directions.length > 0 ? `مائل: ${directions.join("، ")}` : "مستقيم";
+
+      if (this.headPositionEl) {
+        this.headPositionEl.textContent = `وضعية الرأس: ${status}`;
+      }
+    }
+    checkHeadPositionAlerts(angles) {
+      // const { yaw } = angles;
+      const { pitch, yaw, roll } = angles;
+      const now = Date.now();
+      // استخدام القيمة المطلقة للزاوية مع مراعاة الاتجاه
+      const absoluteYaw = Math.abs(yaw);
+      const direction = yaw > 0 ? "right" : "left";
+
+      // Vertical detection
+      if (Math.abs(pitch) < this.config.alerts.head.upThreshold) {
+        this.handleHeadAlert(
+          direction,
+          now,
+          `الميل الحاد للأعلى (${absoluteYaw.toFixed(1)}°)`
+        );
+      } else if (Math.abs(pitch) > this.config.alerts.head.downThreshold) {
+        this.handleHeadAlert(
+          "down",
+          now,
+          `الميل الحاد للأسفل (${absoluteYaw.toFixed(1)}°)`
+        );
+      }
+
+      // Horizontal detection
+      if (yaw > this.config.alerts.head.lateralThreshold) {
+        this.handleHeadAlert(
+          "right",
+          now,
+          `الميل الحاد لليمين (${yaw.toFixed(1)}°)`
+        );
+      } else if (yaw < -this.config.alerts.head.lateralThreshold) {
+        this.handleHeadAlert(
+          "left",
+          now,
+          `الميل الحاد لليسار (${yaw.toFixed(1)}°)`
+        );
+      }
+    }
+    handleHeadAlert(direction, currentTime, message) {
+      if (
+        this.config.alerts.head.enabled[direction] &&
+        currentTime - this.lastAlertTimes.head[direction] >
+          this.config.alerts.head.duration
+      ) {
+        this.showAlert(message, "warning");
+        this.lastAlertTimes.head[direction] = currentTime;
+        this.updateAttentionScore(true);
+      }
+    }
+
     processPoseResults(results) {
       this.poseResults = results;
       this.updateAnalysis();
@@ -139,20 +329,19 @@ const Monitoring = () => {
         this.faceResults.multiFaceLandmarks &&
         this.faceResults.multiFaceLandmarks.length > 0
       ) {
-        this.analyzeFaceLandmarks(this.faceResults.multiFaceLandmarks[0]);
-        if (this.poseResults && this.poseResults.poseResults) {
-          this.analyzePoseLandmarks(
-            this.faceResults.multiFaceLandmarks[0],
-            this.poseResults.poseLandmarks
-          );
+        const landmarks = this.faceResults.multiFaceLandmarks[0];
+        this.analyzeFaceLandmarks(landmarks);
+        if (this.poseResults && this.poseResults.poseLandmarks) {
+          this.analyzePoseLandmarks(landmarks, this.poseResults.poseLandmarks);
         } else {
-          this.detectHeadPosition(this.faceResults.multiFaceLandmarks[0]);
+          this.detectHeadPosition(landmarks);
         }
       } else {
         this.updateAttentionScore(false);
         this.showAlert("تحذير: لم يتم اكتشاف الوجه!", "danger");
       }
     }
+
     drawResultsOnCanvas() {
       if (this.faceResults && this.faceResults.image) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -177,7 +366,6 @@ const Monitoring = () => {
       this.detectHeadDirectionRelativeToShoulders(faceLandmarks, poseLandmarks);
     }
 
-    // رسم معالم الوجه على canvas
     drawFaceLandmarks(landmarks) {
       this.ctx.fillStyle = "red";
       landmarks.forEach((point) => {
@@ -213,6 +401,7 @@ const Monitoring = () => {
         }
         this.currentGazeDirection = gaze.direction;
         this.currentFocusStartTime = Date.now();
+        this.lastAlertTimes.gaze = Date.now();
       }
       let focusElapsed = (Date.now() - this.currentFocusStartTime) / 1000;
       if (this.focusTimeEl)
@@ -220,14 +409,14 @@ const Monitoring = () => {
           1
         )}s`;
 
-      //   console.log(
-      //     `أعلى زمن تركيز للاتجاه ${this.currentGazeDirection}: ${
-      //       this.maxFocusTimes[this.currentGazeDirection] || 0
-      //     }s`
-      //   );
-
-      if (gaze.confidence > 75 && !gaze.isCentered) {
+      if (
+        gaze.confidence > 75 &&
+        !gaze.isCentered &&
+        this.config.alerts.gaze.enabled &&
+        Date.now() - this.lastAlertTimes.gaze > this.config.alerts.gaze.duration
+      ) {
         this.showAlert(`انحراف النظر إلى ${gaze.direction}`, "warning");
+        this.lastAlertTimes.gaze = Date.now();
         this.updateAttentionScore(true);
       }
     }
@@ -259,17 +448,46 @@ const Monitoring = () => {
       }
     }
 
+    // ضبط تنبيهات حركة الرأس باستخدام عتبات منفصلة للاتجاهات
     detectHeadPosition(landmarks) {
       const forehead = landmarks[10];
       const chin = landmarks[152];
+
+      // Check if forehead or chin are undefined
+      if (!forehead || !chin) {
+        console.warn("Forehead or chin landmarks not detected!");
+        return;
+      }
+
       const verticalRatio = chin.y - forehead.y;
-      if (verticalRatio < -0.1) {
-        this.showAlert(" وضعية الرأس: الميل للأعلى!", "warning");
+
+      console.log("verticalRatio:", verticalRatio);
+      console.log("upThreshold:", this.config.alerts.head.upThreshold);
+      console.log("downThreshold:", this.config.alerts.head.downThreshold);
+
+      if (verticalRatio < this.config.alerts.head.upThreshold) {
+        // Head tilted upwards
+        if (
+          this.config.alerts.head.enabled.up &&
+          Date.now() - this.lastAlertTimes.head.up >
+            this.config.alerts.head.duration
+        ) {
+          this.showAlert("وضعية الرأس: الميل للأعلى!", "warning");
+          this.lastAlertTimes.head.up = Date.now();
+        }
         if (this.headPositionEl)
           this.headPositionEl.textContent = "وضعية الرأس: مائل لأعلى";
         this.updateAttentionScore(true);
-      } else if (verticalRatio > 0.1) {
-        this.showAlert("وضعية الرأس: الميل للأسفل!", "warning");
+      } else if (verticalRatio > this.config.alerts.head.downThreshold) {
+        // Head tilted downwards
+        if (
+          this.config.alerts.head.enabled.down &&
+          Date.now() - this.lastAlertTimes.head.down >
+            this.config.alerts.head.duration
+        ) {
+          this.showAlert("وضعية الرأس: الميل للأسفل!", "warning");
+          this.lastAlertTimes.head.down = Date.now();
+        }
         if (this.headPositionEl)
           this.headPositionEl.textContent = "وضعية الرأس: مائل لأسفل";
         this.updateAttentionScore(true);
@@ -279,38 +497,68 @@ const Monitoring = () => {
       }
     }
 
+    // استخدام نتائج Pose لمزيد من دقة تحديد اتجاه الرأس الأفقي
     detectHeadDirectionRelativeToShoulders(faceLandmarks, poseLandmarks) {
       const nose = faceLandmarks[1];
       const leftShoulder = poseLandmarks[11];
       const rightShoulder = poseLandmarks[12];
-      const shoulderMidpoint = {
-        x: (leftShoulder.x + rightShoulder.x) / 2,
-        y: (leftShoulder.y + rightShoulder.y) / 2,
-      };
-      const dx = nose.x - shoulderMidpoint.x;
-      const threshold = 0.05;
-      if (Math.abs(dx) < threshold) {
+      // حساب الزاوية النسبية بين الأنف والكتفين
+      const shoulderWidth = rightShoulder.x - leftShoulder.x;
+      const noseOffset = nose.x - (leftShoulder.x + rightShoulder.x) / 2;
+
+      // تحويل الإزاحة إلى نسبة مئوية من عرض الكتفين
+      const lateralRatio = (noseOffset / shoulderWidth) * 100;
+
+      // تحديد العتبات بناء على نسبة الحركة
+      const lateralThreshold = 15; // نسبة مئوية من عرض الكتفين
+      if (Math.abs(lateralRatio) < lateralThreshold) {
         if (this.headPositionEl)
           this.headPositionEl.textContent = "وضعية الرأس: متجه للأمام";
-      } else if (dx > threshold) {
-        this.showAlert("الرأس متجه لليمين!", "warning");
+      } else if (lateralRatio > lateralThreshold) {
+        if (
+          this.config.alerts.head.enabled.right &&
+          Date.now() - this.lastAlertTimes.head.right >
+            this.config.alerts.head.duration
+        ) {
+          this.showAlert("الرأس متجه لليمين!", "warning");
+          this.lastAlertTimes.head.right = Date.now();
+        }
         if (this.headPositionEl)
-          this.headPositionEl.textContent = "وضعية الرأس: متجه لليمين";
+          this.headPositionEl.textContent = `وضعية الرأس: متجه لليمين (${Math.abs(
+            lateralRatio
+          ).toFixed(1)}%)`;
         this.updateAttentionScore(true);
       } else {
-        this.showAlert("الرأس متجه لليسار!", "warning");
+        if (
+          this.config.alerts.head.enabled.left &&
+          Date.now() - this.lastAlertTimes.head.left >
+            this.config.alerts.head.duration
+        ) {
+          this.showAlert("الرأس متجه لليسار!", "warning");
+          this.lastAlertTimes.head.left = Date.now();
+        }
         if (this.headPositionEl)
-          this.headPositionEl.textContent = "وضعية الرأس: متجه لليسار";
+          this.headPositionEl.textContent = `وضعية الرأس: متجه لليسار (${Math.abs(
+            lateralRatio
+          ).toFixed(1)}%)`;
         this.updateAttentionScore(true);
       }
     }
 
+    // تنبيه فتح الفم: يصدر فقط إذا تجاوزت قيمة الفم عتبة محددة واستمر الوضع لفترة معينة
     detectMouthActions(landmarks) {
       const upperLip = landmarks[13];
       const lowerLip = landmarks[14];
       const mouthOpen = lowerLip.y - upperLip.y;
-      if (mouthOpen > 0.05) {
-        this.showAlert("الفم مفتوح!", "danger");
+      if (mouthOpen > this.config.alerts.mouth.threshold) {
+        if (
+          this.config.alerts.mouth.enabled &&
+          Date.now() - this.lastAlertTimes.mouth >
+            this.config.alerts.mouth.duration
+        ) {
+          this.showAlert("الفم مفتوح!", "danger");
+          this.lastAlertTimes.mouth = Date.now();
+        }
         if (this.mouthStatusEl)
           this.mouthStatusEl.textContent = "حالة الفم: مفتوح";
       } else {
@@ -362,6 +610,7 @@ const Monitoring = () => {
     showAlert(message, type) {
       if (this.alert) {
         this.alert.textContent = message;
+        // استخدام فئات Tailwind أو style inline
         this.alert.style.background =
           type === "danger"
             ? "bg-red-500"
@@ -371,7 +620,7 @@ const Monitoring = () => {
         this.alert.style.display = "block";
         setTimeout(() => {
           this.alert.style.display = "none";
-        }, 3000);
+        }, 5000);
       }
       this.logEvent(message, type);
       if (type !== "info") this.warningCount++;
@@ -398,7 +647,6 @@ const Monitoring = () => {
     }
   } // End of AdvancedMonitor class
 
-  // إنشاء المراقب عند تحميل الصفحة
   useEffect(() => {
     const refs = {
       video: videoRef,
@@ -413,15 +661,10 @@ const Monitoring = () => {
       eventLog: eventLogRef,
     };
     monitorRef.current = new AdvancedMonitor(refs, config);
-    // بدء الكاميرا تلقائياً أو عند الضغط على زر التشغيل
-    // monitorRef.current.startCamera();
-    return () => {
-      if (monitorRef.current) monitorRef.current.stopCamera();
-    };
+    return () => monitorRef.current?.stopCamera();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // دوال تشغيل/إيقاف الكاميرا
   const handleStartCamera = async () => {
     if (monitorRef.current) {
       await monitorRef.current.startCamera();
@@ -430,10 +673,8 @@ const Monitoring = () => {
   };
 
   const handleStopCamera = () => {
-    if (monitorRef.current) {
-      monitorRef.current.stopCamera();
-      setIsCameraOn(false);
-    }
+    monitorRef.current?.stopCamera();
+    setIsCameraOn(false);
   };
 
   return (
@@ -480,7 +721,7 @@ const Monitoring = () => {
         <div
           id="alert"
           ref={alertRef}
-          className="alert-badge fixed top-5 right-5 p-2 m-4  text-white hidden animate-pulse rounded-xl "
+          className="alert-badge fixed top-5 right-5 p-2 m-4 text-white hidden animate-pulse rounded-xl"
           style={{ backgroundColor: "#c91919" }}
         ></div>
 

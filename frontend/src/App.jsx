@@ -18,7 +18,7 @@ import Monitoring from "./Models/Monitoring";
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <div className="App">
         <div className="p-4 rounded-sm shadow-lg">
           <Routes>
