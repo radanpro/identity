@@ -1,14 +1,19 @@
 import Header from "../components/Header";
+import PropTypes from "prop-types";
 import { useOutletContext } from "react-router-dom";
 import { CiGlobe } from "react-icons/ci";
 import { LuFileText } from "react-icons/lu";
 import { IoEllipse } from "react-icons/io5";
 
-const Dashboard = () => {
+const Dashboard = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   return (
     <div className="flex-col">
-      <Header page="Dashboard" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="Dashboard"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div className=" flex flex-col items-center justify-center h-screen bg-gray-50">
         <div className="flex justify-center p-2 w-full ">
           <div className=" flex items-center  justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center">
@@ -138,6 +143,10 @@ const Dashboard = () => {
       </div>
     </div>
   );
+};
+
+Dashboard.propTypes = {
+  isLoggedIn: PropTypes.bool,
 };
 
 export default Dashboard;

@@ -15,10 +15,13 @@ import AlertList from "./Alert/AlertList";
 import ModelList from "./AIExapServer/Models/ModelsList";
 import ControlModel from "./Models/admin/ControlModel";
 import Monitoring from "./Models/Monitoring";
-import DevicePage from "./Devices/DevicePage";
+import DevicePage from "./DevicesAndUsers/DevicePage";
 import Register from "./login/Register";
+import Profile from "./DevicesAndUsers/Profile";
 
 function App() {
+  const isLoggedIn = true;
+  // const isLoggedIn = !!localStorage.getItem("token");
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <div className="App">
@@ -27,9 +30,10 @@ function App() {
             <Route path="/users" element={<MainLayout />}>
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
+              <Route index element={<Dashboard isLoggedIn={isLoggedIn} />} />
               <Route path="add-student" element={<AddStudent />} />
               <Route path="edit-student/:id" element={<EditStudent />} />
               <Route path="students" element={<StudentList />} />
