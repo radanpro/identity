@@ -15,6 +15,7 @@ import AlertList from "./Alert/AlertList";
 import ModelList from "./AIExapServer/Models/ModelsList";
 import ControlModel from "./Models/admin/ControlModel";
 import Monitoring from "./Models/Monitoring";
+import DevicePage from "./Devices/DevicePage";
 
 function App() {
   return (
@@ -44,6 +45,8 @@ function App() {
               <Route path="/models-list" element={<ModelList />} />
               <Route path="/control-model" element={<ControlModel />} />
               <Route path="/monitoring-model" element={<Monitoring />} />
+              {/* devices and users */}
+              <Route path="/device/create" element={<DevicePage />} />
             </Route>
           </Routes>
         </div>

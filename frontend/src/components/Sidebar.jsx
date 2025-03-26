@@ -23,6 +23,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const isControlModelActive = location.pathname.startsWith("/control-model");
   const isMonitorModelActive =
     location.pathname.startsWith("/monitoring-model");
+  const isDeviceActive = location.pathname.startsWith("/device/create");
 
   return (
     <aside
@@ -108,6 +109,17 @@ const Sidebar = ({ isOpen, onClose }) => {
           }`}
         >
           Monitor Model
+        </NavLink>
+      </div>
+      <div className="border-t-2 border-sky-300 mt-4 pt-2">
+        <p className="text-gray-400 text-center p-3">Devices and users</p>
+        <NavLink
+          to="device/create"
+          className={`block p-2 rounded-lg ${
+            isDeviceActive ? "bg-blue-600 text-white" : "text-gray-700"
+          }`}
+        >
+          Devices
         </NavLink>
       </div>
     </aside>
