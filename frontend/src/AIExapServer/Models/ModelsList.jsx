@@ -6,8 +6,9 @@ import { Pagination } from "../../shared/Pagination";
 import { useCallback, useEffect, useState } from "react";
 import Header from "../../components/Header";
 import SearchAddBar from "../../components/SearchAddBar";
+import PropTypes from "prop-types";
 
-const ModelList = () => {
+const ModelList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [models, setModels] = useState([]);
   const [filteredModels, setFilteredModels] = useState([]);
@@ -78,7 +79,11 @@ const ModelList = () => {
 
   return (
     <div className="flex-col">
-      <Header page="ModelList" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="ModelList"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div>
         {/* عنوان الصفحة */}
         <SearchAddBar onSearch={handleSearch} onAdd="Model " />
@@ -280,4 +285,7 @@ const ModelList = () => {
   );
 };
 
+ModelList.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
+};
 export default ModelList;

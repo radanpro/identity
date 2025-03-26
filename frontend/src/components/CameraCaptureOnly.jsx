@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-
+import PropTypes from "prop-types";
 const CameraCaptureOnly = ({ setCapturedImage }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -129,5 +129,7 @@ const CameraCaptureOnly = ({ setCapturedImage }) => {
     </div>
   );
 };
-
+CameraCaptureOnly.propTypes = {
+  setCapturedImage: PropTypes.func.isRequired,
+};
 export default CameraCaptureOnly;

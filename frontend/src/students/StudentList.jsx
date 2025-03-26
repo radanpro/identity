@@ -6,17 +6,16 @@ import SearchAddBar from "../components/SearchAddBar";
 import { Button } from "../shared/Button";
 import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
-
-const StudentList = () => {
+import PropTypes from "prop-types";
+const StudentList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // عدد العناصر في كل صفحة
+  const [itemsPerPage] = useState(10);
   const location = useLocation();
 
-  // دالة لتحويل المصفوفة إلى كائنات تحتوي على مفاتيح محددة
   const mapStudents = (data) => {
     return data.map((student) => ({
       student_id: student[0],
@@ -44,7 +43,6 @@ const StudentList = () => {
     }
   }, []);
 
-  // إعداد الرسالة الأولية من التنقل
   useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
@@ -85,7 +83,11 @@ const StudentList = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Student" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="Student"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div>
         {/* عنوان الصفحة */}
         <SearchAddBar onSearch={handleSearch} onAdd="طالب " />
@@ -205,4 +207,7 @@ const StudentList = () => {
   );
 };
 
+StudentList.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
+};
 export default StudentList;

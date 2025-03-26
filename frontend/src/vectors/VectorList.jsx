@@ -5,8 +5,8 @@ import Header from "../components/Header";
 import VectorSearchBar from "./components/VectorSearchBar";
 import VectorTable from "./components/VectorTable";
 import VectorPagination from "./components/VectorPagination";
-
-const VectorList = () => {
+import PropTypes from "prop-types";
+const VectorList = ({ isLoggedIn }) => {
   const [vectors, setVectors] = useState([]);
   const [filteredVectors, setFilteredVectors] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -93,7 +93,11 @@ const VectorList = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Vectors" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="Vectors"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div className="p-4">
         <VectorSearchBar
           onSearch={handleSearch}
@@ -120,6 +124,9 @@ const VectorList = () => {
       </div>
     </div>
   );
+};
+VectorList.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
 };
 
 export default VectorList;

@@ -1,5 +1,5 @@
 // src/shared/Pagination.js
-import React from "react";
+import PropTypes from "prop-types";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid"; // تغيير المسار هنا
 
 export function Pagination({
@@ -30,3 +30,9 @@ export function Pagination({
     </div>
   );
 }
+Pagination.propTypes = {
+  currentPage: PropTypes.number.isRequired,
+  totalPages: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  className: PropTypes.string,
+};

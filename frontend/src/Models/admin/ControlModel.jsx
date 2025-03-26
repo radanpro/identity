@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Header from "../../components/Header";
+import PropTypes from "prop-types";
 
 // Default configuration (same as the provided config)
 const defaultConfig = {
@@ -56,7 +57,7 @@ const defaultConfig = {
   },
 };
 
-const EditConfig = () => {
+const EditConfig = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [config, setConfig] = useState(defaultConfig);
   const [loading, setLoading] = useState(true);
@@ -142,7 +143,11 @@ const EditConfig = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
-      <Header page="Edit Config" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="Edit Config"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div className="p-4 max-w-4xl mx-auto">
         <h1 className="text-3xl mb-6 text-center">Edit Configuration</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -667,4 +672,7 @@ const EditConfig = () => {
   );
 };
 
+EditConfig.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
+};
 export default EditConfig;

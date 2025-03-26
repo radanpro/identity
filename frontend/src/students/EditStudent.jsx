@@ -4,8 +4,9 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import CameraCaptureOnly from "../components/CameraCaptureOnly";
 import Header from "../components/Header";
 import { Button } from "../shared/Button"; // استيراد مكون Button
+import PropTypes from "prop-types";
 
-const EditStudent = () => {
+const EditStudent = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const { id } = useParams(); // الحصول على معرف الطالب من الرابط
   const [number, setRegistrationNumber] = useState("");
@@ -103,7 +104,11 @@ const EditStudent = () => {
 
   return (
     <div className="flex-col">
-      <Header page="edit-student" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="edit-student"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Edit Student</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -192,4 +197,7 @@ const EditStudent = () => {
   );
 };
 
+EditStudent.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
+};
 export default EditStudent;

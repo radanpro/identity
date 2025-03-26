@@ -3,8 +3,9 @@ import axios from "axios";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import CameraCaptureOnly from "../components/CameraCaptureOnly";
 import Header from "../components/Header";
+import PropTypes from "prop-types";
 
-const AddExam = () => {
+const AddExam = ({ isLoggedIn }) => {
   const [number, setRegistrationNumber] = useState("");
   const [name, setName] = useState("");
   const [college, setCollege] = useState("");
@@ -76,7 +77,11 @@ const AddExam = () => {
 
   return (
     <div className="flex-col">
-      <Header page="Dashboard" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="Dashboard"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Add New Student</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -159,6 +164,9 @@ const AddExam = () => {
       </div>
     </div>
   );
+};
+AddExam.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
 };
 
 export default AddExam;

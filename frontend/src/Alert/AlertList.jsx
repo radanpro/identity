@@ -8,8 +8,9 @@ import axios from "axios";
 import SearchAddBar from "../components/SearchAddBar";
 import { MdOutlineMessage } from "react-icons/md";
 import { IoIosSunny } from "react-icons/io";
+import PropTypes from "prop-types";
 
-const AlertList = () => {
+const AlertList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [alerts, setAlerts] = useState([]);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
@@ -81,7 +82,11 @@ const AlertList = () => {
   return (
     <div className="flex-col">
       <div>
-        <Header page="alertList" onToggleSidebar={onToggleSidebar} />
+        <Header
+          page="alertList"
+          onToggleSidebar={onToggleSidebar}
+          isLoggedIn={isLoggedIn}
+        />
         <div>
           {/* عنوان الصفحة */}
           <SearchAddBar onSearch={handleSearch} onAdd="Alert " />
@@ -351,5 +356,7 @@ const AlertList = () => {
     </div>
   );
 };
-
+AlertList.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
+};
 export default AlertList;

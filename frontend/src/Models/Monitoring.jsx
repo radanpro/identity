@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { Pose } from "@mediapipe/pose";
-
+import PropTypes from "prop-types";
 // إعدادات افتراضية يمكن تعديلها من السيرفر
 const config = {
   faceMeshOptions: {
@@ -61,7 +61,7 @@ const config = {
   },
 };
 
-const Monitoring = () => {
+const Monitoring = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [isCameraOn, setIsCameraOn] = useState(false);
   const videoRef = useRef(null);
@@ -679,7 +679,11 @@ const Monitoring = () => {
 
   return (
     <div className="flex-col min-h-screen bg-gray-100 text-gray-900">
-      <Header page="controller model" onToggleSidebar={onToggleSidebar} />
+      <Header
+        page="controller model"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+      />
       <div className="dashboard mx-auto p-4">
         <h1 className="text-3xl text-center mb-4">
           نظام مراقبة الامتحانات الذكي 🎓
@@ -762,6 +766,10 @@ const Monitoring = () => {
       </div>
     </div>
   );
+};
+
+Monitoring.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
 };
 
 export default Monitoring;

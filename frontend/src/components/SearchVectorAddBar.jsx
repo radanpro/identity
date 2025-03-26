@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
+import PropTypes from "prop-types";
 
-const SearchVectorAddBar = ({ onSearch, onAdd, onVerifyAll }) => {
+const SearchVectorAddBar = ({ onSearch, onAdd }) => {
   return (
     <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-md mb-4">
       {/* حقل البحث */}
@@ -29,4 +30,8 @@ const SearchVectorAddBar = ({ onSearch, onAdd, onVerifyAll }) => {
   );
 };
 
+SearchVectorAddBar.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+  onAdd: PropTypes.string.isRequired,
+};
 export default SearchVectorAddBar;

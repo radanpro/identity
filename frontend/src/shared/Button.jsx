@@ -1,5 +1,6 @@
 // src/shared/Button.js
 import { classNames } from "./Utils";
+import PropTypes from "prop-types";
 
 export function Button({ children, className, ...rest }) {
   return (
@@ -16,6 +17,10 @@ export function Button({ children, className, ...rest }) {
   );
 }
 
+Button.propTypes = {
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+};
 export function PageButton({ children, className, ...rest }) {
   return (
     <button
@@ -30,3 +35,7 @@ export function PageButton({ children, className, ...rest }) {
     </button>
   );
 }
+PageButton.propTypes = {
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+};

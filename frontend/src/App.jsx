@@ -34,24 +34,65 @@ function App() {
             </Route>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard isLoggedIn={isLoggedIn} />} />
-              <Route path="add-student" element={<AddStudent />} />
-              <Route path="edit-student/:id" element={<EditStudent />} />
-              <Route path="students" element={<StudentList />} />
-              <Route path="compare-image" element={<CompareImage />} />
+              <Route
+                path="add-student"
+                element={<AddStudent isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="edit-student/:id"
+                element={<EditStudent isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="students"
+                element={<StudentList isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="compare-image"
+                element={<CompareImage isLoggedIn={isLoggedIn} />}
+              />
               <Route
                 path="camera"
-                element={<SearchRealTime setCapturedImage={() => {}} />}
+                element={
+                  <SearchRealTime
+                    setCapturedImage={() => {}}
+                    isLoggedIn={isLoggedIn}
+                  />
+                }
               />
-              <Route path="search-image" element={<SearchImage />} />
-              <Route path="vectors" element={<VectorsList />} />
-              <Route path="add-vector" element={<AddVector />} />
+              <Route
+                path="search-image"
+                element={<SearchImage isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="vectors"
+                element={<VectorsList isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="add-vector"
+                element={<AddVector isLoggedIn={isLoggedIn} />}
+              />
               {/* model */}
-              <Route path="/alert-list" element={<AlertList />} />
-              <Route path="/models-list" element={<ModelList />} />
-              <Route path="/control-model" element={<ControlModel />} />
-              <Route path="/monitoring-model" element={<Monitoring />} />
+              <Route
+                path="/alert-list"
+                element={<AlertList isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="/models-list"
+                element={<ModelList isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="/control-model"
+                element={<ControlModel isLoggedIn={isLoggedIn} />}
+              />
+              <Route
+                path="/monitoring-model"
+                element={<Monitoring isLoggedIn={isLoggedIn} />}
+              />
               {/* devices and users */}
-              <Route path="/device/create" element={<DevicePage />} />
+              <Route
+                path="/device/create"
+                element={<DevicePage isLoggedIn={isLoggedIn} />}
+              />
             </Route>
           </Routes>
         </div>
