@@ -18,6 +18,8 @@ import Monitoring from "./Models/Monitoring";
 import DevicePage from "./DevicesAndUsers/DevicePage";
 import Register from "./login/Register";
 import Profile from "./DevicesAndUsers/Profile";
+import DeviceUpdate from "./DevicesAndUsers/DeviceUpdate";
+import DeviceList from "./DevicesAndUsers/DeviceList";
 
 function App() {
   const isLoggedIn = true;
@@ -89,10 +91,17 @@ function App() {
                 element={<Monitoring isLoggedIn={isLoggedIn} />}
               />
               {/* devices and users */}
-              <Route
-                path="/device/create"
-                element={<DevicePage isLoggedIn={isLoggedIn} />}
-              />
+              <Route path="/devices">
+                <Route
+                  path="register"
+                  element={<DevicePage isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="update/:id"
+                  element={<DeviceUpdate isLoggedIn={isLoggedIn} />}
+                />
+                <Route index element={<DeviceList isLoggedIn={isLoggedIn} />} />
+              </Route>
             </Route>
           </Routes>
         </div>
