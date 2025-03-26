@@ -16,6 +16,7 @@ import ModelList from "./AIExapServer/Models/ModelsList";
 import ControlModel from "./Models/admin/ControlModel";
 import Monitoring from "./Models/Monitoring";
 import DevicePage from "./Devices/DevicePage";
+import Register from "./login/Register";
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
           <Routes>
             <Route path="/users" element={<MainLayout />}>
               <Route path="login" element={<Login />} />
-              {/* <Route path="register" element={<Register />} /> */}
+              <Route path="register" element={<Register />} />
             </Route>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
