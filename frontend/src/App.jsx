@@ -4,7 +4,7 @@ import StudentList from "./students/StudentList";
 import VectorsList from "./vectors/VectorList";
 import CompareImage from "./components/CompareImage";
 import SearchImage from "./components/SearchImage";
-import SearchRealTime from "./components/SearchRealTime";
+// import SearchRealTime from "./components/SearchRealTime";
 import EditStudent from "./students/EditStudent";
 import Layout from "./Layout";
 import Dashboard from "./dashboard/Dashboard";
@@ -20,6 +20,7 @@ import Register from "./login/Register";
 import Profile from "./DevicesAndUsers/Profile";
 import DeviceUpdate from "./DevicesAndUsers/DeviceUpdate";
 import DeviceList from "./DevicesAndUsers/DeviceList";
+import CaptureInterface from "./components/CaptureInterface";
 
 function App() {
   const isLoggedIn = true;
@@ -55,12 +56,21 @@ function App() {
               <Route
                 path="camera"
                 element={
-                  <SearchRealTime
+                  <CaptureInterface
                     setCapturedImage={() => {}}
                     isLoggedIn={isLoggedIn}
                   />
                 }
               />
+              {/* <Route
+                path="camera"
+                element={
+                  <SearchRealTime
+                    setCapturedImage={() => {}}
+                    isLoggedIn={isLoggedIn}
+                  />
+                }
+              /> */}
               <Route
                 path="search-image"
                 element={<SearchImage isLoggedIn={isLoggedIn} />}

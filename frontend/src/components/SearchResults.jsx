@@ -36,6 +36,12 @@ const SearchResults = ({ imageResults, errorMessage }) => {
                         </p>
                       </div>
                       <div className="flex justify-between w-full">
+                        <p>{student.Number}</p>
+                        <p>
+                          <strong>رقم القيد</strong>
+                        </p>
+                      </div>
+                      <div className="flex justify-between w-full">
                         <p className="text-left">{student.College}</p>
                         <p className="text-right">
                           <strong>الكلية</strong>

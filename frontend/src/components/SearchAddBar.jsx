@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import PropTypes from "prop-types";
 
 const SearchAddBar = ({ onSearch, onAdd }) => {
   return (
@@ -22,4 +23,8 @@ const SearchAddBar = ({ onSearch, onAdd }) => {
   );
 };
 
+SearchAddBar.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+  onAdd: PropTypes.string.isRequired,
+};
 export default SearchAddBar;
