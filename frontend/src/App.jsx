@@ -124,7 +124,7 @@ function App() {
                   element={<ExamForm isLoggedIn={isLoggedIn} />}
                 />
                 <Route
-                  path=":examId"
+                  path="edit-exam/:examId"
                   element={<ExamForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>

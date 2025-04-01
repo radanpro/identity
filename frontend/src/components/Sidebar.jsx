@@ -1,36 +1,73 @@
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useState } from "react";
+import {
+  FaHome,
+  FaUser,
+  FaVectorSquare,
+  FaCamera,
+  FaBell,
+  FaCube,
+  FaTools,
+  FaDesktop,
+  FaClipboardList,
+  FaUserPlus,
+} from "react-icons/fa";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
-  const [deviceMenuOpen, setDeviceMenuOpen] = useState(false);
-  const [examMenuOpen, setExamMenuOpen] = useState(false);
 
-  const toggleDeviceMenu = () => {
-    setDeviceMenuOpen(!deviceMenuOpen);
-  };
-  const toggleExamMenu = () => {
-    setExamMenuOpen(!examMenuOpen);
+  // حالة التحكم للقوائم المنسدلة باستخدام مفتاح العنصر
+  const [openMenus, setOpenMenus] = useState({});
+
+  const toggleMenu = (menuKey) => {
+    setOpenMenus((prev) => ({ ...prev, [menuKey]: !prev[menuKey] }));
   };
 
-  const isStudentActive =
-    location.pathname.startsWith("/students") ||
-    location.pathname.startsWith("/add-student");
-  const isVectorActive =
-    location.pathname.startsWith("/vectors") ||
-    location.pathname.startsWith("/add-vector");
-  const isAlertActive =
-    location.pathname.startsWith("/alert-list") ||
-    location.pathname.startsWith("/alert-info");
-  const isModelActive =
-    location.pathname.startsWith("/models-list") ||
-    location.pathname.startsWith("/models-info");
-  const isControlModelActive = location.pathname.startsWith("/control-model");
-  const isMonitorModelActive =
-    location.pathname.startsWith("/monitoring-model");
-  const isDeviceActive = location.pathname.startsWith("/devices");
-  const isExamActive = location.pathname.startsWith("/exam");
+  // تعريف عناصر القائمة الرئيسية كمصفوفة من الكائنات
+  const mainNav = [
+    { label: "Dashboard", to: "/", icon: <FaHome /> },
+    { label: "Student", to: "/students", icon: <FaUser /> },
+    { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> },
+    { label: "Exams", to: "/exam/index", icon: <FaClipboardList /> },
+    { label: "Search Real Time", to: "/camera", icon: <FaCamera /> },
+  ];
+
+  const modelsGroup = {
+    group: "Models",
+    items: [
+      { label: "Alerts", to: "/alert-list", icon: <FaBell /> },
+      { label: "Models", to: "/models-list", icon: <FaCube /> },
+      { label: "Control Model", to: "/control-model", icon: <FaTools /> },
+      { label: "Monitor Model", to: "/monitoring-model", icon: <FaDesktop /> },
+    ],
+  };
+
+  const devicesGroup = {
+    group: "Devices and Users",
+    items: [
+      {
+        label: "Devices",
+        icon: <FaDesktop />,
+        children: [
+          { label: "Device List", to: "/devices", icon: <FaClipboardList /> },
+          {
+            label: "Register Device",
+            to: "/devices/register",
+            icon: <FaUserPlus />,
+          },
+        ],
+      },
+    ],
+  };
+
+  // دالة للتحقق من حالة التفعيل بناءً على المسار الحالي
+  const getLinkClasses = (to) =>
+    `block p-2 rounded-lg ${
+      location.pathname.startsWith(to)
+        ? "bg-blue-600 text-white"
+        : "text-gray-700"
+    }`;
 
   return (
     <aside
@@ -46,150 +83,75 @@ const Sidebar = ({ isOpen, onClose }) => {
         ✕
       </button>
       <nav className="space-y-4">
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `block p-2 rounded-lg ${
-              isActive ? "bg-blue-600 text-white" : "text-gray-700"
-            }`
-          }
-        >
-          Dashboard
-        </NavLink>
-        <NavLink
-          to="/students"
-          className={`block p-2 rounded-lg ${
-            isStudentActive ? "bg-blue-600 text-white" : "text-gray-700"
-          }`}
-        >
-          Student
-        </NavLink>
-        <NavLink
-          to="/vectors"
-          className={`block p-2 rounded-lg ${
-            isVectorActive ? "bg-blue-600 text-white" : "text-gray-700"
-          }`}
-        >
-          Vectors
-        </NavLink>
-        <NavLink
-          to="/camera"
-          className={({ isActive }) =>
-            `block p-2 rounded-lg ${
-              isActive ? "bg-blue-600 text-white" : "text-gray-700"
-            }`
-          }
-        >
-          Search Real Time
-        </NavLink>
+        {mainNav.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `flex items-center gap-2 p-2 rounded-lg ${
+                isActive ? "bg-blue-600 text-white" : "text-gray-700"
+              }`
+            }
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
       </nav>
+
+      {/* قسم النماذج */}
       <div className="border-t-2 border-sky-300 mt-4 pt-2">
-        <p className="text-gray-400 text-center p-3">Models</p>
-        <NavLink
-          to="/alert-list"
-          className={`block p-2 rounded-lg ${
-            isAlertActive ? "bg-blue-600 text-white" : "text-gray-700"
-          }`}
-        >
-          Alerts
-        </NavLink>
-        <NavLink
-          to="/models-list"
-          className={`block p-2 rounded-lg ${
-            isModelActive ? "bg-blue-600 text-white" : "text-gray-700"
-          }`}
-        >
-          Models
-        </NavLink>
-        <NavLink
-          to="/control-model"
-          className={`block p-2 rounded-lg ${
-            isControlModelActive ? "bg-blue-600 text-white" : "text-gray-700"
-          }`}
-        >
-          Control Model
-        </NavLink>
-        <NavLink
-          to="/monitoring-model"
-          className={`block p-2 rounded-lg ${
-            isMonitorModelActive ? "bg-blue-600 text-white" : "text-gray-700"
-          }`}
-        >
-          Monitor Model
-        </NavLink>
+        <p className="text-gray-400 text-center p-3">{modelsGroup.group}</p>
+        {modelsGroup.items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={getLinkClasses(item.to)}
+          >
+            <div className="flex items-center gap-2">
+              {item.icon}
+              <span>{item.label}</span>
+            </div>
+          </NavLink>
+        ))}
       </div>
+
+      {/* قسم الأجهزة والمستخدمين */}
       <div className="border-t-2 border-sky-300 mt-4 pt-2">
-        <p className="text-gray-400 text-center p-3">Devices and Users</p>
-        <div className="space-y-2">
-          <button
-            onClick={toggleDeviceMenu}
-            className={`w-full text-left p-2 rounded-lg ${
-              isDeviceActive ? "bg-blue-600 text-white" : "text-gray-700"
-            }`}
-          >
-            Devices
-          </button>
-          {deviceMenuOpen && (
-            <div className="pl-4 space-y-2">
-              <NavLink
-                to="/devices"
-                className={({ isActive }) =>
-                  `block p-2 rounded-lg ${
-                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                  }`
-                }
-              >
-                Device List
-              </NavLink>
-              <NavLink
-                to="/devices/register"
-                className={({ isActive }) =>
-                  `block p-2 rounded-lg ${
-                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                  }`
-                }
-              >
-                Register Device
-              </NavLink>
-            </div>
-          )}
-        </div>
-      </div>
-      <div>
-        <div className="space-y-2">
-          <button
-            onClick={toggleExamMenu}
-            className={`w-full text-left p-2 rounded-lg ${
-              isExamActive ? "bg-blue-600 text-white" : "text-gray-700"
-            }`}
-          >
-            Exam
-          </button>
-          {examMenuOpen && (
-            <div className="pl-4 space-y-2">
-              <NavLink
-                to="/exam/index"
-                className={({ isActive }) =>
-                  `block p-2 rounded-lg ${
-                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                  }`
-                }
-              >
-                Exam List
-              </NavLink>
-              <NavLink
-                to="/exam/add"
-                className={({ isActive }) =>
-                  `block p-2 rounded-lg ${
-                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                  }`
-                }
-              >
-                add Exam
-              </NavLink>
-            </div>
-          )}
-        </div>
+        <p className="text-gray-400 text-center p-3">{devicesGroup.group}</p>
+        {devicesGroup.items.map((item, index) => (
+          <div key={index}>
+            <button
+              onClick={() => toggleMenu(item.label)}
+              className={`flex items-center gap-2 w-full text-left p-2 rounded-lg ${
+                location.pathname.startsWith("/devices")
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-700"
+              }`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+            {item.children && openMenus[item.label] && (
+              <div className="pl-4 space-y-2">
+                {item.children.map((child) => (
+                  <NavLink
+                    key={child.to}
+                    to={child.to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 p-2 rounded-lg ${
+                        isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                      }`
+                    }
+                  >
+                    {child.icon}
+                    <span>{child.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </aside>
   );

@@ -4,11 +4,33 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
 
+const formatDateTime = (value) => {
+  if (!value) return "";
+  // نفترض أن القيمة تأتي بالشكل "YYYY-MM-DD hh:mm:ss.SSSSSS"
+  const [datePart, timePart] = value.split(" ");
+  if (!datePart || !timePart) return value;
+  // استخراج الجزء الأساسي من الوقت بدون الكسور الدقيقة
+  const [timeMain] = timePart.split(".");
+  return `${datePart}T${timeMain}`;
+};
+
 const ExamForm = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const { examId } = useParams(); // إذا كان موجودًا نعتبر الوضع تعديل
   const [isEdit, setIsEdit] = useState(false);
+  const mapExams = (data) => {
+    return data.map((exam) => ({
+      student_number: exam[1],
+      subject: exam[2],
+      seat_number: exam[3],
+      exam_room: exam[4],
+      exam_center: exam[5],
+      exam_datetime: formatDateTime(exam[6]),
+      duration: exam[7],
+    }));
+  };
+
   const [formData, setFormData] = useState({
     student_number: "",
     subject: "",
@@ -21,7 +43,6 @@ const ExamForm = ({ isLoggedIn }) => {
 
   useEffect(() => {
     if (examId) {
-      // في حالة التعديل، نجلب بيانات الاختبار الحالي
       setIsEdit(true);
       const fetchExam = async () => {
         try {
@@ -29,8 +50,10 @@ const ExamForm = ({ isLoggedIn }) => {
             `http://127.0.0.1:3000/exam/${examId}`
           );
           if (response.status === 200) {
-            // يجب أن تكون response.data كائن يحتوي على الحقول المطلوبة
-            setFormData(response.data);
+            const mappedExams = mapExams(response.data);
+
+            setFormData(mappedExams[0]);
+            // console.log("FormData", FormData);
           }
         } catch (error) {
           console.error("فشل في جلب بيانات الاختبار", error);
@@ -69,13 +92,12 @@ const ExamForm = ({ isLoggedIn }) => {
           `http://127.0.0.1:3000/exam/${formData.student_number}`,
           formData
         );
-        navigate("/exams", {
+        navigate("/exam/index", {
           state: { message: "تم تحديث الاختبار بنجاح!" },
         });
       } else {
-        // وضع الإضافة: إضافة اختبار جديد باستخدام POST
         await axios.post("http://127.0.0.1:3000/exam", formData);
-        navigate("/exams", {
+        navigate("/exam/index", {
           state: { message: "تم إضافة الاختبار بنجاح!" },
         });
       }

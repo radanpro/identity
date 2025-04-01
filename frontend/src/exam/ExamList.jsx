@@ -162,7 +162,7 @@ const ExamList = ({ isLoggedIn }) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <NavLink
-                          to={`/edit-exam/${exam.id}`}
+                          to={`/exam/edit-exam/${exam.student_number}`}
                           className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
                         >
                           تعديل
