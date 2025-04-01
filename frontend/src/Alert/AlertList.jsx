@@ -89,7 +89,11 @@ const AlertList = ({ isLoggedIn }) => {
         />
         <div>
           {/* عنوان الصفحة */}
-          <SearchAddBar onSearch={handleSearch} onAdd="Alert " />
+          <SearchAddBar
+            onSearch={handleSearch}
+            onAdd="Alert "
+            link="/add-student"
+          />
         </div>
         {successMessage && (
           <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">

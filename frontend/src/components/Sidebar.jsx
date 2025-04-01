@@ -5,9 +5,13 @@ import { useState } from "react";
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const [deviceMenuOpen, setDeviceMenuOpen] = useState(false);
+  const [examMenuOpen, setExamMenuOpen] = useState(false);
 
   const toggleDeviceMenu = () => {
     setDeviceMenuOpen(!deviceMenuOpen);
+  };
+  const toggleExamMenu = () => {
+    setExamMenuOpen(!examMenuOpen);
   };
 
   const isStudentActive =
@@ -26,6 +30,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const isMonitorModelActive =
     location.pathname.startsWith("/monitoring-model");
   const isDeviceActive = location.pathname.startsWith("/devices");
+  const isExamActive = location.pathname.startsWith("/exam");
 
   return (
     <aside
@@ -145,6 +150,42 @@ const Sidebar = ({ isOpen, onClose }) => {
                 }
               >
                 Register Device
+              </NavLink>
+            </div>
+          )}
+        </div>
+      </div>
+      <div>
+        <div className="space-y-2">
+          <button
+            onClick={toggleExamMenu}
+            className={`w-full text-left p-2 rounded-lg ${
+              isExamActive ? "bg-blue-600 text-white" : "text-gray-700"
+            }`}
+          >
+            Exam
+          </button>
+          {examMenuOpen && (
+            <div className="pl-4 space-y-2">
+              <NavLink
+                to="/exam/index"
+                className={({ isActive }) =>
+                  `block p-2 rounded-lg ${
+                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                  }`
+                }
+              >
+                Exam List
+              </NavLink>
+              <NavLink
+                to="/exam/add"
+                className={({ isActive }) =>
+                  `block p-2 rounded-lg ${
+                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                  }`
+                }
+              >
+                add Exam
               </NavLink>
             </div>
           )}

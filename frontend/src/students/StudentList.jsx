@@ -90,7 +90,11 @@ const StudentList = ({ isLoggedIn }) => {
       />
       <div>
         {/* عنوان الصفحة */}
-        <SearchAddBar onSearch={handleSearch} onAdd="طالب " />
+        <SearchAddBar
+          onSearch={handleSearch}
+          onAdd="طالب "
+          link="/add-student"
+        />
       </div>
       {successMessage && (
         <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
