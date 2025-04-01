@@ -22,7 +22,7 @@ import DeviceUpdate from "./DevicesAndUsers/DeviceUpdate";
 import DeviceList from "./DevicesAndUsers/DeviceList";
 import CaptureInterface from "./components/CaptureInterface";
 import ExamList from "./exam/ExamList";
-import AddExam from "./exam/AddExam";
+import ExamForm from "./exam/AddExam";
 
 function App() {
   const isLoggedIn = true;
@@ -121,9 +121,12 @@ function App() {
                 />
                 <Route
                   path="add"
-                  element={<AddExam isLoggedIn={isLoggedIn} />}
+                  element={<ExamForm isLoggedIn={isLoggedIn} />}
                 />
-                <Route index element={<DeviceList isLoggedIn={isLoggedIn} />} />
+                <Route
+                  path=":examId"
+                  element={<ExamForm isLoggedIn={isLoggedIn} />}
+                />
               </Route>
             </Route>
           </Routes>
