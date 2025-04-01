@@ -16,14 +16,27 @@ const ExamList = ({ isLoggedIn }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const location = useLocation();
+  const mapExams = (data) => {
+    return data.map((exam) => ({
+      id: exam[0],
+      student_number: exam[1],
+      subject: exam[2],
+      seat_number: exam[3],
+      exam_room: exam[4],
+      exam_center: exam[5],
+      exam_datetime: exam[6],
+      duration: exam[7],
+    }));
+  };
 
   // جلب بيانات الامتحانات من الخادم
   const fetchExams = useCallback(async () => {
     try {
       const response = await axios.get("http://127.0.0.1:3000/exams");
       if (response.status === 200) {
-        setExams(response.data);
-        setFilteredExams(response.data);
+        const mappedExams = mapExams(response.data);
+        setExams(mappedExams);
+        setFilteredExams(mappedExams);
       }
     } catch (error) {
       console.error("فشل في جلب بيانات الامتحانات", error);
@@ -122,34 +135,34 @@ const ExamList = ({ isLoggedIn }) => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentItems.map((exam) => (
-                    <tr key={exam[0]}>
+                    <tr key={exam.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam[0]}
+                        {exam.id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam[1]}
+                        {exam.student_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam[2]}
+                        {exam.subject}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam[3]}
+                        {exam.seat_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam[4]}
+                        {exam.exam_room}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam[5]}
+                        {exam.exam_center}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(exam[6]).toLocaleString()}
+                        {new Date(exam.exam_datetime).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam[7]}
+                        {exam.duration}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <NavLink
-                          to={`/edit-exam/${exam[0]}`}
+                          to={`/edit-exam/${exam.id}`}
                           className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
                         >
                           تعديل
