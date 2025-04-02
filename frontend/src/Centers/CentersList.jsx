@@ -7,17 +7,23 @@ import { Button } from "../shared/Button";
 import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 const CentersList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [centers, setCenters] = useState([]);
   const [filteredCenters, setFilteredCenters] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    id: null,
+    centerName: "",
+  });
   const itemsPerPage = 10;
   const location = useLocation();
 
-  // جلب بيانات المراكز من الخادم
   const fetchCenters = useCallback(async () => {
     try {
       const response = await axios.get("http://127.0.0.1:3000/centers");
@@ -55,16 +61,32 @@ const CentersList = ({ isLoggedIn }) => {
     setCurrentPage(1);
   };
 
-  const handleDelete = async (centerCode) => {
-    if (window.confirm("هل أنت متأكد من حذف هذا المركز؟")) {
-      try {
-        await axios.delete(`http://127.0.0.1:3000/centers/${centerCode}`);
-        setSuccessMessage("تم حذف المركز بنجاح");
-        fetchCenters(); // إعادة تحميل البيانات بعد الحذف
-      } catch (error) {
-        console.error("فشل في حذف المركز", error);
-        alert("حدث خطأ أثناء محاولة حذف المركز");
-      }
+  const openDeleteModal = (id, centerName) => {
+    setDeleteModal({
+      isOpen: true,
+      id,
+      centerName,
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      id: null,
+      centerName: "",
+    });
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://127.0.0.1:3000/centers/${deleteModal.id}`);
+      setSuccessMessage("تم حذف المركز بنجاح");
+      fetchCenters(); // إعادة تحميل البيانات بعد الحذف
+      closeDeleteModal();
+    } catch (error) {
+      console.error("فشل في حذف المركز", error);
+      setErrorMessage("حدث خطأ أثناء محاولة حذف المركز");
+      closeDeleteModal();
     }
   };
 
@@ -93,6 +115,11 @@ const CentersList = ({ isLoggedIn }) => {
       {successMessage && (
         <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
           {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+          {errorMessage}
         </div>
       )}
       <div className="m-2 mt-2">
@@ -145,7 +172,9 @@ const CentersList = ({ isLoggedIn }) => {
                     تعديل
                   </NavLink>
                   <Button
-                    onClick={() => handleDelete(center.center_code)}
+                    onClick={() =>
+                      openDeleteModal(center.id, center.center_name)
+                    }
                     className="text-red-600 hover:text-red-900 border border-gray-200 p-2 px-4 rounded-md inline-block"
                   >
                     حذف
@@ -167,6 +196,16 @@ const CentersList = ({ isLoggedIn }) => {
           </div>
         )}
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="تأكيد حذف المركز"
+        message={`هل أنت متأكد من رغبتك في حذف المركز "${deleteModal.id}"؟`}
+        confirmText="حذف"
+        cancelText="إلغاء"
+      />
     </div>
   );
 };
