@@ -23,6 +23,8 @@ import DeviceList from "./DevicesAndUsers/DeviceList";
 import CaptureInterface from "./components/CaptureInterface";
 import ExamList from "./exam/ExamList";
 import ExamForm from "./exam/AddExam";
+import CollegeForm from "./Colleges/AddCollege";
+import CollegeList from "./Colleges/CollegesList";
 
 function App() {
   const isLoggedIn = true;
@@ -126,6 +128,20 @@ function App() {
                 <Route
                   path="edit-exam/:examId"
                   element={<ExamForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              <Route path="/college">
+                <Route
+                  path="index"
+                  element={<CollegeList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<CollegeForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-college/:collegeId"
+                  element={<CollegeForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>
             </Route>

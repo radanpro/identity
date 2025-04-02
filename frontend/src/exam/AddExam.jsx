@@ -130,7 +130,7 @@ const ExamForm = ({ isLoggedIn }) => {
             value={formData.student_number}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isEdit} // في حالة التعديل، يتم قفل هذا الحقل إذا كان يعتبر مفتاحًا أساسيًا
+            disabled={isEdit}
           />
           <input
             type="text"

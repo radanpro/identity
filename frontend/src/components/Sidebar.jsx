@@ -12,6 +12,7 @@ import {
   FaDesktop,
   FaClipboardList,
   FaUserPlus,
+  FaUniversity,
 } from "react-icons/fa";
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -30,6 +31,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { label: "Student", to: "/students", icon: <FaUser /> },
     { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> },
     { label: "Exams", to: "/exam/index", icon: <FaClipboardList /> },
+    { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
     { label: "Search Real Time", to: "/camera", icon: <FaCamera /> },
   ];
 
