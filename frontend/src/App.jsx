@@ -25,6 +25,8 @@ import ExamList from "./exam/ExamList";
 import ExamForm from "./exam/AddExam";
 import CollegeForm from "./Colleges/AddCollege";
 import CollegeList from "./Colleges/CollegesList";
+import CenterForm from "./Centers/AddCenter";
+import CentersList from "./Centers/CentersList";
 
 function App() {
   const isLoggedIn = true;
@@ -116,6 +118,7 @@ function App() {
                 />
                 <Route index element={<DeviceList isLoggedIn={isLoggedIn} />} />
               </Route>
+              {/* Exam */}
               <Route path="/exam">
                 <Route
                   path="index"
@@ -130,6 +133,7 @@ function App() {
                   element={<ExamForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>
+              {/* College */}
               <Route path="/college">
                 <Route
                   path="index"
@@ -142,6 +146,21 @@ function App() {
                 <Route
                   path="edit-college/:collegeId"
                   element={<CollegeForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* Centers */}
+              <Route path="/centers">
+                <Route
+                  path="index"
+                  element={<CentersList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<CenterForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-center/:centerId"
+                  element={<CenterForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>
             </Route>

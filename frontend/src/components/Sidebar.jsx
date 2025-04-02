@@ -13,6 +13,8 @@ import {
   FaClipboardList,
   FaUserPlus,
   FaUniversity,
+  FaSchool,
+  // FaGraduationCap,
 } from "react-icons/fa";
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -32,6 +34,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> },
     { label: "Exams", to: "/exam/index", icon: <FaClipboardList /> },
     { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
+    { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
     { label: "Search Real Time", to: "/camera", icon: <FaCamera /> },
   ];
 
