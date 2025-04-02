@@ -6,6 +6,7 @@ import SearchAddBar from "../components/SearchAddBar";
 import { Button } from "../shared/Button";
 import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import PropTypes from "prop-types";
 
 const CollegeList = ({ isLoggedIn }) => {
@@ -13,7 +14,13 @@ const CollegeList = ({ isLoggedIn }) => {
   const [colleges, setColleges] = useState([]);
   const [filteredColleges, setFilteredColleges] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    college_id: null,
+    name: "",
+  });
   const itemsPerPage = 10;
   const location = useLocation();
 
@@ -32,6 +39,22 @@ const CollegeList = ({ isLoggedIn }) => {
     }
   }, [setColleges, setFilteredColleges]);
 
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
   useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
@@ -55,6 +78,36 @@ const CollegeList = ({ isLoggedIn }) => {
     setCurrentPage(1);
   };
 
+  const openDeleteModal = (college_id, name) => {
+    setDeleteModal({
+      isOpen: true,
+      college_id,
+      name,
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      college_id: null,
+      name: "",
+    });
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(
+        `http://127.0.0.1:3000/api/academic/colleges/${deleteModal.college_id}`
+      );
+      setSuccessMessage("تم حذف المركز بنجاح");
+      fetchColleges();
+      closeDeleteModal();
+    } catch (error) {
+      console.error("فشل في حذف المركز", error);
+      setErrorMessage("حدث خطأ أثناء محاولة حذف المركز");
+      closeDeleteModal();
+    }
+  };
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredColleges.slice(
@@ -84,6 +137,11 @@ const CollegeList = ({ isLoggedIn }) => {
       {successMessage && (
         <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
           {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+          {errorMessage}
         </div>
       )}
       <div className="m-2 mt-2">
@@ -119,7 +177,12 @@ const CollegeList = ({ isLoggedIn }) => {
                   >
                     تعديل
                   </NavLink>
-                  <Button className="text-red-600 hover:text-red-900 border border-gray-200 p-2 px-4 rounded-md inline-block">
+                  <Button
+                    onClick={() =>
+                      openDeleteModal(college.college_id, college.name)
+                    }
+                    className="text-red-600 hover:text-red-900 border border-gray-200 p-2 px-4 rounded-md inline-block"
+                  >
                     حذف
                   </Button>
                 </div>
@@ -139,6 +202,15 @@ const CollegeList = ({ isLoggedIn }) => {
           </div>
         )}
       </div>
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="تأكيد حذف الكلية"
+        message={`هل أنت متأكد من رغبتك في حذف الكية "${deleteModal.college_id}"؟`}
+        confirmText="حذف"
+        cancelText="إلغاء"
+      />
     </div>
   );
 };

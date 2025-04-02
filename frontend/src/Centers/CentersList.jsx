@@ -37,10 +37,27 @@ const CentersList = ({ isLoggedIn }) => {
   }, []);
 
   useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+  useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
       const timer = setTimeout(() => {
         setSuccessMessage(null);
+        setErrorMessage(null);
         window.history.replaceState({}, document.title);
       }, 5000);
       return () => clearTimeout(timer);
