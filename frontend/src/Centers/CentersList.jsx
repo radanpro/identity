@@ -1,3 +1,4 @@
+// CentersList.js
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { NavLink, useLocation } from "react-router-dom";
@@ -8,19 +9,14 @@ import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import useDelete from "../hooks/useDelete";
 
 const CentersList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [centers, setCenters] = useState([]);
   const [filteredCenters, setFilteredCenters] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [deleteModal, setDeleteModal] = useState({
-    isOpen: false,
-    id: null,
-    centerName: "",
-  });
   const itemsPerPage = 10;
   const location = useLocation();
 
@@ -37,34 +33,6 @@ const CentersList = ({ isLoggedIn }) => {
   }, []);
 
   useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
-  useEffect(() => {
-    if (errorMessage) {
-      const timer = setTimeout(() => {
-        setErrorMessage(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [errorMessage]);
-  useEffect(() => {
-    if (location.state?.message) {
-      setSuccessMessage(location.state.message);
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-        setErrorMessage(null);
-        window.history.replaceState({}, document.title);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state?.message]);
-
-  useEffect(() => {
     fetchCenters();
   }, [fetchCenters]);
 
@@ -78,34 +46,41 @@ const CentersList = ({ isLoggedIn }) => {
     setCurrentPage(1);
   };
 
-  const openDeleteModal = (id, centerName) => {
-    setDeleteModal({
-      isOpen: true,
-      id,
-      centerName,
-    });
-  };
+  // استخدام hook الحذف مع ضبط المدة إلى 5 ثوانٍ
+  const {
+    deleteModal,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDelete,
+    feedback,
+    setFeedback,
+  } = useDelete({
+    baseUrl: "http://127.0.0.1:3000/centers",
+    successDeleteMessageText: "تم حذف المركز بنجاح",
+    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف المركز",
+    refreshData: fetchCenters,
+  });
 
-  const closeDeleteModal = () => {
-    setDeleteModal({
-      isOpen: false,
-      id: null,
-      centerName: "",
-    });
-  };
-
-  const handleDelete = async () => {
-    try {
-      await axios.delete(`http://127.0.0.1:3000/centers/${deleteModal.id}`);
-      setSuccessMessage("تم حذف المركز بنجاح");
-      fetchCenters(); // إعادة تحميل البيانات بعد الحذف
-      closeDeleteModal();
-    } catch (error) {
-      console.error("فشل في حذف المركز", error);
-      setErrorMessage("حدث خطأ أثناء محاولة حذف المركز");
-      closeDeleteModal();
+  // مؤثر لرسائل النجاح القادمة من location
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+        window.history.replaceState({}, document.title);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [location.state]);
+
+  useEffect(() => {
+    if (feedback.success || feedback.error) {
+      const timer = setTimeout(() => {
+        setFeedback({ success: null, error: null });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback, setFeedback]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -134,9 +109,14 @@ const CentersList = ({ isLoggedIn }) => {
           {successMessage}
         </div>
       )}
-      {errorMessage && (
+      {feedback.success && (
+        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+          {feedback.success}
+        </div>
+      )}
+      {feedback.error && (
         <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
-          {errorMessage}
+          {feedback.error}
         </div>
       )}
       <div className="m-2 mt-2">

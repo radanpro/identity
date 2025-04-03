@@ -8,23 +8,17 @@ import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import PropTypes from "prop-types";
+import useDelete from "../hooks/useDelete";
 
 const CollegeList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [colleges, setColleges] = useState([]);
   const [filteredColleges, setFilteredColleges] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [deleteModal, setDeleteModal] = useState({
-    isOpen: false,
-    college_id: null,
-    name: "",
-  });
   const itemsPerPage = 10;
   const location = useLocation();
 
-  // جلب بيانات الامتحانات من الخادم
   const fetchColleges = useCallback(async () => {
     try {
       const response = await axios.get(
@@ -35,36 +29,9 @@ const CollegeList = ({ isLoggedIn }) => {
         setFilteredColleges(response.data);
       }
     } catch (error) {
-      console.error("فشل في جلب بيانات الكيات", error);
+      console.error("فشل في جلب بيانات الكليات", error);
     }
-  }, [setColleges, setFilteredColleges]);
-
-  useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
-  useEffect(() => {
-    if (errorMessage) {
-      const timer = setTimeout(() => {
-        setErrorMessage(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [errorMessage]);
-  useEffect(() => {
-    if (location.state?.message) {
-      setSuccessMessage(location.state.message);
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-        window.history.replaceState({}, document.title);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state?.message]);
+  }, []);
 
   useEffect(() => {
     fetchColleges();
@@ -78,36 +45,43 @@ const CollegeList = ({ isLoggedIn }) => {
     setCurrentPage(1);
   };
 
-  const openDeleteModal = (college_id, name) => {
-    setDeleteModal({
-      isOpen: true,
-      college_id,
-      name,
-    });
-  };
+  // استخدام hook الحذف
+  const {
+    deleteModal,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDelete,
+    feedback,
+    setFeedback,
+  } = useDelete({
+    baseUrl: "http://127.0.0.1:3000/api/academic/colleges",
+    successDeleteMessageText: "تم حذف الكلية بنجاح",
+    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف الكلية",
+    refreshData: fetchColleges,
+  });
 
-  const closeDeleteModal = () => {
-    setDeleteModal({
-      isOpen: false,
-      college_id: null,
-      name: "",
-    });
-  };
-
-  const handleDelete = async () => {
-    try {
-      await axios.delete(
-        `http://127.0.0.1:3000/api/academic/colleges/${deleteModal.college_id}`
-      );
-      setSuccessMessage("تم حذف المركز بنجاح");
-      fetchColleges();
-      closeDeleteModal();
-    } catch (error) {
-      console.error("فشل في حذف المركز", error);
-      setErrorMessage("حدث خطأ أثناء محاولة حذف المركز");
-      closeDeleteModal();
+  // مؤثر لرسالة النجاح من location
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+        window.history.replaceState({}, document.title);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [location.state]);
+
+  // مؤثر لمسح رسائل feedback بعد 5 ثوانٍ
+  useEffect(() => {
+    if (feedback.success || feedback.error) {
+      const timer = setTimeout(() => {
+        setFeedback({ success: null, error: null });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback, setFeedback]);
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredColleges.slice(
@@ -115,7 +89,6 @@ const CollegeList = ({ isLoggedIn }) => {
     indexOfLastItem
   );
 
-  // تغيير الصفحة
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -130,7 +103,7 @@ const CollegeList = ({ isLoggedIn }) => {
       <div>
         <SearchAddBar
           onSearch={handleSearch}
-          onAdd="الكية "
+          onAdd="الكلية"
           link="/college/add"
         />
       </div>
@@ -139,9 +112,14 @@ const CollegeList = ({ isLoggedIn }) => {
           {successMessage}
         </div>
       )}
-      {errorMessage && (
+      {feedback.success && (
+        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+          {feedback.success}
+        </div>
+      )}
+      {feedback.error && (
         <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
-          {errorMessage}
+          {feedback.error}
         </div>
       )}
       <div className="m-2 mt-2">
@@ -158,7 +136,6 @@ const CollegeList = ({ isLoggedIn }) => {
               الإجراءات
             </div>
           </div>
-
           {/* محتوى الأعمدة */}
           <div className="bg-white divide-y divide-gray-200">
             {currentItems.map((college) => (
@@ -190,8 +167,6 @@ const CollegeList = ({ isLoggedIn }) => {
             ))}
           </div>
         </div>
-
-        {/* الترقيم */}
         {Math.ceil(filteredColleges.length / itemsPerPage) > 1 && (
           <div className="mt-4 flex justify-center">
             <Pagination
@@ -207,7 +182,7 @@ const CollegeList = ({ isLoggedIn }) => {
         onClose={closeDeleteModal}
         onConfirm={handleDelete}
         title="تأكيد حذف الكلية"
-        message={`هل أنت متأكد من رغبتك في حذف الكية "${deleteModal.college_id}"؟`}
+        message={`هل أنت متأكد من رغبتك في حذف الكلية "${deleteModal.name}"؟`}
         confirmText="حذف"
         cancelText="إلغاء"
       />
