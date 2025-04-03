@@ -7,6 +7,8 @@ import { Button } from "../shared/Button";
 import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
+import useDelete from "../hooks/useDelete";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 const ExamList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
@@ -48,6 +50,7 @@ const ExamList = ({ isLoggedIn }) => {
       setSuccessMessage(location.state.message);
       const timer = setTimeout(() => {
         setSuccessMessage(null);
+        window.history.replaceState({}, document.title);
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -68,6 +71,29 @@ const ExamList = ({ isLoggedIn }) => {
     setCurrentPage(1); // العودة إلى الصفحة الأولى بعد البحث
   };
 
+  // استخدام hook الحذف
+  const {
+    deleteModal,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDelete,
+    feedback,
+    setFeedback,
+  } = useDelete({
+    baseUrl: "http://127.0.0.1:3000/exam/id",
+    successDeleteMessageText: "تم حذف الاختبار بنجاح",
+    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف الاختبار",
+    refreshData: fetchExams,
+  });
+
+  useEffect(() => {
+    if (feedback.success || feedback.error) {
+      const timer = setTimeout(() => {
+        setFeedback({ success: null, error: null });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback, setFeedback]);
   // حساب العناصر المعروضة للصفحة الحالية
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -95,6 +121,16 @@ const ExamList = ({ isLoggedIn }) => {
       {successMessage && (
         <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
           {successMessage}
+        </div>
+      )}
+      {feedback.success && (
+        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+          {feedback.success}
+        </div>
+      )}
+      {feedback.error && (
+        <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+          {feedback.error}
         </div>
       )}
       <div className="mt-2 flex flex-col">
@@ -167,7 +203,12 @@ const ExamList = ({ isLoggedIn }) => {
                         >
                           تعديل
                         </NavLink>
-                        <Button className="ml-2 text-red-600 hover:text-red-900">
+                        <Button
+                          onClick={() =>
+                            openDeleteModal(exam.id, exam.student_number)
+                          }
+                          className="ml-2 text-red-600 hover:text-red-900"
+                        >
                           حذف
                         </Button>
                       </td>
@@ -179,14 +220,25 @@ const ExamList = ({ isLoggedIn }) => {
           </div>
         </div>
         {/* Pagination */}
-        <div className="mt-4 flex justify-center">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(filteredExams.length / itemsPerPage)}
-            onPageChange={handlePageChange}
-          />
-        </div>
+        {Math.ceil(filteredExams.length / itemsPerPage) > 1 && (
+          <div className="mt-4 flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredExams.length / itemsPerPage)}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </div>
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="تأكيد حذف الاختبار"
+        message={`هل أنت متأكد من رغبتك في حذف الاختبار "${deleteModal.name}"؟`}
+        confirmText="حذف"
+        cancelText="إلغاء"
+      />
     </div>
   );
 };
