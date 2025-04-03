@@ -39,6 +39,8 @@ import YearList from "./Academic/Years/YearList";
 import YearForm from "./Academic/Years/YearForm";
 import MajorForm from "./Academic/Majors/MajorForm";
 import MajorList from "./Academic/Majors/MajorList";
+import NewExamList from "./exam/NewExamList";
+import NewExamForm from "./exam/NewExamForm";
 
 function App() {
   const isLoggedIn = true;
@@ -138,6 +140,21 @@ function App() {
                 <Route
                   path="edit-exam/:examId"
                   element={<ExamForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* NewExam */}
+              <Route path="/newexam">
+                <Route
+                  path="index"
+                  element={<NewExamList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<NewExamForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-exam/:examId"
+                  element={<NewExamForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>
               {/* College */}

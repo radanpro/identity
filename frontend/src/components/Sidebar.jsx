@@ -40,7 +40,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     group: "University",
     items: [
       { label: "Student", to: "/students", icon: <FaUser /> },
-      { label: "Exams", to: "/exam/index", icon: <FaClipboardList /> },
+      { label: "Exams", to: "/newexam/index", icon: <FaClipboardList /> },
       { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
       { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
       { label: "Courses", to: "/courses/index", icon: <FaBook /> },

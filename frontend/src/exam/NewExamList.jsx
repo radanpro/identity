@@ -1,47 +1,38 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
-import Header from "../../components/Header";
-import SearchAddBar from "../../components/SearchAddBar";
-import { Button } from "../../shared/Button";
-import { Pagination } from "../../shared/Pagination";
+import { NavLink, useLocation } from "react-router-dom";
+import Header from "../components/Header";
+import SearchAddBar from "../components/SearchAddBar";
+import { Button } from "../shared/Button";
+import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
-import useDelete from "../../hooks/useDelete";
-import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import useDelete from "../hooks/useDelete";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
-const MajorList = ({ isLoggedIn }) => {
-  const navigate = useNavigate();
+const NewExamList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
-  const { college_id } = useParams();
-  const [majors, setMajors] = useState([]);
-  const [filteredMajors, setFilteredMajors] = useState([]);
-  const [collegeName, setCollegeName] = useState("");
+  const [exams, setExams] = useState([]);
+  const [filteredExams, setFilteredExams] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const location = useLocation();
 
-  const fetchCollegeAndMajors = useCallback(async () => {
+  // جلب بيانات الامتحانات من الخادم
+  const fetchExams = useCallback(async () => {
     try {
-      // جلب بيانات الكلية
-      const collegeResponse = await axios.get(
-        `http://127.0.0.1:3000/api/academic/colleges/${college_id}`
+      const response = await axios.get(
+        "http://127.0.0.1:3000/api/academic/exams/filter"
       );
-      setCollegeName(collegeResponse.data.name);
-
-      // جلب التخصصات التابعة للكلية
-      const majorsResponse = await axios.get(
-        `http://127.0.0.1:3000/api/academic/majors/college/${college_id}`
-      );
-      if (majorsResponse.status === 200) {
-        setMajors(majorsResponse.data);
-        setFilteredMajors(majorsResponse.data);
+      if (response.status === 200) {
+        setExams(response.data);
+        setFilteredExams(response.data);
       }
     } catch (error) {
-      console.error("فشل في جلب البيانات", error);
+      console.error("فشل في جلب بيانات الامتحانات", error);
     }
-  }, [college_id]);
+  }, []);
 
   useEffect(() => {
     if (location.state?.message) {
@@ -55,19 +46,21 @@ const MajorList = ({ isLoggedIn }) => {
   }, [location.state?.message]);
 
   useEffect(() => {
-    fetchCollegeAndMajors();
-  }, [fetchCollegeAndMajors]);
+    fetchExams();
+  }, [fetchExams]);
 
+  // دالة البحث: يتم البحث عبر رقم الامتحان أو المادة
   const handleSearch = (query) => {
-    const filtered = majors.filter(
-      (major) =>
-        major.name.toLowerCase().includes(query.toLowerCase()) ||
-        major.id.toString().includes(query)
+    const filtered = exams.filter(
+      (exam) =>
+        exam.exam_id.toString().includes(query) ||
+        exam.course_id.toString().includes(query)
     );
-    setFilteredMajors(filtered);
-    setCurrentPage(1);
+    setFilteredExams(filtered);
+    setCurrentPage(1); // العودة إلى الصفحة الأولى بعد البحث
   };
 
+  // استخدام hook الحذف
   const {
     deleteModal,
     openDeleteModal,
@@ -76,10 +69,10 @@ const MajorList = ({ isLoggedIn }) => {
     feedback,
     setFeedback,
   } = useDelete({
-    baseUrl: "http://127.0.0.1:3000/api/academic/majors",
-    successDeleteMessageText: "تم حذف التخصص بنجاح",
-    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف التخصص",
-    refreshData: fetchCollegeAndMajors,
+    baseUrl: "http://127.0.0.1:3000/api/academic/exams/",
+    successDeleteMessageText: "تم حذف الاختبار بنجاح",
+    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف الاختبار",
+    refreshData: fetchExams,
   });
 
   useEffect(() => {
@@ -91,26 +84,33 @@ const MajorList = ({ isLoggedIn }) => {
     }
   }, [feedback, setFeedback]);
 
+  // حساب العناصر المعروضة للصفحة الحالية
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredMajors.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredExams.slice(indexOfFirstItem, indexOfLastItem);
 
+  // تغيير الصفحة
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  // دالة لدمج التاريخ والوقت لعرضهما معًا
+  const formatExamDateTime = (exam) => {
+    return `${exam.exam_date} ${exam.exam_time}`;
   };
 
   return (
     <div className="flex-col">
       <Header
-        page={`تخصصات كلية ${collegeName}`}
+        page="Exam"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
       />
       <div>
         <SearchAddBar
           onSearch={handleSearch}
-          onAdd="تخصص "
-          link={`/academic/majors/add-major/${college_id}`}
+          onAdd="امتحان "
+          link="/newexam/add"
         />
       </div>
       {successMessage && (
@@ -136,16 +136,28 @@ const MajorList = ({ isLoggedIn }) => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      رقم التخصص
+                      رقم الامتحان
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      اسم التخصص
+                      الكلية
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      تاريخ الإنشاء
+                      المادة
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      آخر تحديث
+                      المستوى
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      التخصص
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      الفصل الدراسي
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      السنة
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      تاريخ ووقت الامتحان
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       الإجراءات
@@ -153,30 +165,42 @@ const MajorList = ({ isLoggedIn }) => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentItems.map((major) => (
-                    <tr key={major.major_id}>
+                  {currentItems.map((exam) => (
+                    <tr key={exam.exam_id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {major.major_id}
+                        {exam.exam_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {major.name}
+                        {exam.college_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(major.created_at).toLocaleString()}
+                        {exam.course_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(major.updated_at).toLocaleString()}
+                        {exam.level_id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {exam.major_id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {exam.semester_id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {exam.year_id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatExamDateTime(exam)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <NavLink
-                          to={`/academic/majors/college/${college_id}/edit-major/${major.major_id}`}
+                          to={`/newexam/edit-exam/${exam.exam_id}`}
                           className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
                         >
                           تعديل
                         </NavLink>
                         <Button
                           onClick={() =>
-                            openDeleteModal(major.major_id, major.name)
+                            openDeleteModal(exam.exam_id, exam.exam_id)
                           }
                           className="ml-2 text-red-600 hover:text-red-900"
                         >
@@ -190,11 +214,12 @@ const MajorList = ({ isLoggedIn }) => {
             </div>
           </div>
         </div>
-        {Math.ceil(filteredMajors.length / itemsPerPage) > 1 && (
+        {/* Pagination */}
+        {Math.ceil(filteredExams.length / itemsPerPage) > 1 && (
           <div className="mt-4 flex justify-center">
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(filteredMajors.length / itemsPerPage)}
+              totalPages={Math.ceil(filteredExams.length / itemsPerPage)}
               onPageChange={handlePageChange}
             />
           </div>
@@ -204,8 +229,8 @@ const MajorList = ({ isLoggedIn }) => {
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}
         onConfirm={handleDelete}
-        title="تأكيد حذف التخصص"
-        message={`هل أنت متأكد من رغبتك في حذف التخصص "${deleteModal.name}"؟`}
+        title="تأكيد حذف الاختبار"
+        message={`هل أنت متأكد من رغبتك في حذف الاختبار رقم "${deleteModal.name}"؟`}
         confirmText="حذف"
         cancelText="إلغاء"
       />
@@ -213,8 +238,8 @@ const MajorList = ({ isLoggedIn }) => {
   );
 };
 
-MajorList.propTypes = {
+NewExamList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
 };
 
-export default MajorList;
+export default NewExamList;
