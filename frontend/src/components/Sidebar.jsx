@@ -14,6 +14,7 @@ import {
   FaUserPlus,
   FaUniversity,
   FaSchool,
+  FaUsers,
   // FaGraduationCap,
 } from "react-icons/fa";
 
@@ -30,6 +31,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   // تعريف عناصر القائمة الرئيسية كمصفوفة من الكائنات
   const mainNav = [
     { label: "Dashboard", to: "/", icon: <FaHome /> },
+    { label: "Users", to: "/users/index", icon: <FaUsers /> },
     { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> },
     { label: "Search Real Time", to: "/camera", icon: <FaCamera /> },
   ];

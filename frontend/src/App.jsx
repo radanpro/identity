@@ -27,6 +27,8 @@ import CollegeForm from "./Colleges/AddCollege";
 import CollegeList from "./Colleges/CollegesList";
 import CenterForm from "./Centers/AddCenter";
 import CentersList from "./Centers/CentersList";
+import UsersList from "./DevicesAndUsers/UsersList";
+import UserForm from "./DevicesAndUsers/AddUser";
 
 function App() {
   const isLoggedIn = true;
@@ -156,6 +158,21 @@ function App() {
                 <Route
                   path="edit-center/:centerId"
                   element={<CenterForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* users */}
+              <Route path="/users">
+                <Route
+                  path="index"
+                  element={<UsersList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<UserForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-users/:userId"
+                  element={<UserForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>
             </Route>
