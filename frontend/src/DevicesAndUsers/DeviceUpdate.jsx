@@ -20,7 +20,7 @@ const DeviceUpdate = ({ isLoggedIn }) => {
     const fetchDeviceDetails = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/devices/${id}`
+          `http://127.0.0.1:3000/api/devices/${id}`
         );
         const data = response.data;
         setDeviceNumber(data.device_number);
@@ -47,14 +47,14 @@ const DeviceUpdate = ({ isLoggedIn }) => {
         status,
       };
       await axios.put(
-        `http://localhost:5000/api/devices/update/${id}`,
+        `http://127.0.0.1:3000/api/devices/update/${id}`,
         payload,
         {
           headers: { "Content-Type": "application/json" },
         }
       );
       alert("Device updated successfully.");
-      navigate("/devices");
+      navigate("/devices/index");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update device.");
     } finally {
@@ -141,7 +141,7 @@ const DeviceUpdate = ({ isLoggedIn }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/devices")}
+                onClick={() => navigate("/devices/index")}
                 className="px-6 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition"
               >
                 Cancel
