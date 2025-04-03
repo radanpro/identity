@@ -68,15 +68,6 @@ function App() {
                   />
                 }
               />
-              {/* <Route
-                path="camera"
-                element={
-                  <SearchRealTime
-                    setCapturedImage={() => {}}
-                    isLoggedIn={isLoggedIn}
-                  />
-                }
-              /> */}
               <Route
                 path="search-image"
                 element={<SearchImage isLoggedIn={isLoggedIn} />}
@@ -116,7 +107,11 @@ function App() {
                   path="update/:id"
                   element={<DeviceUpdate isLoggedIn={isLoggedIn} />}
                 />
-                <Route index element={<DeviceList isLoggedIn={isLoggedIn} />} />
+                <Route
+                  index
+                  path="index"
+                  element={<DeviceList isLoggedIn={isLoggedIn} />}
+                />
               </Route>
               {/* Exam */}
               <Route path="/exam">

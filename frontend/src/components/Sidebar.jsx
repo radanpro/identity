@@ -30,14 +30,18 @@ const Sidebar = ({ isOpen, onClose }) => {
   // تعريف عناصر القائمة الرئيسية كمصفوفة من الكائنات
   const mainNav = [
     { label: "Dashboard", to: "/", icon: <FaHome /> },
-    { label: "Student", to: "/students", icon: <FaUser /> },
     { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> },
-    { label: "Exams", to: "/exam/index", icon: <FaClipboardList /> },
-    { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
-    { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
     { label: "Search Real Time", to: "/camera", icon: <FaCamera /> },
   ];
-
+  const universityGroup = {
+    group: "University",
+    items: [
+      { label: "Student", to: "/students", icon: <FaUser /> },
+      { label: "Exams", to: "/exam/index", icon: <FaClipboardList /> },
+      { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
+      { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
+    ],
+  };
   const modelsGroup = {
     group: "Models",
     items: [
@@ -51,17 +55,11 @@ const Sidebar = ({ isOpen, onClose }) => {
   const devicesGroup = {
     group: "Devices and Users",
     items: [
+      { label: "Device List", to: "/devices/index", icon: <FaClipboardList /> },
       {
-        label: "Devices",
-        icon: <FaDesktop />,
-        children: [
-          { label: "Device List", to: "/devices", icon: <FaClipboardList /> },
-          {
-            label: "Register Device",
-            to: "/devices/register",
-            icon: <FaUserPlus />,
-          },
-        ],
+        label: "Register Device",
+        to: "/devices/register",
+        icon: <FaUserPlus />,
       },
     ],
   };
@@ -69,9 +67,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   // دالة للتحقق من حالة التفعيل بناءً على المسار الحالي
   const getLinkClasses = (to) =>
     `block p-2 rounded-lg ${
-      location.pathname.startsWith(to)
-        ? "bg-blue-600 text-white"
-        : "text-gray-700"
+      location.pathname === to ? "bg-blue-600 text-white" : "text-gray-700"
     }`;
 
   return (
@@ -87,76 +83,98 @@ const Sidebar = ({ isOpen, onClose }) => {
       >
         ✕
       </button>
-      <nav className="space-y-4">
-        {mainNav.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `flex items-center gap-2 p-2 rounded-lg ${
-                isActive ? "bg-blue-600 text-white" : "text-gray-700"
-              }`
-            }
-          >
-            {item.icon}
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* قسم النماذج */}
-      <div className="border-t-2 border-sky-300 mt-4 pt-2">
-        <p className="text-gray-400 text-center p-3">{modelsGroup.group}</p>
-        {modelsGroup.items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={getLinkClasses(item.to)}
-          >
-            <div className="flex items-center gap-2">
-              {item.icon}
-              <span>{item.label}</span>
-            </div>
-          </NavLink>
-        ))}
-      </div>
-
-      {/* قسم الأجهزة والمستخدمين */}
-      <div className="border-t-2 border-sky-300 mt-4 pt-2">
-        <p className="text-gray-400 text-center p-3">{devicesGroup.group}</p>
-        {devicesGroup.items.map((item, index) => (
-          <div key={index}>
-            <button
-              onClick={() => toggleMenu(item.label)}
-              className={`flex items-center gap-2 w-full text-left p-2 rounded-lg ${
-                location.pathname.startsWith("/devices")
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-700"
-              }`}
+      <div className="overflow-y-auto h-[80%] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-300">
+        <nav className="space-y-4">
+          {mainNav.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex items-center gap-2 p-2 rounded-lg ${
+                  isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                }`
+              }
             >
               {item.icon}
               <span>{item.label}</span>
-            </button>
-            {item.children && openMenus[item.label] && (
-              <div className="pl-4 space-y-2">
-                {item.children.map((child) => (
-                  <NavLink
-                    key={child.to}
-                    to={child.to}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 p-2 rounded-lg ${
-                        isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                      }`
-                    }
-                  >
-                    {child.icon}
-                    <span>{child.label}</span>
-                  </NavLink>
-                ))}
+            </NavLink>
+          ))}
+        </nav>
+        {/* مجموعة University */}
+        <div className="border-t-2 border-sky-300 mt-4 pt-2">
+          {/* عنوان المجموعة لا يتغير لونه عند تفعيل أحد الأبناء */}
+          <button
+            onClick={() => toggleMenu("university")}
+            className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
+          >
+            <FaUniversity />
+            <span>{universityGroup.group}</span>
+          </button>
+          {openMenus["university"] && (
+            <div className="pl-4 space-y-2">
+              {universityGroup.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 p-2 rounded-lg ${
+                      isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                    }`
+                  }
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* قسم النماذج */}
+        <div className="border-t-2 border-sky-300 mt-4 pt-2">
+          <p className="text-gray-400 text-center p-3">{modelsGroup.group}</p>
+          {modelsGroup.items.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={getLinkClasses(item.to)}
+            >
+              <div className="flex items-center gap-2">
+                {item.icon}
+                <span>{item.label}</span>
               </div>
-            )}
-          </div>
-        ))}
+            </NavLink>
+          ))}
+        </div>
+
+        {/* قسم الأجهزة والمستخدمين */}
+        <div className="border-t-2 border-sky-300 mt-4 pt-2">
+          {/* <p className="text-gray-400 text-center p-3">{devicesGroup.group}</p> */}
+          <button
+            onClick={() => toggleMenu("DevicesAndUsers")}
+            className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
+          >
+            <FaDesktop />
+            <span>{devicesGroup.group}</span>
+          </button>
+          {openMenus["DevicesAndUsers"] && (
+            <div className="pl-4 space-y-2">
+              {devicesGroup.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 p-2 rounded-lg ${
+                      isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                    }`
+                  }
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </aside>
   );
