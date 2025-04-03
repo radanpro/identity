@@ -29,6 +29,16 @@ import CenterForm from "./Centers/AddCenter";
 import CentersList from "./Centers/CentersList";
 import UsersList from "./DevicesAndUsers/UsersList";
 import UserForm from "./DevicesAndUsers/AddUser";
+import CoursesList from "./Academic/Courses/CoursesList";
+import CourseForm from "./Academic/Courses/CourseForm";
+import LevelList from "./Academic/Levels/LevelList";
+import LevelForm from "./Academic/Levels/LevelForm";
+import SemesterList from "./Academic/Semesters/SemesterList";
+import SemesterForm from "./Academic/Semesters/SemesterForm";
+import YearList from "./Academic/Years/YearList";
+import YearForm from "./Academic/Years/YearForm";
+import MajorForm from "./Academic/Majors/MajorForm";
+import MajorList from "./Academic/Majors/MajorList";
 
 function App() {
   const isLoggedIn = true;
@@ -145,6 +155,21 @@ function App() {
                   element={<CollegeForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>
+              {/* academic */}
+              <Route path="/academic/majors">
+                <Route
+                  path="college/:college_id"
+                  element={<MajorList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add-major/:college_id"
+                  element={<MajorForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="college/:college_id/edit-major/:major_id"
+                  element={<MajorForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
               {/* Centers */}
               <Route path="/centers">
                 <Route
@@ -173,6 +198,66 @@ function App() {
                 <Route
                   path="edit-users/:userId"
                   element={<UserForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* Courses */}
+              <Route path="/courses">
+                <Route
+                  path="index"
+                  element={<CoursesList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<CourseForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-course/:courseId"
+                  element={<CourseForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* Livels */}
+              <Route path="/levels">
+                <Route
+                  path="index"
+                  element={<LevelList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<LevelForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-level/:levelId"
+                  element={<LevelForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* semesters */}
+              <Route path="/semesters">
+                <Route
+                  path="index"
+                  element={<SemesterList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<SemesterForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-semester/:semesterId"
+                  element={<SemesterForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* years */}
+              <Route path="/years">
+                <Route
+                  path="index"
+                  element={<YearList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<YearForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="edit-year/:yearId"
+                  element={<YearForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>
             </Route>

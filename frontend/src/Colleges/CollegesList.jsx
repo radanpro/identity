@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import SearchAddBar from "../components/SearchAddBar";
 import { Button } from "../shared/Button";
@@ -18,6 +18,7 @@ const CollegeList = ({ isLoggedIn }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const location = useLocation();
+  const navigate = useNavigate(); // استخدمنا useNavigate للتنقل بين الصفحات
 
   const fetchColleges = useCallback(async () => {
     try {
@@ -93,6 +94,11 @@ const CollegeList = ({ isLoggedIn }) => {
     setCurrentPage(pageNumber);
   };
 
+  // دالة للتعامل مع النقر على الكلية لرؤية تخصصاتها
+  const handleCollegeClick = (collegeId) => {
+    navigate(`/academic/majors/college/${collegeId}`);
+  };
+
   return (
     <div className="flex-col p-2">
       <Header
@@ -143,10 +149,18 @@ const CollegeList = ({ isLoggedIn }) => {
                 key={college.college_id}
                 className="grid grid-cols-3 p-4 hover:bg-gray-50"
               >
-                <div className="text-sm text-gray-900">
+                <div
+                  className="text-sm text-gray-900 cursor-pointer hover:text-blue-600"
+                  onClick={() => handleCollegeClick(college.college_id)}
+                >
                   {college.college_id}
                 </div>
-                <div className="text-sm text-gray-900">{college.name}</div>
+                <div
+                  className="text-sm text-gray-900 cursor-pointer hover:text-blue-600"
+                  onClick={() => handleCollegeClick(college.college_id)}
+                >
+                  {college.name}
+                </div>
                 <div className="text-sm font-medium space-x-2">
                   <NavLink
                     to={`/college/edit-college/${college.college_id}`}

@@ -15,6 +15,7 @@ import {
   FaUniversity,
   FaSchool,
   FaUsers,
+  FaBook,
   // FaGraduationCap,
 } from "react-icons/fa";
 
@@ -42,6 +43,10 @@ const Sidebar = ({ isOpen, onClose }) => {
       { label: "Exams", to: "/exam/index", icon: <FaClipboardList /> },
       { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
       { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
+      { label: "Courses", to: "/courses/index", icon: <FaBook /> },
+      { label: "Levels", to: "/levels/index", icon: <FaBook /> },
+      { label: "Semesters", to: "/semesters/index", icon: <FaBook /> },
+      { label: "Years", to: "/years/index", icon: <FaBook /> },
     ],
   };
   const modelsGroup = {
