@@ -228,7 +228,7 @@ function App() {
                   element={<CourseForm isLoggedIn={isLoggedIn} />}
                 />
                 <Route
-                  path="edit-course/:courseId"
+                  path="edit-course/:course_id"
                   element={<CourseForm isLoggedIn={isLoggedIn} />}
                 />
               </Route>

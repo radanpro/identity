@@ -103,7 +103,7 @@ const CoursesList = ({ isLoggedIn }) => {
       <div>
         <SearchAddBar
           onSearch={handleSearch}
-          onAdd="مادة دراسية"
+          onAdd="مادة دراسية "
           link="/courses/add"
         />
       </div>
@@ -175,7 +175,7 @@ const CoursesList = ({ isLoggedIn }) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <NavLink
-                          to={`/courses/edit/${course.course_id}`}
+                          to={`/courses/edit-course/${course.course_id}`}
                           className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
                         >
                           تعديل
