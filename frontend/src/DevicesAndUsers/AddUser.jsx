@@ -11,7 +11,7 @@ const UserForm = ({ isLoggedIn }) => {
   const [isEdit, setIsEdit] = useState(false);
 
   const [formData, setFormData] = useState({
-    id: "",
+    user_id: "",
     username: "",
     password: "",
     role: "User", // قيمة افتراضية
@@ -27,7 +27,7 @@ const UserForm = ({ isLoggedIn }) => {
           );
           if (response.status === 200) {
             setFormData({
-              id: response.data.id,
+              user_id: response.data.id,
               username: response.data.username,
               role: response.data.role,
               password: "",
@@ -68,7 +68,12 @@ const UserForm = ({ isLoggedIn }) => {
 
       if (isEdit) {
         // وضع التعديل: تحديث بيانات المستخدم باستخدام PUT
-        await axios.put(`http://127.0.0.1:3000/users/${formData.id}`, userData);
+        console.log(formData.user_id);
+
+        await axios.put(
+          `http://127.0.0.1:3000/users/${formData.user_id}`,
+          userData
+        );
         navigate("/users/index", {
           state: { message: "تم تحديث المستخدم بنجاح!" },
         });
