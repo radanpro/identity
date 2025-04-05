@@ -49,12 +49,12 @@ const NewExamList = ({ isLoggedIn }) => {
     fetchExams();
   }, [fetchExams]);
 
-  // دالة البحث: يتم البحث عبر رقم الامتحان أو المادة
+  // دالة البحث: يتم البحث عبر رقم الامتحان أو اسم المادة
   const handleSearch = (query) => {
     const filtered = exams.filter(
       (exam) =>
         exam.exam_id.toString().includes(query) ||
-        exam.course_id.toString().includes(query)
+        exam.course.course_name.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredExams(filtered);
     setCurrentPage(1); // العودة إلى الصفحة الأولى بعد البحث
@@ -96,7 +96,7 @@ const NewExamList = ({ isLoggedIn }) => {
 
   // دالة لدمج التاريخ والوقت لعرضهما معًا
   const formatExamDateTime = (exam) => {
-    return `${exam.exam_date} ${exam.exam_time}`;
+    return `${exam.exam_date} من ${exam.exam_start_time} إلى ${exam.exam_end_time}`;
   };
 
   return (
@@ -157,7 +157,7 @@ const NewExamList = ({ isLoggedIn }) => {
                       السنة
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      تاريخ ووقت الامتحان
+                      موعد الامتحان
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       الإجراءات
@@ -171,22 +171,22 @@ const NewExamList = ({ isLoggedIn }) => {
                         {exam.exam_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.college_id}
+                        {exam.college.college_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.course_id}
+                        {exam.course.course_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.level_id}
+                        {exam.level.level_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.major_id}
+                        {exam.major.major_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.semester_id}
+                        {exam.semester.semester_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.year_id}
+                        {exam.year.year_name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatExamDateTime(exam)}

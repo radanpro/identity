@@ -9,6 +9,7 @@ const NewExamForm = ({ isLoggedIn }) => {
   const navigate = useNavigate();
   const { examId } = useParams();
   const [isEdit, setIsEdit] = useState(false);
+  const [error, setError] = useState(null);
 
   // States for dropdown options
   const [colleges, setColleges] = useState([]);
@@ -22,7 +23,8 @@ const NewExamForm = ({ isLoggedIn }) => {
     college_id: "",
     course_id: "",
     exam_date: "",
-    exam_time: "",
+    exam_start_time: "",
+    exam_end_time: "",
     level_id: "",
     major_id: "",
     semester_id: "",
@@ -143,7 +145,8 @@ const NewExamForm = ({ isLoggedIn }) => {
       !formData.college_id ||
       !formData.course_id ||
       !formData.exam_date ||
-      !formData.exam_time ||
+      !formData.exam_start_time ||
+      !formData.exam_end_time ||
       !formData.level_id ||
       !formData.major_id ||
       !formData.semester_id ||
@@ -154,15 +157,19 @@ const NewExamForm = ({ isLoggedIn }) => {
     }
 
     try {
-      // Prepare data without college_id and ensure all IDs are integers
-      const courseData = {
+      // Prepare data with all required fields
+      const examData = {
         college_id: parseInt(formData.college_id),
         course_id: parseInt(formData.course_id),
         exam_date: formData.exam_date,
-        exam_time:
-          formData.exam_time.length === 5
-            ? formData.exam_time + ":00"
-            : formData.exam_time,
+        exam_start_time:
+          formData.exam_start_time.length === 5
+            ? formData.exam_start_time + ":00"
+            : formData.exam_start_time,
+        exam_end_time:
+          formData.exam_end_time.length === 5
+            ? formData.exam_end_time + ":00"
+            : formData.exam_end_time,
         level_id: parseInt(formData.level_id),
         major_id: parseInt(formData.major_id),
         semester_id: parseInt(formData.semester_id),
@@ -171,48 +178,57 @@ const NewExamForm = ({ isLoggedIn }) => {
 
       // Validate that all IDs are positive integers
       if (
-        isNaN(courseData.college_id) ||
-        isNaN(courseData.course_id) ||
-        isNaN(courseData.level_id) ||
-        isNaN(courseData.major_id) ||
-        isNaN(courseData.semester_id) ||
-        isNaN(courseData.year_id) ||
-        courseData.college_id <= 0 ||
-        courseData.course_id <= 0 ||
-        courseData.level_id <= 0 ||
-        courseData.major_id <= 0 ||
-        courseData.semester_id <= 0 ||
-        courseData.year_id <= 0
+        isNaN(examData.college_id) ||
+        isNaN(examData.course_id) ||
+        isNaN(examData.level_id) ||
+        isNaN(examData.major_id) ||
+        isNaN(examData.semester_id) ||
+        isNaN(examData.year_id) ||
+        examData.college_id <= 0 ||
+        examData.course_id <= 0 ||
+        examData.level_id <= 0 ||
+        examData.major_id <= 0 ||
+        examData.semester_id <= 0 ||
+        examData.year_id <= 0
       ) {
         alert("يجب أن تكون جميع المعرفات أعداد صحيحة موجبة");
         return;
       }
+
       if (isEdit) {
         await axios.put(
           `http://127.0.0.1:3000/api/academic/exams/${examId}`,
-          courseData
+          examData
         );
         navigate("/newexam/index", {
           state: { message: "تم تحديث الاختبار بنجاح!" },
         });
       } else {
-        await axios.post(
-          "http://127.0.0.1:3000/api/academic/exams/",
-          courseData
-        );
+        await axios.post("http://127.0.0.1:3000/api/academic/exams/", examData);
         navigate("/newexam/index", {
           state: { message: "تم إضافة الاختبار بنجاح!" },
         });
       }
     } catch (error) {
-      console.error("خطأ أثناء إرسال البيانات:", error);
+      // console.error("خطأ أثناء إرسال البيانات:", error);
+
       if (error.response) {
-        alert(`خطأ: ${error.response.data.detail}`);
+        setError(error.response.data.error);
+        // serError(`خطأ: ${error.response.data.detail}`);
       } else {
-        alert("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
+        setError("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
       }
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  });
 
   return (
     <div className="flex-col">
@@ -225,6 +241,11 @@ const NewExamForm = ({ isLoggedIn }) => {
         <h2 className="text-2xl font-bold mb-6 text-center">
           {isEdit ? "تعديل الاختبار" : "إضافة اختبار جديد"}
         </h2>
+        {error && (
+          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* First Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -366,7 +387,7 @@ const NewExamForm = ({ isLoggedIn }) => {
           </div>
 
           {/* Fourth Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Exam Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -382,15 +403,30 @@ const NewExamForm = ({ isLoggedIn }) => {
               />
             </div>
 
-            {/* Exam Time */}
+            {/* Exam Start Time */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                وقت الامتحان
+                وقت بدء الامتحان
               </label>
               <input
                 type="time"
-                name="exam_time"
-                value={formData.exam_time}
+                name="exam_start_time"
+                value={formData.exam_start_time}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            {/* Exam End Time */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                وقت انتهاء الامتحان
+              </label>
+              <input
+                type="time"
+                name="exam_end_time"
+                value={formData.exam_end_time}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
