@@ -101,6 +101,17 @@ const AlertList = ({ isLoggedIn }) => {
           onToggleSidebar={onToggleSidebar}
           isLoggedIn={isLoggedIn}
         />
+
+        <div className="flex justify-center p-2 w-full ">
+          <div className=" flex items-center  justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center">
+            <h2 className="p-2 text-2xl text-white">Supervisors</h2>
+            <CiGlobe className="text-4xl text-blue-500 p-2 cursor-pointer" />
+          </div>
+          <div className=" flex items-center justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center ">
+            <h2 className="p-2 text-2xl text-white">Alerts</h2>
+            <LuFileText className="text-4xl text-blue-500 p-2 cursor-pointer" />
+          </div>
+        </div>
         <div>
           <SearchAddBar
             onSearch={handleSearch}
@@ -113,17 +124,6 @@ const AlertList = ({ isLoggedIn }) => {
             {successMessage}
           </div>
         )}
-        <div className="flex justify-center p-2 w-full ">
-          <div className=" flex items-center  justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center">
-            <h2 className="p-2 text-2xl text-white">Supervisors</h2>
-            <CiGlobe className="text-4xl text-blue-500 p-2 cursor-pointer" />
-          </div>
-          <div className=" flex items-center justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center ">
-            <h2 className="p-2 text-2xl text-white">Alerts</h2>
-            <LuFileText className="text-4xl text-blue-500 p-2 cursor-pointer" />
-          </div>
-        </div>
-
         <div className=" flex flex-col h-screen bg-gray-50">
           {/* the table */}
           <div className="flex justify-center items-center w-full ">
