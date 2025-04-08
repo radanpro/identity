@@ -236,14 +236,16 @@ const AlertList = ({ isLoggedIn }) => {
                             <MdOutlineMessage className="text-yellow-300 text-4xl" />
                             <IoIosSunny className="text-red-600 text-4xl absolute -top-5 right-8 flex items-center justify-center shadow-md bg-null rounded-full" />
                             <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600  text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
-                              {alert.unread_count}
+                              <span className="text-ml">
+                                {alert.unread_count}
+                              </span>
                             </div>
                           </div>
                         </td>
                         {/* LoginDate */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <h3>
-                            exam_date #
+                            تاريخ الاختبار #
                             <span className="text-sky-600 font-semibold text-xl">
                               {new Date(alert.exam_date).toLocaleDateString(
                                 "ar-EG",
@@ -257,13 +259,13 @@ const AlertList = ({ isLoggedIn }) => {
                             </span>
                           </h3>
                           <h3>
-                            exam_period #
+                            فترة الاختبار #
                             <span className="text-sky-600 font-semibold text-xl">
                               {alert.exam_period}
                             </span>
                           </h3>
                           <h3>
-                            last_alert_time #
+                            تاريخ اخر تنبية #
                             <span className="text-sky-600 font-semibold text-xl">
                               {new Date(alert.last_alert_time).toLocaleString(
                                 "ar-EG",
