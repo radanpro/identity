@@ -9,6 +9,7 @@ import SearchAddBar from "../components/SearchAddBar";
 import { MdOutlineMessage } from "react-icons/md";
 import { IoIosSunny } from "react-icons/io";
 import PropTypes from "prop-types";
+import AlertDetailsModal from "../components/AlertDetailsModal";
 
 const AlertList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
@@ -18,6 +19,8 @@ const AlertList = ({ isLoggedIn }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const location = useLocation();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedAlertDetails, setSelectedAlertDetails] = useState(null);
 
   const mapAlerts = (data) => {
     return data.map((alert) => ({
@@ -83,6 +86,28 @@ const AlertList = ({ isLoggedIn }) => {
     );
     setFilteredAlerts(filtered);
     setCurrentPage(1);
+  };
+
+  const fetchAlertDetails = async (device_id, exam_id, student_id) => {
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:3000/api/alerts/alerts/mark-and-get",
+        {
+          device_id,
+          exam_id,
+          student_id,
+        }
+      );
+      if (response.status === 200) {
+        setSelectedAlertDetails(response.data);
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error("فشل في جلب التفاصيل:", error);
+    }
+  };
+  const handleRowClick = (alert) => {
+    fetchAlertDetails(alert.device_id, alert.exam_id, alert.student_id);
   };
 
   const indexOfLestItem = currentPage * itemsPerPage;
@@ -172,13 +197,24 @@ const AlertList = ({ isLoggedIn }) => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentItems.map((alert) => (
-                      <tr key={alert.alert_id}>
+                      <tr
+                        key={
+                          alert.device_id +
+                          "-" +
+                          alert.exam_id +
+                          "-" +
+                          alert.student_id
+                        }
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleRowClick(alert)}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <h3>
                             Device #
                             <span className="text-sky-600 font-semibold text-xl">
                               {alert.device_number}
                             </span>
+                            {alert.device_id}
                           </h3>
                           <h3 className="hidden">
                             Device Id #
@@ -439,6 +475,11 @@ const AlertList = ({ isLoggedIn }) => {
           </div>
         </div>
       </div>
+      <AlertDetailsModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        alertDetails={selectedAlertDetails}
+      />
     </div>
   );
 };
