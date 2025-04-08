@@ -181,6 +181,10 @@ const AlertList = ({ isLoggedIn }) => {
                       >
                         Alerts
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider">
+                        new Alert
+                      </th>
+
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
@@ -214,7 +218,6 @@ const AlertList = ({ isLoggedIn }) => {
                             <span className="text-sky-600 font-semibold text-xl">
                               {alert.device_number}
                             </span>
-                            {alert.device_id}
                           </h3>
                           <h3 className="hidden">
                             Device Id #
@@ -271,12 +274,24 @@ const AlertList = ({ isLoggedIn }) => {
                           <div className="flex items-center justify-center relative">
                             <MdOutlineMessage className="text-yellow-300 text-4xl" />
                             <IoIosSunny className="text-red-600 text-4xl absolute -top-5 right-8 flex items-center justify-center shadow-md bg-null rounded-full" />
-                            <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600  text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
+                            <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600 text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
                               <span className="text-ml">
-                                {alert.unread_count}
+                                {alert.alert_count}
                               </span>
                             </div>
                           </div>
+                        </td>
+                        {/* Unread Count Column */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <h3
+                            className={`${
+                              alert.unread_count > 0
+                                ? "bg-red-500"
+                                : "bg-green-500"
+                            } text-center rounded-md p-1 text-white font-semibold`}
+                          >
+                            {alert.unread_count} تنبيه غير مقروء
+                          </h3>
                         </td>
                         {/* LoginDate */}
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -324,141 +339,6 @@ const AlertList = ({ isLoggedIn }) => {
                           <h3>Delete</h3>
                         </td>
                       </tr>
-                      // <tr>
-                      //   {/* alert info  */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     <h3>192.168.1.1</h3>
-                      //     <h3>20-B0-D0-63-a2-26</h3>
-                      //     <h3>001</h3>
-                      //     {/* <h3>{alert.alert_ip}</h3>
-                      //     <h3>{alert.alert_macID}</h3>
-                      //     <h3>{alert.alert_number}</h3> */}
-                      //   </td>
-                      //   {/* location */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.alert_room}</h3>
-                      //     <h3>{alert.PC_number}</h3> */}
-                      //     <h3>Hall A</h3>
-                      //     <h3>PC number : 012 </h3>
-                      //   </td>
-                      //   {/* status */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.status}</h3> */}
-                      //     <h3 className="bg-red-500 text-center rounded-md p-1 text-white font-semibold">
-                      //       Offline
-                      //     </h3>
-                      //   </td>
-                      //   {/* Alert */}
-                      //   <td className="relative px-6 py-4 whitespace-nowrap">
-                      //     <div className="flex items-center justify-center relative">
-                      //       <MdOutlineMessage className="text-yellow-300 text-4xl" />
-                      //       <IoIosSunny className="text-red-600 text-4xl absolute -top-5 right-8 flex items-center justify-center shadow-md bg-null rounded-full" />
-                      //       <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600  text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
-                      //         4
-                      //       </div>
-                      //     </div>
-                      //   </td>
-                      //   {/* LoginDate */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.loginDate}</h3> */}
-                      //     <h3>14/1/2025</h3>
-                      //   </td>
-                      //   {/* Control */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.control}</h3> */}
-                      //     <h3>Delete</h3>
-                      //   </td>
-                      // </tr>
-                      // <tr>
-                      //   {/* alert info  */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     <h3>192.168.1.1</h3>
-                      //     <h3>20-B0-D0-63-a2-26</h3>
-                      //     <h3>001</h3>
-                      //     {/* <h3>{alert.alert_ip}</h3>
-                      //     <h3>{alert.alert_macID}</h3>
-                      //     <h3>{alert.alert_number}</h3> */}
-                      //   </td>
-                      //   {/* location */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.alert_room}</h3>
-                      //     <h3>{alert.PC_number}</h3> */}
-                      //     <h3>Hall A</h3>
-                      //     <h3>PC number : 012 </h3>
-                      //   </td>
-                      //   {/* status */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.status}</h3> */}
-                      //     <h3 className="bg-green-500 text-center rounded-md p-1 text-white font-semibold">
-                      //       Online
-                      //     </h3>
-                      //   </td>
-                      //   {/* Alert */}
-                      //   <td className="relative px-6 py-4 whitespace-nowrap">
-                      //     <div className="flex items-center justify-center relative">
-                      //       <MdOutlineMessage className="text-yellow-300 text-4xl" />
-                      //       <IoIosSunny className="text-red-600 text-4xl absolute -top-5 right-8 flex items-center justify-center shadow-md bg-null rounded-full" />
-                      //       <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600  text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
-                      //         4
-                      //       </div>
-                      //     </div>
-                      //   </td>
-                      //   {/* LoginDate */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.loginDate}</h3> */}
-                      //     <h3>14/1/2025</h3>
-                      //   </td>
-                      //   {/* Control */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.control}</h3> */}
-                      //     <h3>Delete</h3>
-                      //   </td>
-                      // </tr>
-                      // <tr>
-                      //   {/* alert info  */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     <h3>192.168.1.1</h3>
-                      //     <h3>20-B0-D0-63-a2-26</h3>
-                      //     <h3>001</h3>
-                      //     {/* <h3>{alert.alert_ip}</h3>
-                      //     <h3>{alert.alert_macID}</h3>
-                      //     <h3>{alert.alert_number}</h3> */}
-                      //   </td>
-                      //   {/* location */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.alert_room}</h3>
-                      //     <h3>{alert.PC_number}</h3> */}
-                      //     <h3>Hall A</h3>
-                      //     <h3>PC number : 012 </h3>
-                      //   </td>
-                      //   {/* status */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.status}</h3> */}
-                      //     <h3 className="bg-red-500 text-center rounded-md p-1 text-white font-semibold">
-                      //       Offline
-                      //     </h3>
-                      //   </td>
-                      //   {/* Alert */}
-                      //   <td className="relative px-6 py-4 whitespace-nowrap">
-                      //     <div className="flex items-center justify-center relative">
-                      //       <MdOutlineMessage className="text-yellow-300 text-4xl" />
-                      //       <IoIosSunny className="text-red-600 text-4xl absolute -top-5 right-8 flex items-center justify-center shadow-md bg-null rounded-full" />
-                      //       <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600  text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
-                      //         4
-                      //       </div>
-                      //     </div>
-                      //   </td>
-                      //   {/* LoginDate */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.loginDate}</h3> */}
-                      //     <h3>14/1/2025</h3>
-                      //   </td>
-                      //   {/* Control */}
-                      //   <td className="px-6 py-4 whitespace-nowrap">
-                      //     {/* <h3>{alert.control}</h3> */}
-                      //     <h3>Delete</h3>
-                      //   </td>
-                      // </tr>
                     ))}
                   </tbody>
                 </table>
