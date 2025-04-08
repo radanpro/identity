@@ -49,7 +49,6 @@ const NewExamList = ({ isLoggedIn }) => {
     fetchExams();
   }, [fetchExams]);
 
-  // دالة البحث: يتم البحث عبر رقم الامتحان أو اسم المادة
   const handleSearch = (query) => {
     const filtered = exams.filter(
       (exam) =>
@@ -57,10 +56,9 @@ const NewExamList = ({ isLoggedIn }) => {
         exam.course.course_name.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredExams(filtered);
-    setCurrentPage(1); // العودة إلى الصفحة الأولى بعد البحث
+    setCurrentPage(1);
   };
 
-  // استخدام hook الحذف
   const {
     deleteModal,
     openDeleteModal,
