@@ -245,7 +245,15 @@ const AlertList = ({ isLoggedIn }) => {
                           <h3>
                             exam_date #
                             <span className="text-sky-600 font-semibold text-xl">
-                              {alert.exam_date}
+                              {new Date(alert.exam_date).toLocaleDateString(
+                                "ar-EG",
+                                {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </span>
                           </h3>
                           <h3>
@@ -257,7 +265,18 @@ const AlertList = ({ isLoggedIn }) => {
                           <h3>
                             last_alert_time #
                             <span className="text-sky-600 font-semibold text-xl">
-                              {alert.last_alert_time}
+                              {new Date(alert.last_alert_time).toLocaleString(
+                                "ar-EG",
+                                {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                  hour12: true,
+                                }
+                              )}
                             </span>
                           </h3>
                         </td>
