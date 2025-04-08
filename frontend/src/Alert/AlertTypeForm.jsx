@@ -6,6 +6,8 @@ import PropTypes from "prop-types";
 
 const AlertTypeForm = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
   const { typeId } = useParams();
   const [isEdit, setIsEdit] = useState(false);
@@ -28,7 +30,7 @@ const AlertTypeForm = ({ isLoggedIn }) => {
         })
         .catch((err) => {
           console.error("فشل في جلب نوع التنبيه:", err);
-          alert("حدث خطأ أثناء تحميل البيانات.");
+          setErrorMessage("حدث خطأ أثناء تحميل البيانات.");
         });
     }
   }, [typeId]);
@@ -45,7 +47,7 @@ const AlertTypeForm = ({ isLoggedIn }) => {
     e.preventDefault();
 
     if (!formData.type_name || formData.type_name.length < 2) {
-      alert("الاسم يجب أن يكون على الأقل مكون من حرفين.");
+      setErrorMessage("الاسم يجب أن يكون على الأقل مكون من حرفين.");
       return;
     }
 
@@ -55,26 +57,35 @@ const AlertTypeForm = ({ isLoggedIn }) => {
           `http://127.0.0.1:3000/api/alert-types/${typeId}`,
           formData
         );
-        alert("تم تعديل نوع التنبيه بنجاح!");
+        setSuccessMessage("تم تعديل نوع التنبيه بنجاح!");
       } else {
         await axios.post("http://127.0.0.1:3000/api/alert-types/", formData);
-        alert("تم إنشاء نوع التنبيه بنجاح!");
+        setSuccessMessage("تم إنشاء نوع التنبيه بنجاح!");
       }
 
-      navigate("/alert-types/index", {
+      navigate("/alertsType/alert-list", {
         state: { message: isEdit ? "تم التعديل بنجاح" : "تم الإنشاء بنجاح" },
       });
     } catch (error) {
       console.error("خطأ أثناء إرسال البيانات:", error);
       if (error.response) {
-        alert(
+        setErrorMessage(
           `خطأ: ${error.response.data.error || error.response.data.detail}`
         );
       } else {
-        alert("حدث خطأ غير متوقع. حاول لاحقًا.");
+        setErrorMessage("حدث خطأ غير متوقع. حاول لاحقًا.");
       }
     }
   };
+  useEffect(() => {
+    if (successMessage || errorMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+        setErrorMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, errorMessage]);
 
   return (
     <div className="flex-col">
@@ -83,10 +94,21 @@ const AlertTypeForm = ({ isLoggedIn }) => {
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
       />
+
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">
           {isEdit ? "تعديل نوع التنبيه" : "إضافة نوع تنبيه جديد"}
         </h2>
+        {successMessage && (
+          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+            {successMessage}
+          </div>
+        )}
+        {errorMessage && (
+          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+            {errorMessage}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

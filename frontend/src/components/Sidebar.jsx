@@ -52,7 +52,8 @@ const Sidebar = ({ isOpen, onClose }) => {
   const modelsGroup = {
     group: "Models",
     items: [
-      { label: "Alerts", to: "/alert-list", icon: <FaBell /> },
+      { label: "Alerts Types", to: "/alertsType/alert-list", icon: <FaBell /> },
+      { label: "Alerts agent", to: "/alerts/alert-list", icon: <FaBell /> },
       { label: "Models", to: "/models-list", icon: <FaCube /> },
       { label: "Control Model", to: "/control-model", icon: <FaTools /> },
       { label: "Monitor Model", to: "/monitoring-model", icon: <FaDesktop /> },

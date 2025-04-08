@@ -41,6 +41,9 @@ import MajorForm from "./Academic/Majors/MajorForm";
 import MajorList from "./Academic/Majors/MajorList";
 import NewExamList from "./exam/NewExamList";
 import NewExamForm from "./exam/NewExamForm";
+import AlertForm from "./Alert/AlertForm";
+import AlertTypeList from "./Alert/AlertTypeList";
+import AlertTypeForm from "./Alert/AlertTypeForm";
 
 function App() {
   const isLoggedIn = true;
@@ -94,11 +97,32 @@ function App() {
                 path="add-vector"
                 element={<AddVector isLoggedIn={isLoggedIn} />}
               />
-              {/* model */}
-              <Route
-                path="/alert-list"
-                element={<AlertList isLoggedIn={isLoggedIn} />}
-              />
+              {/* model Alerts */}
+              <Route path="/alerts">
+                <Route
+                  path="alert-list"
+                  element={<AlertList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add-alert"
+                  element={<AlertForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
+              {/* AlertyType */}
+              <Route path="/alertsType">
+                <Route
+                  path="alert-list"
+                  element={<AlertTypeList isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add-alert"
+                  element={<AlertTypeForm isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="update-alert/:typeId"
+                  element={<AlertTypeForm isLoggedIn={isLoggedIn} />}
+                />
+              </Route>
               <Route
                 path="/models-list"
                 element={<ModelList isLoggedIn={isLoggedIn} />}

@@ -1,19 +1,24 @@
-import Header from "../components/Header";
-import { useOutletContext, useLocation, NavLink } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { NavLink, useLocation } from "react-router-dom";
+import Header from "../components/Header";
 import SearchAddBar from "../components/SearchAddBar";
-import PropTypes from "prop-types";
 import { Pagination } from "../shared/Pagination";
+import { useOutletContext } from "react-router-dom";
+import PropTypes from "prop-types";
+import useDelete from "../hooks/useDelete";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import { Button } from "../shared/Button";
 
 const AlertTypeList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const location = useLocation();
+
   const [alertTypes, setAlertTypes] = useState([]);
   const [filteredTypes, setFilteredTypes] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const itemsPerPage = 10;
 
   const fetchAlertTypes = useCallback(async () => {
     try {
@@ -25,18 +30,17 @@ const AlertTypeList = ({ isLoggedIn }) => {
         setFilteredTypes(response.data);
       }
     } catch (error) {
-      console.error("Failed to fetch alert types", error);
+      console.error("فشل في جلب أنواع التنبيهات", error);
     }
   }, []);
 
   useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
-
       const timer = setTimeout(() => {
         setSuccessMessage(null);
+        window.history.replaceState({}, document.title);
       }, 5000);
-
       return () => clearTimeout(timer);
     }
   }, [location.state?.message]);
@@ -53,17 +57,28 @@ const AlertTypeList = ({ isLoggedIn }) => {
     setCurrentPage(1);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this alert type?")) {
-      try {
-        await axios.delete(`http://127.0.0.1:3000/api/alert-types/${id}`);
-        setAlertTypes((prev) => prev.filter((type) => type.id !== id));
-        setFilteredTypes((prev) => prev.filter((type) => type.id !== id));
-      } catch (error) {
-        console.error("Failed to delete alert type", error);
-      }
+  const {
+    deleteModal,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDelete,
+    feedback,
+    setFeedback,
+  } = useDelete({
+    baseUrl: "http://127.0.0.1:3000/api/alert-types",
+    successDeleteMessageText: "تم حذف نوع التنبيه بنجاح",
+    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف نوع التنبيه",
+    refreshData: fetchAlertTypes,
+  });
+
+  useEffect(() => {
+    if (feedback.success || feedback.error) {
+      const timer = setTimeout(() => {
+        setFeedback({ success: null, error: null });
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [feedback, setFeedback]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -81,74 +96,112 @@ const AlertTypeList = ({ isLoggedIn }) => {
         isLoggedIn={isLoggedIn}
       />
 
-      <div className="px-4">
+      <div>
         <SearchAddBar
           onSearch={handleSearch}
-          onAdd="Alert Type"
-          link="/alert-types/add"
+          onAdd="نوع تنبيه "
+          link="/alertsType/add-alert"
         />
+      </div>
 
-        {successMessage && (
-          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-            {successMessage}
+      {successMessage && (
+        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+          {successMessage}
+        </div>
+      )}
+      {feedback.success && (
+        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+          {feedback.success}
+        </div>
+      )}
+      {feedback.error && (
+        <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+          {feedback.error}
+        </div>
+      )}
+
+      <div className="mt-2 flex flex-col">
+        <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Control
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentItems.length > 0 ? (
+                    currentItems.map((type) => (
+                      <tr key={type.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {type.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {type.type_name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                          <NavLink
+                            to={`/alertsType/update-alert/${type.id}`}
+                            className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
+                          >
+                            تعديل
+                          </NavLink>
+                          <Button
+                            onClick={() =>
+                              openDeleteModal(type.id, type.type_name)
+                            }
+                            className="ml-2 text-red-600 hover:text-red-900"
+                          >
+                            حذف
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="3"
+                        className="px-6 py-4 text-center text-gray-500"
+                      >
+                        لا توجد أنواع تنبيهات.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {Math.ceil(filteredTypes.length / itemsPerPage) > 1 && (
+          <div className="mt-4 flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredTypes.length / itemsPerPage)}
+              onPageChange={handlePageChange}
+            />
           </div>
         )}
-
-        <div className="overflow-x-auto mt-4">
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Type Name
-                </th>
-                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Control
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentItems.map((type) => (
-                <tr key={type.id} className="border-b border-gray-200">
-                  <td className="py-3 px-6">{type.id}</td>
-                  <td className="py-3 px-6">{type.type_name}</td>
-                  <td className="py-3 px-6 text-sm font-medium space-x-2">
-                    <NavLink
-                      to={`/alert-types/edit/${type.id}`}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Edit
-                    </NavLink>
-                    <button
-                      onClick={() => handleDelete(type.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {currentItems.length === 0 && (
-                <tr>
-                  <td colSpan="3" className="text-center py-4 text-gray-500">
-                    No alert types found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mt-4 flex justify-center">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(filteredTypes.length / itemsPerPage)}
-            onPageChange={handlePageChange}
-          />
-        </div>
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="تأكيد حذف نوع التنبيه"
+        message={`هل أنت متأكد من رغبتك في حذف نوع التنبيه "${deleteModal.name}"؟`}
+        confirmText="حذف"
+        cancelText="إلغاء"
+      />
     </div>
   );
 };
