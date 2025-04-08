@@ -290,7 +290,7 @@ const AlertList = ({ isLoggedIn }) => {
                                 : "bg-green-500"
                             } text-center rounded-md p-1 text-white font-semibold`}
                           >
-                            {alert.unread_count} تنبيه غير مقروء
+                            New Alert #{alert.unread_count}
                           </h3>
                         </td>
                         {/* LoginDate */}
@@ -346,13 +346,15 @@ const AlertList = ({ isLoggedIn }) => {
             </div>
           </div>
           {/* Pagination */}
-          <div className="mt-4 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={Math.ceil(filteredAlerts.length / itemsPerPage)}
-              onPageChange={handlePageChange}
-            />
-          </div>
+          {Math.ceil(filteredAlerts.length / itemsPerPage) > 1 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(filteredAlerts.length / itemsPerPage)}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
       </div>
       <AlertDetailsModal
