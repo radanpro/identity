@@ -8,44 +8,81 @@ const DeviceUpdate = ({ isLoggedIn }) => {
   const { id } = useParams();
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  const [deviceNumber, setDeviceNumber] = useState("");
-  const [roomNumber, setRoomNumber] = useState("");
-  const [examCenterName, setExamCenterName] = useState("");
-  const [status, setStatus] = useState("active");
+  const [formData, setFormData] = useState({
+    center_id: "",
+    device_number: "",
+    room_number: "",
+  });
+  const [centers, setCenters] = useState([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchDeviceDetails = async () => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+  useEffect(() => {
+    // Fetch centers list
+    const fetchCenters = async () => {
       try {
-        const response = await axios.get(
-          `http://127.0.0.1:3000/api/devices/${id}`
-        );
-        const data = response.data;
-        setDeviceNumber(data.device_number);
-        setRoomNumber(data.room_number);
-        setExamCenterName(data.exam_center_name);
-        setStatus(data.status);
+        const response = await axios.get("http://127.0.0.1:3000/centers");
+        setCenters(response.data);
       } catch (err) {
-        setError("Failed to load device details.", err);
+        console.error("Failed to fetch centers", err);
       }
     };
 
+    // Fetch device details
+    const fetchDeviceDetails = async () => {
+      try {
+        console.log(id);
+        const response = await axios.get(
+          `http://127.0.0.1:3000/api/devices/show?device_id=${id}`
+        );
+        const data = response.data.device;
+        console.log(response.data.device);
+        setFormData({
+          center_id: data.center_id.toString(),
+          device_number: data.device_number.toString(),
+          room_number: data.room_number,
+          device_token: data.device_token,
+        });
+      } catch (err) {
+        setError("Failed to load device details.");
+        console.error(err);
+      }
+    };
+
+    fetchCenters();
     fetchDeviceDetails();
   }, [id]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
+
     try {
       const payload = {
-        device_number: parseInt(deviceNumber, 10),
-        room_number: parseInt(roomNumber, 10),
-        exam_center_name: examCenterName,
-        status,
+        center_id: parseInt(formData.center_id, 10),
+        device_number: parseInt(formData.device_number, 10),
+        room_number: formData.room_number,
       };
+
       await axios.put(
         `http://127.0.0.1:3000/api/devices/update/${id}`,
         payload,
@@ -53,10 +90,14 @@ const DeviceUpdate = ({ isLoggedIn }) => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      alert("Device updated successfully.");
-      navigate("/devices/index");
+
+      setSuccessMessage("Device updated successfully.");
+      navigate("/devices/index", {
+        state: { message: "Device updated successfully!" },
+      });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update device.");
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
@@ -77,14 +118,50 @@ const DeviceUpdate = ({ isLoggedIn }) => {
               {error}
             </div>
           )}
+          {successMessage && (
+            <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+              {successMessage}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+            {/* Center */}
+            <div>
+              <label className="block mb-1 font-semibold">Center</label>
+              <select
+                name="center_id"
+                value={formData.center_id}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 rounded-md p-2"
+              >
+                <option value="">Select Center</option>
+                {centers.map((center) => (
+                  <option key={center.id} value={center.id}>
+                    {center.center_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Token */}
+            <div>
+              <label className="block mb-1 font-semibold">Token</label>
+              <input
+                type="text"
+                name="device_token"
+                value={formData.device_token}
+                disabled
+                className="w-full border border-gray-300 rounded-md p-2 bg-gray-200 cursor-not-allowed"
+              />
+            </div>
+
             {/* Device Number */}
             <div>
               <label className="block mb-1 font-semibold">Device Number</label>
               <input
                 type="number"
-                value={deviceNumber}
-                onChange={(e) => setDeviceNumber(e.target.value)}
+                name="device_number"
+                value={formData.device_number}
+                onChange={handleChange}
                 required
                 className="w-full border border-gray-300 rounded-md p-2"
               />
@@ -94,50 +171,23 @@ const DeviceUpdate = ({ isLoggedIn }) => {
             <div>
               <label className="block mb-1 font-semibold">Room Number</label>
               <input
-                type="number"
-                value={roomNumber}
-                onChange={(e) => setRoomNumber(e.target.value)}
-                required
-                className="w-full border border-gray-300 rounded-md p-2"
-              />
-            </div>
-
-            {/* Exam Center Name (يمتد على عرض النموذج بالكامل) */}
-            <div className="col-span-2">
-              <label className="block mb-1 font-semibold">
-                Exam Center Name
-              </label>
-              <input
                 type="text"
-                value={examCenterName}
-                onChange={(e) => setExamCenterName(e.target.value)}
+                name="room_number"
+                value={formData.room_number}
+                onChange={handleChange}
                 required
                 className="w-full border border-gray-300 rounded-md p-2"
               />
             </div>
 
-            {/* Status */}
-            <div className="col-span-2">
-              <label className="block mb-1 font-semibold">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2"
-              >
-                <option value="active">Active</option>
-                <option value="disabled">Disabled</option>
-                <option value="maintenance">Maintenance</option>
-              </select>
-            </div>
-
-            {/* أزرار التحكم */}
+            {/* Control Buttons */}
             <div className="col-span-2 flex justify-center space-x-4 mt-4">
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
               >
-                Update Device
+                {isSubmitting ? "Updating..." : "Update Device"}
               </button>
               <button
                 type="button"
