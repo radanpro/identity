@@ -64,9 +64,9 @@ function App() {
     }
 
     checkAuth();
+    // sessionStorage.setItem("userToken", tokenFromAPI);
   }, []);
   // console.log(isRegisterIn);
-
   // const isLoggedIn = !!localStorage.getItem("token");
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
