@@ -4,7 +4,7 @@ import axios from "axios";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
 
-const DeviceUpdate = ({ isLoggedIn }) => {
+const DeviceUpdate = ({ isLoggedIn, isRegisterIn }) => {
   const { id } = useParams();
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
@@ -109,6 +109,7 @@ const DeviceUpdate = ({ isLoggedIn }) => {
         page="Update Device"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="w-full max-w-3xl bg-white p-6 shadow m-6 rounded-md">
@@ -206,6 +207,7 @@ const DeviceUpdate = ({ isLoggedIn }) => {
 
 DeviceUpdate.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default DeviceUpdate;

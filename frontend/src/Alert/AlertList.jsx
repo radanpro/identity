@@ -14,7 +14,7 @@ import useDelete from "../hooks/useDelete";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import { Button } from "../shared/Button";
 
-const AlertList = ({ isLoggedIn }) => {
+const AlertList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [alerts, setAlerts] = useState([]);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
@@ -194,6 +194,7 @@ const AlertList = ({ isLoggedIn }) => {
           page="alertList"
           onToggleSidebar={onToggleSidebar}
           isLoggedIn={isLoggedIn}
+          isRegisterIn={isRegisterIn}
         />
 
         {/* مكوّن الفلاتر المدمج */}
@@ -466,6 +467,7 @@ const AlertList = ({ isLoggedIn }) => {
 
 AlertList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default AlertList;

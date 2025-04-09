@@ -5,7 +5,7 @@ import { CiGlobe } from "react-icons/ci";
 import { LuFileText } from "react-icons/lu";
 import { IoEllipse } from "react-icons/io5";
 
-const Dashboard = ({ isLoggedIn }) => {
+const Dashboard = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   return (
     <div className="flex-col">
@@ -13,6 +13,7 @@ const Dashboard = ({ isLoggedIn }) => {
         page="Dashboard"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className=" flex flex-col items-center justify-center h-screen bg-gray-50">
         <div className="flex justify-center p-2 w-full ">
@@ -147,6 +148,7 @@ const Dashboard = ({ isLoggedIn }) => {
 
 Dashboard.propTypes = {
   isLoggedIn: PropTypes.bool,
+  isRegisterIn: PropTypes.bool,
 };
 
 export default Dashboard;

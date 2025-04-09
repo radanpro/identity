@@ -8,7 +8,7 @@ import Header from "../../components/Header";
 import SearchAddBar from "../../components/SearchAddBar";
 import PropTypes from "prop-types";
 
-const ModelList = ({ isLoggedIn }) => {
+const ModelList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [models, setModels] = useState([]);
   const [filteredModels, setFilteredModels] = useState([]);
@@ -83,6 +83,7 @@ const ModelList = ({ isLoggedIn }) => {
         page="ModelList"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div>
         {/* عنوان الصفحة */}
@@ -291,5 +292,6 @@ const ModelList = ({ isLoggedIn }) => {
 
 ModelList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 export default ModelList;

@@ -46,8 +46,27 @@ import AlertTypeList from "./Alert/AlertTypeList";
 import AlertTypeForm from "./Alert/AlertTypeForm";
 import AddDevice from "./DevicesAndUsers/AddDevice";
 
+import { useEffect, useState } from "react";
+import { validateDeviceToken, isUserLoggedIn } from "./utils/auth";
+
+import RequireDeviceRegister from "./components/RequireDeviceRegister";
+
 function App() {
-  const isLoggedIn = true;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isRegisterIn, setIsRegisterIn] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const deviceValid = await validateDeviceToken();
+      const userLogged = isUserLoggedIn();
+      setIsLoggedIn(userLogged);
+      setIsRegisterIn(deviceValid);
+    }
+
+    checkAuth();
+  }, []);
+  // console.log(isRegisterIn);
+
   // const isLoggedIn = !!localStorage.getItem("token");
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
@@ -60,22 +79,52 @@ function App() {
               <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard isLoggedIn={isLoggedIn} />} />
+              <Route
+                index
+                element={
+                  <RequireDeviceRegister>
+                    <Dashboard
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  </RequireDeviceRegister>
+                }
+              />
               <Route
                 path="add-student"
-                element={<AddStudent isLoggedIn={isLoggedIn} />}
+                element={
+                  <AddStudent
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="edit-student/:id"
-                element={<EditStudent isLoggedIn={isLoggedIn} />}
+                element={
+                  <EditStudent
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="students"
-                element={<StudentList isLoggedIn={isLoggedIn} />}
+                element={
+                  <StudentList
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="compare-image"
-                element={<CompareImage isLoggedIn={isLoggedIn} />}
+                element={
+                  <CompareImage
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="camera"
@@ -83,227 +132,453 @@ function App() {
                   <CaptureInterface
                     setCapturedImage={() => {}}
                     isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
                   />
                 }
               />
               <Route
                 path="search-image"
-                element={<SearchImage isLoggedIn={isLoggedIn} />}
+                element={
+                  <SearchImage
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="vectors"
-                element={<VectorsList isLoggedIn={isLoggedIn} />}
+                element={
+                  <VectorsList
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="add-vector"
-                element={<AddVector isLoggedIn={isLoggedIn} />}
+                element={
+                  <AddVector
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               {/* model Alerts */}
               <Route path="/alerts">
                 <Route
                   path="alert-list"
-                  element={<AlertList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <AlertList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add-alert"
-                  element={<AlertForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <AlertForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* AlertyType */}
               <Route path="/alertsType">
                 <Route
                   path="alert-list"
-                  element={<AlertTypeList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <AlertTypeList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add-alert"
-                  element={<AlertTypeForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <AlertTypeForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="update-alert/:typeId"
-                  element={<AlertTypeForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <AlertTypeForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               <Route
                 path="/models-list"
-                element={<ModelList isLoggedIn={isLoggedIn} />}
+                element={
+                  <ModelList
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="/control-model"
-                element={<ControlModel isLoggedIn={isLoggedIn} />}
+                element={
+                  <ControlModel
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               <Route
                 path="/monitoring-model"
-                element={<Monitoring isLoggedIn={isLoggedIn} />}
+                element={
+                  <Monitoring
+                    isLoggedIn={isLoggedIn}
+                    isRegisterIn={isRegisterIn}
+                  />
+                }
               />
               {/* devices and users */}
               <Route path="/devices">
                 <Route
                   path="register"
-                  element={<DevicePage isLoggedIn={isLoggedIn} />}
+                  element={
+                    <DevicePage
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<AddDevice isLoggedIn={isLoggedIn} />}
+                  element={
+                    <AddDevice
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="update/:id"
-                  element={<DeviceUpdate isLoggedIn={isLoggedIn} />}
+                  element={
+                    <DeviceUpdate
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   index
                   path="index"
-                  element={<DeviceList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <DeviceList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* Exam */}
               <Route path="/exam">
                 <Route
                   path="index"
-                  element={<ExamList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <ExamList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<ExamForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <ExamForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-exam/:examId"
-                  element={<ExamForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <ExamForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* NewExam */}
               <Route path="/newexam">
                 <Route
                   path="index"
-                  element={<NewExamList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <NewExamList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<NewExamForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <NewExamForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-exam/:examId"
-                  element={<NewExamForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <NewExamForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* College */}
               <Route path="/college">
                 <Route
                   path="index"
-                  element={<CollegeList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CollegeList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<CollegeForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CollegeForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-college/:collegeId"
-                  element={<CollegeForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CollegeForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* academic */}
               <Route path="/academic/majors">
                 <Route
                   path="college/:college_id"
-                  element={<MajorList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <MajorList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add-major/:college_id"
-                  element={<MajorForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <MajorForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="college/:college_id/edit-major/:major_id"
-                  element={<MajorForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <MajorForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* Centers */}
               <Route path="/centers">
                 <Route
                   path="index"
-                  element={<CentersList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CentersList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<CenterForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CenterForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-center/:centerId"
-                  element={<CenterForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CenterForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* users */}
               <Route path="/users">
                 <Route
                   path="index"
-                  element={<UsersList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <UsersList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<UserForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <UserForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-users/:userId"
-                  element={<UserForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <UserForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* Courses */}
               <Route path="/courses">
                 <Route
                   path="index"
-                  element={<CoursesList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CoursesList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<CourseForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CourseForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-course/:course_id"
-                  element={<CourseForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <CourseForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* Livels */}
               <Route path="/levels">
                 <Route
                   path="index"
-                  element={<LevelList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <LevelList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<LevelForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <LevelForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-level/:levelId"
-                  element={<LevelForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <LevelForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* semesters */}
               <Route path="/semesters">
                 <Route
                   path="index"
-                  element={<SemesterList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <SemesterList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<SemesterForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <SemesterForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-semester/:semesterId"
-                  element={<SemesterForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <SemesterForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
               {/* years */}
               <Route path="/years">
                 <Route
                   path="index"
-                  element={<YearList isLoggedIn={isLoggedIn} />}
+                  element={
+                    <YearList
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="add"
-                  element={<YearForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <YearForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
                 <Route
                   path="edit-year/:yearId"
-                  element={<YearForm isLoggedIn={isLoggedIn} />}
+                  element={
+                    <YearForm
+                      isLoggedIn={isLoggedIn}
+                      isRegisterIn={isRegisterIn}
+                    />
+                  }
                 />
               </Route>
             </Route>

@@ -6,7 +6,7 @@ import ManualCameraComponent from "./ManualCameraComponent";
 import AutoFaceCaptureComponent from "./AutoFaceCaptureComponent";
 import PropTypes from "prop-types";
 
-const CaptureInterface = ({ isLoggedIn }) => {
+const CaptureInterface = ({ isLoggedIn, isRegisterIn }) => {
   // captureMode يمكن أن تكون "upload", "manual", أو "auto"
   const [captureMode, setCaptureMode] = useState("upload");
   const { onToggleSidebar } = useOutletContext();
@@ -20,6 +20,7 @@ const CaptureInterface = ({ isLoggedIn }) => {
         page="Search Real Time"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
 
       <div className="mb-4">
@@ -100,5 +101,6 @@ const CaptureInterface = ({ isLoggedIn }) => {
 };
 CaptureInterface.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 export default CaptureInterface;

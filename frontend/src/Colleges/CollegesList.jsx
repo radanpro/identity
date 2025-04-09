@@ -10,7 +10,7 @@ import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import PropTypes from "prop-types";
 import useDelete from "../hooks/useDelete";
 
-const CollegeList = ({ isLoggedIn }) => {
+const CollegeList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [colleges, setColleges] = useState([]);
   const [filteredColleges, setFilteredColleges] = useState([]);
@@ -105,6 +105,7 @@ const CollegeList = ({ isLoggedIn }) => {
         page="College"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div>
         <SearchAddBar
@@ -206,6 +207,7 @@ const CollegeList = ({ isLoggedIn }) => {
 
 CollegeList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default CollegeList;

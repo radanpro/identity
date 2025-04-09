@@ -11,7 +11,7 @@ import { Button } from "../shared/Button";
 import DeviceFilterForm from "../components/DeviceFilterForm";
 import PopupMessage from "../components/PopupMessage";
 
-const DeviceList = ({ isLoggedIn }) => {
+const DeviceList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -237,6 +237,7 @@ const DeviceList = ({ isLoggedIn }) => {
           page="Devices"
           onToggleSidebar={onToggleSidebar}
           isLoggedIn={isLoggedIn}
+          isRegisterIn={isRegisterIn}
         />
 
         {/* ✅ فلترة الأجهزة - باستخدام مكون منفصل */}
@@ -439,6 +440,7 @@ const DeviceList = ({ isLoggedIn }) => {
 
 DeviceList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default DeviceList;

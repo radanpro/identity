@@ -11,7 +11,7 @@ import {
   FaTools,
   FaDesktop,
   FaClipboardList,
-  FaUserPlus,
+  // FaUserPlus,
   FaUniversity,
   FaSchool,
   FaUsers,
@@ -64,11 +64,11 @@ const Sidebar = ({ isOpen, onClose }) => {
     group: "Devices and Users",
     items: [
       { label: "Device List", to: "/devices/index", icon: <FaClipboardList /> },
-      {
-        label: "Register Device",
-        to: "/devices/register",
-        icon: <FaUserPlus />,
-      },
+      // {
+      //   label: "Register Device",
+      //   to: "/devices/register",
+      //   icon: <FaUserPlus />,
+      // },
     ],
   };
 

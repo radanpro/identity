@@ -10,7 +10,7 @@ import useDelete from "../hooks/useDelete";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import { Button } from "../shared/Button";
 
-const AlertTypeList = ({ isLoggedIn }) => {
+const AlertTypeList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const location = useLocation();
 
@@ -94,6 +94,7 @@ const AlertTypeList = ({ isLoggedIn }) => {
         page="Alert Types"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
 
       <div>
@@ -208,6 +209,7 @@ const AlertTypeList = ({ isLoggedIn }) => {
 
 AlertTypeList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default AlertTypeList;

@@ -6,7 +6,7 @@ import Header from "../components/Header";
 import { Button } from "../shared/Button"; // استيراد مكون Button
 import PropTypes from "prop-types";
 
-const EditStudent = ({ isLoggedIn }) => {
+const EditStudent = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const { id } = useParams(); // الحصول على معرف الطالب من الرابط
   const [number, setRegistrationNumber] = useState("");
@@ -108,6 +108,7 @@ const EditStudent = ({ isLoggedIn }) => {
         page="edit-student"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Edit Student</h2>
@@ -199,5 +200,6 @@ const EditStudent = ({ isLoggedIn }) => {
 
 EditStudent.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 export default EditStudent;

@@ -6,7 +6,8 @@ import VectorSearchBar from "./components/VectorSearchBar";
 import VectorTable from "./components/VectorTable";
 import VectorPagination from "./components/VectorPagination";
 import PropTypes from "prop-types";
-const VectorList = ({ isLoggedIn }) => {
+
+const VectorList = ({ isLoggedIn, isRegisterIn }) => {
   const [vectors, setVectors] = useState([]);
   const [filteredVectors, setFilteredVectors] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -97,6 +98,7 @@ const VectorList = ({ isLoggedIn }) => {
         page="Vectors"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="p-4">
         <VectorSearchBar
@@ -127,6 +129,7 @@ const VectorList = ({ isLoggedIn }) => {
 };
 VectorList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default VectorList;

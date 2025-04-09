@@ -7,7 +7,7 @@ import { Button } from "../shared/Button";
 import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
-const StudentList = ({ isLoggedIn }) => {
+const StudentList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -87,6 +87,7 @@ const StudentList = ({ isLoggedIn }) => {
         page="Student"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div>
         {/* عنوان الصفحة */}
@@ -213,5 +214,6 @@ const StudentList = ({ isLoggedIn }) => {
 
 StudentList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 export default StudentList;

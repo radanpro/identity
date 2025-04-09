@@ -10,7 +10,7 @@ import PropTypes from "prop-types";
 import useDelete from "../../hooks/useDelete";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 
-const MajorList = ({ isLoggedIn }) => {
+const MajorList = ({ isLoggedIn, isRegisterIn }) => {
   const navigate = useNavigate();
   const { onToggleSidebar } = useOutletContext();
   const { college_id } = useParams();
@@ -105,6 +105,7 @@ const MajorList = ({ isLoggedIn }) => {
         page={`تخصصات كلية ${collegeName}`}
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div>
         <SearchAddBar
@@ -215,6 +216,7 @@ const MajorList = ({ isLoggedIn }) => {
 
 MajorList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default MajorList;

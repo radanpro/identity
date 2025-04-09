@@ -5,7 +5,7 @@ import CameraCaptureOnly from "../components/CameraCaptureOnly";
 import Header from "../components/Header";
 import { Button } from "../shared/Button"; // استيراد مكون Button
 import PropTypes from "prop-types";
-const AddStudent = ({ isLoggedIn }) => {
+const AddStudent = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [number, setRegistrationNumber] = useState("");
   const [name, setName] = useState("");
@@ -83,6 +83,7 @@ const AddStudent = ({ isLoggedIn }) => {
         page="add-student"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Add New Student</h2>
@@ -173,5 +174,6 @@ const AddStudent = ({ isLoggedIn }) => {
 };
 AddStudent.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 export default AddStudent;

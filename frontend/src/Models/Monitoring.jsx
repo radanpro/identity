@@ -61,7 +61,7 @@ const config = {
   },
 };
 
-const Monitoring = ({ isLoggedIn }) => {
+const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [isCameraOn, setIsCameraOn] = useState(false);
   const videoRef = useRef(null);
@@ -683,6 +683,7 @@ const Monitoring = ({ isLoggedIn }) => {
         page="controller model"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="dashboard mx-auto p-4">
         <h1 className="text-3xl text-center mb-4">
@@ -770,6 +771,7 @@ const Monitoring = ({ isLoggedIn }) => {
 
 Monitoring.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default Monitoring;

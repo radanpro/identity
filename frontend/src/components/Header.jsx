@@ -2,7 +2,7 @@ import { Bell, User, Menu } from "lucide-react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 
-const Header = ({ page, onToggleSidebar, isLoggedIn }) => {
+const Header = ({ page, onToggleSidebar, isLoggedIn, isRegisterIn }) => {
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
@@ -36,13 +36,13 @@ const Header = ({ page, onToggleSidebar, isLoggedIn }) => {
         {isLoggedIn ? (
           // If logged in, show profile icon
           <div
-            className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center"
+            className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer"
             onClick={handleProfileClick}
           >
             <User className="w-6 h-6 text-gray-600" />
           </div>
         ) : (
-          // If not logged in, show login button
+          // If not logged in, show login/register buttons
           <div className="flex items-center space-x-4">
             <Link
               to="/users/login"
@@ -50,12 +50,14 @@ const Header = ({ page, onToggleSidebar, isLoggedIn }) => {
             >
               Login
             </Link>
-            <Link
-              to="/users/register"
-              className="bg-green-500 font-medium hover:underline p-1 rounded-md text-white"
-            >
-              Register
-            </Link>
+            {!isRegisterIn && (
+              <Link
+                to="/users/register"
+                className="bg-green-500 font-medium hover:underline p-1 rounded-md text-white"
+              >
+                Register
+              </Link>
+            )}
           </div>
         )}
       </div>
@@ -67,6 +69,7 @@ Header.propTypes = {
   page: PropTypes.string.isRequired,
   onToggleSidebar: PropTypes.func.isRequired,
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default Header;

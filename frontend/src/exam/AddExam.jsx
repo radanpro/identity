@@ -14,7 +14,7 @@ const formatDateTime = (value) => {
   return `${datePart}T${timeMain}`;
 };
 
-const ExamForm = ({ isLoggedIn }) => {
+const ExamForm = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const { examId } = useParams(); // إذا كان موجودًا نعتبر الوضع تعديل
@@ -117,6 +117,7 @@ const ExamForm = ({ isLoggedIn }) => {
         page={isEdit ? "تعديل الاختبار" : "إضافة اختبار"}
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">
@@ -204,6 +205,7 @@ const ExamForm = ({ isLoggedIn }) => {
 
 ExamForm.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default ExamForm;

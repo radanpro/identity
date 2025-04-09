@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
 
-const AlertTypeForm = ({ isLoggedIn }) => {
+const AlertTypeForm = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -93,6 +93,7 @@ const AlertTypeForm = ({ isLoggedIn }) => {
         page={isEdit ? "تعديل نوع تنبيه" : "إضافة نوع تنبيه"}
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
 
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
@@ -147,6 +148,7 @@ const AlertTypeForm = ({ isLoggedIn }) => {
 
 AlertTypeForm.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default AlertTypeForm;

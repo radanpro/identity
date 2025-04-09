@@ -57,7 +57,7 @@ const defaultConfig = {
   },
 };
 
-const EditConfig = ({ isLoggedIn }) => {
+const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [config, setConfig] = useState(defaultConfig);
   const [loading, setLoading] = useState(true);
@@ -147,6 +147,7 @@ const EditConfig = ({ isLoggedIn }) => {
         page="Edit Config"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="p-4 max-w-4xl mx-auto">
         <h1 className="text-3xl mb-6 text-center">Edit Configuration</h1>
@@ -674,5 +675,6 @@ const EditConfig = ({ isLoggedIn }) => {
 
 EditConfig.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 export default EditConfig;

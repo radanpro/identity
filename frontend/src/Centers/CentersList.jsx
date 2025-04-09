@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import useDelete from "../hooks/useDelete";
 
-const CentersList = ({ isLoggedIn }) => {
+const CentersList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [centers, setCenters] = useState([]);
   const [filteredCenters, setFilteredCenters] = useState([]);
@@ -94,6 +94,7 @@ const CentersList = ({ isLoggedIn }) => {
         page="المراكز"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div>
         <SearchAddBar
@@ -201,6 +202,7 @@ const CentersList = ({ isLoggedIn }) => {
 
 CentersList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default CentersList;

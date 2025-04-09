@@ -10,7 +10,7 @@ import PropTypes from "prop-types";
 import useDelete from "../../hooks/useDelete";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 
-const LevelList = ({ isLoggedIn }) => {
+const LevelList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [levels, setLevels] = useState([]);
   const [filteredLevels, setFilteredLevels] = useState([]);
@@ -95,6 +95,7 @@ const LevelList = ({ isLoggedIn }) => {
         page="المستويات الأكاديمية"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div>
         <SearchAddBar
@@ -205,6 +206,7 @@ const LevelList = ({ isLoggedIn }) => {
 
 LevelList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default LevelList;

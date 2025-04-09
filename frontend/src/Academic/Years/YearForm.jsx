@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import Header from "../../components/Header";
 import PropTypes from "prop-types";
 
-const YearForm = ({ isLoggedIn }) => {
+const YearForm = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const { yearId } = useParams();
@@ -86,6 +86,7 @@ const YearForm = ({ isLoggedIn }) => {
         page={isEdit ? "تعديل السنة الأكاديمية" : "إضافة سنة أكاديمية"}
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">
@@ -130,6 +131,7 @@ const YearForm = ({ isLoggedIn }) => {
 
 YearForm.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default YearForm;

@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import Header from "../../components/Header";
 import PropTypes from "prop-types";
 
-const CourseForm = ({ isLoggedIn }) => {
+const CourseForm = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const { course_id } = useParams();
@@ -183,6 +183,7 @@ const CourseForm = ({ isLoggedIn }) => {
         page={isEdit ? "تعديل المادة الدراسية" : "إضافة مادة دراسية"}
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">
@@ -374,6 +375,7 @@ const CourseForm = ({ isLoggedIn }) => {
 
 CourseForm.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default CourseForm;

@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
 
-const AddDevice = ({ isLoggedIn }) => {
+const AddDevice = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
 
@@ -98,6 +98,7 @@ const AddDevice = ({ isLoggedIn }) => {
         page="إضافة جهاز"
         onToggleSidebar={onToggleSidebar}
         isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
       />
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">إضافة جهاز جديد</h2>
@@ -189,6 +190,7 @@ const AddDevice = ({ isLoggedIn }) => {
 
 AddDevice.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default AddDevice;
