@@ -11,4 +11,15 @@ const RequireDeviceRegister = ({ children }) => {
 RequireDeviceRegister.propTypes = {
   children: propstype.node.isRequired,
 };
-export default RequireDeviceRegister;
+export { RequireDeviceRegister };
+// src/components/NotRequireDeviceRegister.jsx
+const NotRequireDeviceRegister = ({ children }) => {
+  if (isDeviceRegistered()) {
+    return <Navigate to="/" />;
+  }
+  return children;
+};
+NotRequireDeviceRegister.propTypes = {
+  children: propstype.node.isRequired,
+};
+export { NotRequireDeviceRegister };

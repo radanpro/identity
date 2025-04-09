@@ -49,7 +49,10 @@ import AddDevice from "./DevicesAndUsers/AddDevice";
 import { useEffect, useState } from "react";
 import { validateDeviceToken, isUserLoggedIn } from "./utils/auth";
 
-import RequireDeviceRegister from "./components/RequireDeviceRegister";
+import {
+  NotRequireDeviceRegister,
+  RequireDeviceRegister,
+} from "./components/RequireDeviceRegister";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -75,7 +78,14 @@ function App() {
           <Routes>
             <Route path="/users" element={<MainLayout />}>
               <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
+              <Route
+                path="register"
+                element={
+                  <NotRequireDeviceRegister>
+                    <Register />
+                  </NotRequireDeviceRegister>
+                }
+              />
               <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="/" element={<Layout />}>
