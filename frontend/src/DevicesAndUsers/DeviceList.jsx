@@ -8,15 +8,17 @@ import PropTypes from "prop-types";
 import useDelete from "../hooks/useDelete";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import { Button } from "../shared/Button";
+import DeviceFilterForm from "../components/DeviceFilterForm"; // ← المكون الجديد للفلترة
 
 const DeviceList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [isLoading, setIsLoading] = useState(false);
   const [devices, setDevices] = useState([]);
   const [filteredDevices, setFilteredDevices] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const location = useLocation();
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -26,11 +28,11 @@ const DeviceList = ({ isLoggedIn }) => {
   });
 
   const fetchDevices = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const params = {};
-      if (filters.center_id) params.center_id = filters.center_id;
-      if (filters.room_number) params.room_number = filters.room_number;
+      if (filters.center) params.center_id = filters.center;
+      if (filters.type) params.room_number = filters.type;
 
       const response = await axios.get(
         "http://127.0.0.1:3000/api/devices/index",
@@ -49,7 +51,7 @@ const DeviceList = ({ isLoggedIn }) => {
       setError("Failed to fetch devices.");
       console.error(err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [filters]);
 
@@ -112,11 +114,6 @@ const DeviceList = ({ isLoggedIn }) => {
     setCurrentPage(pageNumber);
   };
 
-  const applyFilters = () => {
-    fetchDevices();
-    setCurrentPage(1);
-  };
-
   const toggleDeviceStatus = async (deviceId) => {
     try {
       const response = await axios.patch(
@@ -156,6 +153,33 @@ const DeviceList = ({ isLoggedIn }) => {
     }
   };
 
+  const applyFilters = async () => {
+    try {
+      setIsLoading(true);
+
+      const params = {};
+      if (filters.type) params.room_number = filters.type;
+      if (filters.center) params.center_id = filters.center;
+      const response = await axios.get(
+        "http://127.0.0.1:3000/api/devices/index",
+        { params }
+      );
+      if (response.status === 200) {
+        const devicesWithStatus = response.data.devices.map((device) => ({
+          ...device,
+          statusText: device.status === 1 ? "Active" : "Inactive",
+        }));
+        setDevices(devicesWithStatus);
+        setFilteredDevices(devicesWithStatus);
+      }
+    } catch (error) {
+      setError("Failed to fetch devices.");
+      console.error("فشل في تطبيق الفلاتر", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex-col">
       <div>
@@ -165,61 +189,12 @@ const DeviceList = ({ isLoggedIn }) => {
           isLoggedIn={isLoggedIn}
         />
 
-        {/* فلترة الأجهزة */}
-        <div className="bg-white shadow rounded-md p-6 mb-4 mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* رقم الغرفة */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700">
-                رقم الغرفة
-              </label>
-              <input
-                type="text"
-                name="room_number"
-                value={filters.room_number}
-                onChange={(e) =>
-                  setFilters({ ...filters, room_number: e.target.value })
-                }
-                className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* المركز */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700">
-                المركز
-              </label>
-              <input
-                type="text"
-                name="center_id"
-                value={filters.center_id}
-                onChange={(e) =>
-                  setFilters({ ...filters, center_id: e.target.value })
-                }
-                className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* أزرار الفلترة */}
-            <div className="flex items-end gap-4">
-              <button
-                onClick={applyFilters}
-                className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-              >
-                تطبيق الفلترة
-              </button>
-              <button
-                onClick={() => {
-                  setFilters({ center_id: "", room_number: "" });
-                  fetchDevices();
-                }}
-                className="w-full bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
-              >
-                إعادة تعيين
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* ✅ فلترة الأجهزة - باستخدام مكون منفصل */}
+        <DeviceFilterForm
+          filters={filters}
+          setFilters={setFilters}
+          onSubmit={applyFilters}
+        />
         {successMessage && (
           <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
             {successMessage}
@@ -244,7 +219,7 @@ const DeviceList = ({ isLoggedIn }) => {
         </div>
 
         <div className="flex flex-col h-screen bg-gray-50">
-          {loading ? (
+          {isLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
