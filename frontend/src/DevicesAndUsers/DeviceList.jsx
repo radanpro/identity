@@ -5,6 +5,9 @@ import axios from "axios";
 import SearchAddBar from "../components/SearchAddBar";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
+import useDelete from "../hooks/useDelete";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import { Button } from "../shared/Button";
 
 const DeviceList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
@@ -76,6 +79,30 @@ const DeviceList = ({ isLoggedIn }) => {
       return () => clearTimeout(timer);
     }
   }, [location.state?.message]);
+
+  // إضافة hook الحذف وتكوينه
+  const {
+    deleteModal,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDelete,
+    feedback,
+    setFeedback,
+  } = useDelete({
+    baseUrl: "http://127.0.0.1:3000/api/devices/id",
+    successDeleteMessageText: "تم حذف الجهاز بنجاح",
+    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف الجهاز",
+    refreshData: fetchDevices,
+  });
+
+  useEffect(() => {
+    if (feedback.success || feedback.error) {
+      const timer = setTimeout(() => {
+        setFeedback({ success: null, error: null });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback, setFeedback]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -159,11 +186,16 @@ const DeviceList = ({ isLoggedIn }) => {
             {successMessage}
           </div>
         )}
-        {/* {errorMessage && (
-          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
-            {errorMessage}
+        {feedback.success && (
+          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+            {feedback.success}
           </div>
-        )} */}
+        )}
+        {feedback.error && (
+          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+            {feedback.error}
+          </div>
+        )}
         <div>
           <SearchAddBar
             onSearch={handleSearch}
@@ -265,7 +297,7 @@ const DeviceList = ({ isLoggedIn }) => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <button
+                            <Button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigate(`/devices/update/${device.id}`);
@@ -273,16 +305,19 @@ const DeviceList = ({ isLoggedIn }) => {
                               className="text-blue-600 hover:text-blue-900 mr-4"
                             >
                               Edit
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // Add delete functionality here
+                                openDeleteModal(
+                                  device.id,
+                                  device.device_number
+                                );
                               }}
-                              className="text-red-600 hover:text-red-900"
+                              className="ml-2 text-red-600 hover:text-red-900"
                             >
                               Delete
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -310,6 +345,15 @@ const DeviceList = ({ isLoggedIn }) => {
           )}
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="تأكيد حذف الجهاز"
+        message={`هل أنت متأكد من رغبتك في حذف الجهاز "${deleteModal.name}"؟`}
+        confirmText="حذف"
+        cancelText="إلغاء"
+      />
     </div>
   );
 };
