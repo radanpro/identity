@@ -1,7 +1,5 @@
 import Header from "../components/Header";
 import { useOutletContext, useLocation } from "react-router-dom";
-import { CiGlobe } from "react-icons/ci";
-import { LuFileText } from "react-icons/lu";
 import { Pagination } from "../shared/Pagination";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
@@ -10,6 +8,7 @@ import { MdOutlineMessage } from "react-icons/md";
 import { IoIosSunny } from "react-icons/io";
 import PropTypes from "prop-types";
 import AlertDetailsModal from "../components/AlertDetailsModal";
+import AlertFilterForm from "../components/AlertFilterForm"; // استيراد مكوّن الفلاتر
 
 const AlertList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
@@ -22,6 +21,16 @@ const AlertList = ({ isLoggedIn }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedAlertDetails, setSelectedAlertDetails] = useState(null);
 
+  // حالة الفلاتر بناءً على AlertFilterForm
+  const [filters, setFilters] = useState({
+    type: "",
+    center: "",
+    exam: "",
+    exam_start_time: "",
+    exam_end_time: "",
+  });
+
+  // الدالة المستخدمة لتهيئة البيانات إذا احتجت لعمل map
   const mapAlerts = (data) => {
     return data.map((alert) => ({
       alert_count: alert.alert_count,
@@ -42,16 +51,7 @@ const AlertList = ({ isLoggedIn }) => {
   const fetchAlerts = useCallback(async () => {
     try {
       const response = await axios.get(
-        "http://127.0.0.1:3000/api/alerts/devices",
-        {
-          // params: {
-          //   center_id: 1,
-          //   room_number: "A1",
-          //   exam_date: "2023-05-15",
-          //   start_time: "09:00:00",
-          //   end_time: "11:00:00",
-          // },
-        }
+        "http://127.0.0.1:3000/api/alerts/devices"
       );
       if (response.status === 200) {
         const mappedAlerts = mapAlerts(response.data);
@@ -63,6 +63,7 @@ const AlertList = ({ isLoggedIn }) => {
     }
   }, []);
 
+  // تعيين رسالة النجاح من history state إن وُجدت
   useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
@@ -82,12 +83,13 @@ const AlertList = ({ isLoggedIn }) => {
 
   const handleSearch = (query) => {
     const filtered = alerts.filter((alert) =>
-      alert.alert_id.toLowerCase().includes(query.toLowerCase())
+      alert.alert_id?.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredAlerts(filtered);
     setCurrentPage(1);
   };
 
+  // دالة لجلب تفاصيل التنبيه عند النقر على صف من الجدول
   const fetchAlertDetails = async (device_id, exam_id, student_id) => {
     try {
       const response = await axios.post(
@@ -118,6 +120,33 @@ const AlertList = ({ isLoggedIn }) => {
     setCurrentPage(pageNumber);
   };
 
+  const applyFilters = async () => {
+    try {
+      console.log(filters.type);
+
+      const response = await axios.get(
+        "http://127.0.0.1:3000/api/alerts/devices",
+        {
+          params: {
+            room_number: filters.type,
+            center_id: filters.center,
+            exam_id: filters.exam,
+            start_time: filters.exam_start_time,
+            end_time: filters.exam_end_time,
+          },
+        }
+      );
+      if (response.status === 200) {
+        const mappedAlerts = mapAlerts(response.data);
+        setAlerts(mappedAlerts);
+        setFilteredAlerts(mappedAlerts);
+        setCurrentPage(1);
+      }
+    } catch (error) {
+      console.error("فشل في تطبيق الفلاتر", error);
+    }
+  };
+
   return (
     <div className="flex-col">
       <div>
@@ -127,16 +156,22 @@ const AlertList = ({ isLoggedIn }) => {
           isLoggedIn={isLoggedIn}
         />
 
-        <div className="flex justify-center p-2 w-full ">
-          <div className=" flex items-center  justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center">
+        {/* <div className="flex justify-center p-2 w-full ">
+          <div className=" flex items-center justify-between bg-gray-400 m-2 rounded-xl lg:px-8 lg:w-64 text-center">
             <h2 className="p-2 text-2xl text-white">Supervisors</h2>
             <CiGlobe className="text-4xl text-blue-500 p-2 cursor-pointer" />
           </div>
-          <div className=" flex items-center justify-between bg-gray-400 m-2 rounded-xl  lg:px-8 lg:w-64 text-center ">
+          <div className=" flex items-center justify-between bg-gray-400 m-2 rounded-xl lg:px-8 lg:w-64 text-center ">
             <h2 className="p-2 text-2xl text-white">Alerts</h2>
             <LuFileText className="text-4xl text-blue-500 p-2 cursor-pointer" />
           </div>
-        </div>
+        </div> */}
+        {/* مكوّن الفلاتر المدمج */}
+        <AlertFilterForm
+          filters={filters}
+          setFilters={setFilters}
+          onSubmit={applyFilters}
+        />
         <div>
           <SearchAddBar
             onSearch={handleSearch}
@@ -149,7 +184,8 @@ const AlertList = ({ isLoggedIn }) => {
             {successMessage}
           </div>
         )}
-        <div className=" flex flex-col h-screen bg-gray-50">
+
+        <div className="flex flex-col h-screen bg-gray-50">
           {/* the table */}
           <div className="flex justify-center items-center w-full ">
             <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -365,7 +401,9 @@ const AlertList = ({ isLoggedIn }) => {
     </div>
   );
 };
+
 AlertList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
 };
+
 export default AlertList;
