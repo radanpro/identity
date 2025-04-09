@@ -22,7 +22,6 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
-  // الدالة الخاصة بإعادة تعيين الفلترة
   const handleClear = () => {
     setFilters({
       type: "",
@@ -70,7 +69,7 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
           >
             <option value="">الكل</option>
             {centers.map((center) => (
-              <option key={center.id} value={center.id}>
+              <option key={`center-${center.id}`} value={center.id}>
                 {center.center_name}
               </option>
             ))}
@@ -90,7 +89,7 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
           >
             <option value="">الكل</option>
             {exams.map((exam) => (
-              <option key={exam.id} value={exam.id}>
+              <option key={exam.exam_id} value={exam.exam_date}>
                 {exam.exam_date}
               </option>
             ))}
@@ -110,7 +109,10 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
           >
             <option value="">الكل</option>
             {exams.map((exam) => (
-              <option key={exam.id} value={exam.exam_start_time}>
+              <option
+                key={`start-time-${exam.exam_id}`}
+                value={exam.exam_start_time || ""}
+              >
                 {exam.exam_start_time}
               </option>
             ))}
@@ -124,30 +126,33 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
           </label>
           <select
             name="exam_end_time"
-            value={filters.exam_end_time || ""}
             onChange={handleChange}
             className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">الكل</option>
-            {exams.map((exam) => (
-              <option key={exam.id} value={exam.exam_end_time}>
+            {exams.map((exam, index) => (
+              <option
+                key={`end-time-${exam.id}-${index}`}
+                value={exam.exam_end_time}
+              >
                 {exam.exam_end_time}
               </option>
             ))}
           </select>
         </div>
+
         {/* قسم الأزرار */}
-        <div className="flex justify-center items-center mt-6 p-2 w-full col-span-1  gap-4">
+        <div className="flex justify-center items-center mt-6 p-2 w-full col-span-1 gap-4">
           <button
             type="submit"
-            className="w-full md:w-1/2 bg-blue-300 text-white px-4 py-2 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full md:w-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Filter
           </button>
           <button
             type="button"
             onClick={handleClear}
-            className="w-full md:w-1/2 bg-gray-300 text-white px-4 py-2 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full md:w-1/2 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
             Clear
           </button>

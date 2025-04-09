@@ -10,6 +10,10 @@ import PropTypes from "prop-types";
 import AlertDetailsModal from "../components/AlertDetailsModal";
 import AlertFilterForm from "../components/AlertFilterForm"; // استيراد مكوّن الفلاتر
 
+import useDelete from "../hooks/useDelete";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import { Button } from "../shared/Button";
+
 const AlertList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [alerts, setAlerts] = useState([]);
@@ -22,19 +26,11 @@ const AlertList = ({ isLoggedIn }) => {
   const [selectedAlertDetails, setSelectedAlertDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // حالة الفلاتر بناءً على AlertFilterForm
-  const [filters, setFilters] = useState({
-    type: "",
-    center: "",
-    exam: "",
-    exam_start_time: "",
-    exam_end_time: "",
-  });
-
   // الدالة المستخدمة لتهيئة البيانات إذا احتجت لعمل map
   const mapAlerts = (data) => {
     return data.map((alert) => ({
       alert_count: alert.alert_count,
+      alert_id: alert.alert_id,
       center_name: alert.center_name,
       device_id: alert.device_id,
       device_number: alert.device_number,
@@ -119,6 +115,37 @@ const AlertList = ({ isLoggedIn }) => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+  const {
+    deleteModal,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDelete,
+    feedback,
+    setFeedback,
+  } = useDelete({
+    baseUrl: "http://127.0.0.1:3000/api/alerts",
+    successDeleteMessageText: "تم حذف التنبيه بنجاح",
+    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف التنبيه",
+    refreshData: fetchAlerts,
+  });
+
+  useEffect(() => {
+    if (feedback.success || feedback.error) {
+      const timer = setTimeout(() => {
+        setFeedback({ success: null, error: null });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback, setFeedback]);
+
+  // حالة الفلاتر بناءً على AlertFilterForm
+  const [filters, setFilters] = useState({
+    type: "",
+    center: "",
+    exam: "",
+    exam_start_time: "",
+    exam_end_time: "",
+  });
 
   useEffect(() => {
     if (
@@ -187,6 +214,16 @@ const AlertList = ({ isLoggedIn }) => {
             {successMessage}
           </div>
         )}
+        {feedback.success && (
+          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+            {feedback.success}
+          </div>
+        )}
+        {feedback.error && (
+          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+            {feedback.error}
+          </div>
+        )}
 
         <div className="flex flex-col h-screen bg-gray-50">
           {isLoading ? (
@@ -245,13 +282,7 @@ const AlertList = ({ isLoggedIn }) => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currentItems.map((alert) => (
                         <tr
-                          key={
-                            alert.device_id +
-                            "-" +
-                            alert.exam_id +
-                            "-" +
-                            alert.student_id
-                          }
+                          key={alert.alert_id}
                           className="cursor-pointer hover:bg-gray-100"
                           onClick={() => handleRowClick(alert)}
                         >
@@ -269,7 +300,7 @@ const AlertList = ({ isLoggedIn }) => {
                               </span>
                             </h3>
                             <h3>
-                              Student ID#{" "}
+                              Student ID#
                               <span className="text-sky-600 font-semibold text-xl">
                                 {alert.student_id}
                               </span>
@@ -381,7 +412,15 @@ const AlertList = ({ isLoggedIn }) => {
                           {/* Control */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             {/* <h3>{alert.control}</h3> */}
-                            <h3>Delete</h3>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDeleteModal(alert.alert_id, alert.alert_id);
+                              }}
+                              className="ml-2 text-red-600 hover:text-red-900"
+                            >
+                              حذف
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -406,6 +445,15 @@ const AlertList = ({ isLoggedIn }) => {
             </div>
           )}
         </div>
+        <DeleteConfirmationModal
+          isOpen={deleteModal.isOpen}
+          onClose={closeDeleteModal}
+          onConfirm={handleDelete}
+          title="تأكيد حذف التنبيه"
+          message={`هل أنت متأكد من رغبتك في حذف ${deleteModal.name}؟`}
+          confirmText="حذف"
+          cancelText="إلغاء"
+        />
       </div>
       <AlertDetailsModal
         show={showModal}
