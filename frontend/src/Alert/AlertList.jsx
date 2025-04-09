@@ -20,6 +20,7 @@ const AlertList = ({ isLoggedIn }) => {
   const location = useLocation();
   const [showModal, setShowModal] = useState(false);
   const [selectedAlertDetails, setSelectedAlertDetails] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // حالة الفلاتر بناءً على AlertFilterForm
   const [filters, setFilters] = useState({
@@ -63,7 +64,6 @@ const AlertList = ({ isLoggedIn }) => {
     }
   }, []);
 
-  // تعيين رسالة النجاح من history state إن وُجدت
   useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
@@ -120,21 +120,32 @@ const AlertList = ({ isLoggedIn }) => {
     setCurrentPage(pageNumber);
   };
 
+  useEffect(() => {
+    if (
+      filters.type === "" &&
+      filters.center === "" &&
+      filters.exam === "" &&
+      filters.exam_start_time === "" &&
+      filters.exam_end_time === ""
+    ) {
+      fetchAlerts();
+    }
+  }, [filters, fetchAlerts]);
+
   const applyFilters = async () => {
     try {
-      console.log(filters.type);
+      setIsLoading(true);
+
+      const params = {};
+      if (filters.type) params.room_number = filters.type;
+      if (filters.center) params.center_id = filters.center;
+      if (filters.exam) params.exam_date = filters.exam;
+      if (filters.exam_start_time) params.start_time = filters.exam_start_time;
+      if (filters.exam_end_time) params.end_time = filters.exam_end_time;
 
       const response = await axios.get(
         "http://127.0.0.1:3000/api/alerts/devices",
-        {
-          params: {
-            room_number: filters.type,
-            center_id: filters.center,
-            exam_id: filters.exam,
-            start_time: filters.exam_start_time,
-            end_time: filters.exam_end_time,
-          },
-        }
+        { params }
       );
       if (response.status === 200) {
         const mappedAlerts = mapAlerts(response.data);
@@ -144,6 +155,8 @@ const AlertList = ({ isLoggedIn }) => {
       }
     } catch (error) {
       console.error("فشل في تطبيق الفلاتر", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -156,16 +169,6 @@ const AlertList = ({ isLoggedIn }) => {
           isLoggedIn={isLoggedIn}
         />
 
-        {/* <div className="flex justify-center p-2 w-full ">
-          <div className=" flex items-center justify-between bg-gray-400 m-2 rounded-xl lg:px-8 lg:w-64 text-center">
-            <h2 className="p-2 text-2xl text-white">Supervisors</h2>
-            <CiGlobe className="text-4xl text-blue-500 p-2 cursor-pointer" />
-          </div>
-          <div className=" flex items-center justify-between bg-gray-400 m-2 rounded-xl lg:px-8 lg:w-64 text-center ">
-            <h2 className="p-2 text-2xl text-white">Alerts</h2>
-            <LuFileText className="text-4xl text-blue-500 p-2 cursor-pointer" />
-          </div>
-        </div> */}
         {/* مكوّن الفلاتر المدمج */}
         <AlertFilterForm
           filters={filters}
@@ -186,201 +189,212 @@ const AlertList = ({ isLoggedIn }) => {
         )}
 
         <div className="flex flex-col h-screen bg-gray-50">
-          {/* the table */}
-          <div className="flex justify-center items-center w-full ">
-            <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
-                      >
-                        alert INFO
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
-                      >
-                        Location
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
-                      >
-                        Status
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
-                      >
-                        Alerts
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider">
-                        new Alert
-                      </th>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : currentItems.length > 0 ? (
+            <div className="flex justify-center items-center w-full ">
+              <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
+                        >
+                          alert INFO
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
+                        >
+                          Location
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
+                        >
+                          Status
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
+                        >
+                          Alerts
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider">
+                          new Alert
+                        </th>
 
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
-                      >
-                        LoginDate
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
-                      >
-                        Control
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentItems.map((alert) => (
-                      <tr
-                        key={
-                          alert.device_id +
-                          "-" +
-                          alert.exam_id +
-                          "-" +
-                          alert.student_id
-                        }
-                        className="cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleRowClick(alert)}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <h3>
-                            Device #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.device_number}
-                            </span>
-                          </h3>
-                          <h3 className="hidden">
-                            Device Id #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.device_id}
-                            </span>
-                          </h3>
-                          <h3>
-                            Student ID#{" "}
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.student_id}
-                            </span>
-                          </h3>
-                          <h3>
-                            Alert Count #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.alert_count}
-                            </span>
-                          </h3>
-                        </td>
-                        {/* location */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <h3>
-                            Room #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.room_number}
-                            </span>
-                          </h3>
-                          <h3>
-                            Center Name #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.center_name}
-                            </span>
-                          </h3>
-                          <h3>
-                            Exam_id #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.exam_id}
-                            </span>
-                          </h3>
-                        </td>
-                        {/* status */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <h3
-                            className={`${
-                              alert.status === 1 ? "bg-green-500" : "bg-red-500"
-                            } text-center rounded-md p-1 text-white font-semibold`}
-                          >
-                            {alert.status === 1 ? "Online" : "Offline"}
-                          </h3>
-                        </td>
-                        {/* Alert */}
-                        <td className="relative px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center justify-center relative">
-                            <MdOutlineMessage className="text-yellow-300 text-4xl" />
-                            <IoIosSunny className="text-red-600 text-4xl absolute -top-5 right-8 flex items-center justify-center shadow-md bg-null rounded-full" />
-                            <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600 text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
-                              <span className="text-ml">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
+                        >
+                          LoginDate
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
+                        >
+                          Control
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {currentItems.map((alert) => (
+                        <tr
+                          key={
+                            alert.device_id +
+                            "-" +
+                            alert.exam_id +
+                            "-" +
+                            alert.student_id
+                          }
+                          className="cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleRowClick(alert)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <h3>
+                              Device #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {alert.device_number}
+                              </span>
+                            </h3>
+                            <h3 className="hidden">
+                              Device Id #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {alert.device_id}
+                              </span>
+                            </h3>
+                            <h3>
+                              Student ID#{" "}
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {alert.student_id}
+                              </span>
+                            </h3>
+                            <h3>
+                              Alert Count #
+                              <span className="text-sky-600 font-semibold text-xl">
                                 {alert.alert_count}
                               </span>
+                            </h3>
+                          </td>
+                          {/* location */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <h3>
+                              Room #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {alert.room_number}
+                              </span>
+                            </h3>
+                            <h3>
+                              Center Name #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {alert.center_name}
+                              </span>
+                            </h3>
+                            <h3>
+                              Exam_id #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {alert.exam_id}
+                              </span>
+                            </h3>
+                          </td>
+                          {/* status */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <h3
+                              className={`${
+                                alert.status === 1
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              } text-center rounded-md p-1 text-white font-semibold`}
+                            >
+                              {alert.status === 1 ? "Online" : "Offline"}
+                            </h3>
+                          </td>
+                          {/* Alert */}
+                          <td className="relative px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center justify-center relative">
+                              <MdOutlineMessage className="text-yellow-300 text-4xl" />
+                              <IoIosSunny className="text-red-600 text-4xl absolute -top-5 right-8 flex items-center justify-center shadow-md bg-null rounded-full" />
+                              <div className="-mt-1 ml-1 absolute -top-2 right-11 bg-red-600 text-white text-sm font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
+                                <span className="text-ml">
+                                  {alert.alert_count}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        {/* Unread Count Column */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <h3
-                            className={`${
-                              alert.unread_count > 0
-                                ? "bg-red-500"
-                                : "bg-green-500"
-                            } text-center rounded-md p-1 text-white font-semibold`}
-                          >
-                            New Alert #{alert.unread_count}
-                          </h3>
-                        </td>
-                        {/* LoginDate */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <h3>
-                            تاريخ الاختبار #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {new Date(alert.exam_date).toLocaleDateString(
-                                "ar-EG",
-                                {
-                                  weekday: "long",
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
-                            </span>
-                          </h3>
-                          <h3>
-                            فترة الاختبار #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {alert.exam_period}
-                            </span>
-                          </h3>
-                          <h3>
-                            تاريخ اخر تنبية #
-                            <span className="text-sky-600 font-semibold text-xl">
-                              {new Date(alert.last_alert_time).toLocaleString(
-                                "ar-EG",
-                                {
-                                  weekday: "long",
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                  hour: "numeric",
-                                  minute: "numeric",
-                                  hour12: true,
-                                }
-                              )}
-                            </span>
-                          </h3>
-                        </td>
-                        {/* Control */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {/* <h3>{alert.control}</h3> */}
-                          <h3>Delete</h3>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          </td>
+                          {/* Unread Count Column */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <h3
+                              className={`${
+                                alert.unread_count > 0
+                                  ? "bg-red-500"
+                                  : "bg-green-500"
+                              } text-center rounded-md p-1 text-white font-semibold`}
+                            >
+                              New Alert #{alert.unread_count}
+                            </h3>
+                          </td>
+                          {/* LoginDate */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <h3>
+                              تاريخ الاختبار #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {new Date(alert.exam_date).toLocaleDateString(
+                                  "ar-EG",
+                                  {
+                                    weekday: "long",
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  }
+                                )}
+                              </span>
+                            </h3>
+                            <h3>
+                              فترة الاختبار #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {alert.exam_period}
+                              </span>
+                            </h3>
+                            <h3>
+                              تاريخ اخر تنبية #
+                              <span className="text-sky-600 font-semibold text-xl">
+                                {new Date(alert.last_alert_time).toLocaleString(
+                                  "ar-EG",
+                                  {
+                                    weekday: "long",
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                    hour: "numeric",
+                                    minute: "numeric",
+                                    hour12: true,
+                                  }
+                                )}
+                              </span>
+                            </h3>
+                          </td>
+                          {/* Control */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {/* <h3>{alert.control}</h3> */}
+                            <h3>Delete</h3>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex justify-center items-center w-full  h-[70%] ">
+              <h2 className="text-gray-500 text-2xl">No alerts found</h2>
+            </div>
+          )}
           {/* Pagination */}
           {Math.ceil(filteredAlerts.length / itemsPerPage) > 1 && (
             <div className="mt-4 flex justify-center">
