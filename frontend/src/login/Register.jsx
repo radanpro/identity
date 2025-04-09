@@ -46,7 +46,7 @@ const Register = () => {
 
       if (response.status === 201) {
         localStorage.setItem("deviceToken", response.data.token);
-        navigate("/", { state: { message: response.data.message } });
+        navigate("/camera", { state: { message: response.data.message } });
       }
     } catch (error) {
       console.error("Registration failed:", error);

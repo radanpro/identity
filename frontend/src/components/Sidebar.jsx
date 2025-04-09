@@ -18,12 +18,26 @@ import {
   FaBook,
   // FaGraduationCap,
 } from "react-icons/fa";
+import { useEffect } from "react";
+import { isUserLoggedIn, validateDeviceToken } from "../utils/auth";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
-
-  // حالة التحكم للقوائم المنسدلة باستخدام مفتاح العنصر
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isRegisterIn, setIsRegisterIn] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
+
+  useEffect(() => {
+    async function checkAuth() {
+      const deviceValid = await validateDeviceToken();
+      const userLogged = isUserLoggedIn();
+      setIsLoggedIn(userLogged);
+      setIsRegisterIn(deviceValid);
+    }
+
+    checkAuth();
+    // sessionStorage.setItem("userToken", tokenFromAPI);
+  }, []);
 
   const toggleMenu = (menuKey) => {
     setOpenMenus((prev) => ({ ...prev, [menuKey]: !prev[menuKey] }));
@@ -31,45 +45,72 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   // تعريف عناصر القائمة الرئيسية كمصفوفة من الكائنات
   const mainNav = [
-    { label: "Dashboard", to: "/", icon: <FaHome /> },
-    { label: "Users", to: "/users/index", icon: <FaUsers /> },
-    { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> },
-    { label: "Search Real Time", to: "/camera", icon: <FaCamera /> },
-  ];
+    isLoggedIn ? { label: "Dashboard", to: "/", icon: <FaHome /> } : null,
+    isLoggedIn
+      ? { label: "Users", to: "/users/index", icon: <FaUsers /> }
+      : null,
+    isLoggedIn
+      ? { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> }
+      : null,
+    isRegisterIn
+      ? { label: "Search Real Time", to: "/camera", icon: <FaCamera /> }
+      : null,
+  ].filter(Boolean);
+
   const universityGroup = {
     group: "University",
     items: [
-      { label: "Student", to: "/students", icon: <FaUser /> },
-      { label: "Exams", to: "/newexam/index", icon: <FaClipboardList /> },
-      { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
-      { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
-      { label: "Courses", to: "/courses/index", icon: <FaBook /> },
-      { label: "Levels", to: "/levels/index", icon: <FaBook /> },
-      { label: "Semesters", to: "/semesters/index", icon: <FaBook /> },
-      { label: "Years", to: "/years/index", icon: <FaBook /> },
-    ],
+      isLoggedIn
+        ? ({ label: "Student", to: "/students", icon: <FaUser /> },
+          { label: "Exams", to: "/newexam/index", icon: <FaClipboardList /> },
+          { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
+          { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
+          { label: "Courses", to: "/courses/index", icon: <FaBook /> },
+          { label: "Levels", to: "/levels/index", icon: <FaBook /> },
+          { label: "Semesters", to: "/semesters/index", icon: <FaBook /> },
+          { label: "Years", to: "/years/index", icon: <FaBook /> })
+        : null,
+    ].filter(Boolean),
   };
   const modelsGroup = {
     group: "Models",
     items: [
-      { label: "Alerts Types", to: "/alertsType/alert-list", icon: <FaBell /> },
-      { label: "Alerts agent", to: "/alerts/alert-list", icon: <FaBell /> },
-      { label: "Models", to: "/models-list", icon: <FaCube /> },
-      { label: "Control Model", to: "/control-model", icon: <FaTools /> },
+      isLoggedIn
+        ? {
+            label: "Alerts Types",
+            to: "/alertsType/alert-list",
+            icon: <FaBell />,
+          }
+        : null,
+      isLoggedIn
+        ? { label: "Alerts agent", to: "/alerts/alert-list", icon: <FaBell /> }
+        : null,
+      isLoggedIn
+        ? { label: "Models", to: "/models-list", icon: <FaCube /> }
+        : null,
+      isLoggedIn
+        ? { label: "Control Model", to: "/control-model", icon: <FaTools /> }
+        : null,
       { label: "Monitor Model", to: "/monitoring-model", icon: <FaDesktop /> },
-    ],
+    ].filter(Boolean),
   };
 
   const devicesGroup = {
     group: "Devices and Users",
     items: [
-      { label: "Device List", to: "/devices/index", icon: <FaClipboardList /> },
+      isLoggedIn
+        ? {
+            label: "Device List",
+            to: "/devices/index",
+            icon: <FaClipboardList />,
+          }
+        : null,
       // {
       //   label: "Register Device",
       //   to: "/devices/register",
       //   icon: <FaUserPlus />,
       // },
-    ],
+    ].filter(Boolean),
   };
 
   // دالة للتحقق من حالة التفعيل بناءً على المسار الحالي
@@ -109,34 +150,36 @@ const Sidebar = ({ isOpen, onClose }) => {
           ))}
         </nav>
         {/* مجموعة University */}
-        <div className="border-t-2 border-sky-300 mt-4 pt-2">
-          {/* عنوان المجموعة لا يتغير لونه عند تفعيل أحد الأبناء */}
-          <button
-            onClick={() => toggleMenu("university")}
-            className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
-          >
-            <FaUniversity />
-            <span>{universityGroup.group}</span>
-          </button>
-          {openMenus["university"] && (
-            <div className="pl-4 space-y-2">
-              {universityGroup.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 p-2 rounded-lg ${
-                      isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                    }`
-                  }
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          )}
-        </div>
+        {universityGroup.items.length ? (
+          <div className="border-t-2 border-sky-300 mt-4 pt-2">
+            {/* عنوان المجموعة لا يتغير لونه عند تفعيل أحد الأبناء */}
+            <button
+              onClick={() => toggleMenu("university")}
+              className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
+            >
+              <FaUniversity />
+              <span>{universityGroup.group}</span>
+            </button>
+            {openMenus["university"] && (
+              <div className="pl-4 space-y-2">
+                {universityGroup.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 p-2 rounded-lg ${
+                        isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                      }`
+                    }
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
         {/* قسم النماذج */}
         <div className="border-t-2 border-sky-300 mt-4 pt-2">
           <p className="text-gray-400 text-center p-3">{modelsGroup.group}</p>
@@ -155,34 +198,36 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         {/* قسم الأجهزة والمستخدمين */}
-        <div className="border-t-2 border-sky-300 mt-4 pt-2">
-          {/* <p className="text-gray-400 text-center p-3">{devicesGroup.group}</p> */}
-          <button
-            onClick={() => toggleMenu("DevicesAndUsers")}
-            className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
-          >
-            <FaDesktop />
-            <span>{devicesGroup.group}</span>
-          </button>
-          {openMenus["DevicesAndUsers"] && (
-            <div className="pl-4 space-y-2">
-              {devicesGroup.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 p-2 rounded-lg ${
-                      isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                    }`
-                  }
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          )}
-        </div>
+        {devicesGroup.items.length ? (
+          <div className="border-t-2 border-sky-300 mt-4 pt-2">
+            {/* <p className="text-gray-400 text-center p-3">{devicesGroup.group}</p> */}
+            <button
+              onClick={() => toggleMenu("DevicesAndUsers")}
+              className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
+            >
+              <FaDesktop />
+              <span>{devicesGroup.group}</span>
+            </button>
+            {openMenus["DevicesAndUsers"] && (
+              <div className="pl-4 space-y-2">
+                {devicesGroup.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 p-2 rounded-lg ${
+                        isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                      }`
+                    }
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
     </aside>
   );

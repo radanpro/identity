@@ -53,6 +53,7 @@ import {
   NotRequireDeviceRegister,
   RequireDeviceRegister,
 } from "./components/RequireDeviceRegister";
+import RequireUserLogin from "./components/RequireUserLogin";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -93,10 +94,12 @@ function App() {
                 index
                 element={
                   <RequireDeviceRegister>
-                    <Dashboard
-                      isLoggedIn={isLoggedIn}
-                      isRegisterIn={isRegisterIn}
-                    />
+                    <RequireUserLogin>
+                      <Dashboard
+                        isLoggedIn={isLoggedIn}
+                        isRegisterIn={isRegisterIn}
+                      />
+                    </RequireUserLogin>
                   </RequireDeviceRegister>
                 }
               />
