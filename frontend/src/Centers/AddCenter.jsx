@@ -11,7 +11,6 @@ const CenterForm = ({ isLoggedIn }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
-    center_code: "",
     center_name: "",
     status: 0,
   });
@@ -51,7 +50,7 @@ const CenterForm = ({ isLoggedIn }) => {
     e.preventDefault();
 
     // التأكد من ملء جميع الحقول المطلوبة
-    if (!formData.center_code || !formData.center_name) {
+    if (!formData.center_name) {
       alert("من فضلك قم بملء جميع الحقول المطلوبة");
       return;
     }
@@ -96,21 +95,6 @@ const CenterForm = ({ isLoggedIn }) => {
           {isEdit ? "تعديل مركز" : "إضافة مركز جديد"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              كود المركز
-            </label>
-            <input
-              type="text"
-              placeholder="كود المركز"
-              name="center_code"
-              value={formData.center_code}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isEdit}
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               اسم المركز

@@ -37,10 +37,8 @@ const CentersList = ({ isLoggedIn }) => {
   }, [fetchCenters]);
 
   const handleSearch = (query) => {
-    const filtered = centers.filter(
-      (center) =>
-        center.center_name.toLowerCase().includes(query.toLowerCase()) ||
-        center.center_code.toLowerCase().includes(query.toLowerCase())
+    const filtered = centers.filter((center) =>
+      center.center_name.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredCenters(filtered);
     setCurrentPage(1);
@@ -100,7 +98,7 @@ const CentersList = ({ isLoggedIn }) => {
       <div>
         <SearchAddBar
           onSearch={handleSearch}
-          onAdd="إضافة مركز"
+          onAdd="إضافة مركز "
           link="/centers/add"
         />
       </div>
@@ -127,9 +125,6 @@ const CentersList = ({ isLoggedIn }) => {
               رقم المركز
             </div>
             <div className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              كود المركز
-            </div>
-            <div className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               اسم المركز
             </div>
             <div className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -148,9 +143,6 @@ const CentersList = ({ isLoggedIn }) => {
                 className="grid grid-cols-5 p-4 hover:bg-gray-50"
               >
                 <div className="text-sm text-gray-900">{center.id}</div>
-                <div className="text-sm text-gray-900">
-                  {center.center_code}
-                </div>
                 <div className="text-sm text-gray-900">
                   {center.center_name}
                 </div>
