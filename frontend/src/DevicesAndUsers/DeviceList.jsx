@@ -8,7 +8,8 @@ import PropTypes from "prop-types";
 import useDelete from "../hooks/useDelete";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import { Button } from "../shared/Button";
-import DeviceFilterForm from "../components/DeviceFilterForm"; // ← المكون الجديد للفلترة
+import DeviceFilterForm from "../components/DeviceFilterForm";
+import PopupMessage from "../components/PopupMessage";
 
 const DeviceList = ({ isLoggedIn }) => {
   const { onToggleSidebar } = useOutletContext();
@@ -19,13 +20,31 @@ const DeviceList = ({ isLoggedIn }) => {
   const [devices, setDevices] = useState([]);
   const [filteredDevices, setFilteredDevices] = useState([]);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [filters, setFilters] = useState({
     center_id: "",
     room_number: "",
   });
+  const [popup, setPopup] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const showPopup = (message, type = "success") => {
+    setPopup({
+      show: true,
+      message,
+      type,
+    });
+  };
+  const closePopup = () => {
+    setPopup({
+      show: false,
+      message: "",
+      type: "success",
+    });
+  };
 
   const fetchDevices = useCallback(async () => {
     setIsLoading(true);
@@ -71,14 +90,7 @@ const DeviceList = ({ isLoggedIn }) => {
 
   useEffect(() => {
     if (location.state?.message) {
-      setSuccessMessage(location.state.message);
-
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-        window.history.replaceState({}, document.title);
-      }, 5000);
-
-      return () => clearTimeout(timer);
+      showPopup(location.state.message, "success");
     }
   }, [location.state?.message]);
 
@@ -89,7 +101,6 @@ const DeviceList = ({ isLoggedIn }) => {
     closeDeleteModal,
     handleDelete,
     feedback,
-    setFeedback,
   } = useDelete({
     baseUrl: "http://127.0.0.1:3000/api/devices/id",
     successDeleteMessageText: "تم حذف الجهاز بنجاح",
@@ -98,14 +109,12 @@ const DeviceList = ({ isLoggedIn }) => {
   });
 
   useEffect(() => {
-    if (feedback.success || feedback.error) {
-      const timer = setTimeout(() => {
-        setFeedback({ success: null, error: null });
-      }, 5000);
-      return () => clearTimeout(timer);
+    if (feedback.success) {
+      showPopup(feedback.success, "success");
+    } else if (feedback.error) {
+      showPopup(feedback.error, "error");
     }
-  }, [feedback, setFeedback]);
-
+  }, [feedback]);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredDevices.slice(indexOfFirstItem, indexOfLastItem);
@@ -121,7 +130,12 @@ const DeviceList = ({ isLoggedIn }) => {
       );
 
       if (response.status === 200) {
-        // بعد التحديث، حدث الواجهة بدون إعادة جلب الكل
+        showPopup(
+          `Device status changed to ${
+            response.data.new_status === 1 ? "Active" : "Inactive"
+          }`,
+          "success"
+        );
         setDevices((prevDevices) =>
           prevDevices.map((device) =>
             device.id === deviceId
@@ -149,7 +163,7 @@ const DeviceList = ({ isLoggedIn }) => {
       }
     } catch (error) {
       console.error("Error toggling status:", error);
-      setError("حدث خطأ أثناء تبديل حالة الجهاز.");
+      showPopup("Failed to toggle device status", "error");
     }
   };
 
@@ -180,6 +194,42 @@ const DeviceList = ({ isLoggedIn }) => {
     }
   };
 
+  const updateTokenHandle = async (deviceId) => {
+    try {
+      console.log(deviceId);
+      if (!deviceId) {
+        showPopup("Device ID is required", "error");
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      const response = await axios.patch(
+        `http://127.0.0.1:3000/api/devices/update-token/${deviceId}/token`
+      );
+
+      if (response.data) {
+        showPopup(response.data.message, "success");
+      }
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 404) {
+          showPopup("Device not found", "error");
+        } else if (error.response.status === 500) {
+          showPopup("Internal server error", "error");
+        } else {
+          showPopup("Failed to update device token", "error");
+        }
+      } else {
+        showPopup("Network error - please check your connection", "error");
+      }
+      console.error("Error updating device token:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex-col">
       <div>
@@ -195,11 +245,6 @@ const DeviceList = ({ isLoggedIn }) => {
           setFilters={setFilters}
           onSubmit={applyFilters}
         />
-        {successMessage && (
-          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-            {successMessage}
-          </div>
-        )}
         {feedback.success && (
           <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
             {feedback.success}
@@ -209,6 +254,13 @@ const DeviceList = ({ isLoggedIn }) => {
           <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
             {feedback.error}
           </div>
+        )}
+        {popup.show && (
+          <PopupMessage
+            message={popup.message}
+            type={popup.type}
+            onClose={closePopup}
+          />
         )}
         <div>
           <SearchAddBar
@@ -323,6 +375,15 @@ const DeviceList = ({ isLoggedIn }) => {
                               className="text-blue-600 hover:text-blue-900 mr-4"
                             >
                               Edit
+                            </Button>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateTokenHandle(device.id);
+                              }}
+                              className="ml-2 text-green-800 hover:text-green-900"
+                            >
+                              Update Token
                             </Button>
                             <Button
                               onClick={(e) => {
