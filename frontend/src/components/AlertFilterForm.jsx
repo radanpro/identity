@@ -22,109 +22,136 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
+  // الدالة الخاصة بإعادة تعيين الفلترة
+  const handleClear = () => {
+    setFilters({
+      type: "",
+      center: "",
+      exam: "",
+      exam_start_time: "",
+      exam_end_time: "",
+    });
+    onSubmit();
+  };
+
   return (
     <form
-      className="flex flex-wrap gap-4 bg-white p-4 shadow rounded-md mb-4"
+      className="bg-white shadow rounded-md p-6 mb-4 mx-auto"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit();
       }}
     >
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          رقم الغرفة
-        </label>
-        <input
-          type="text"
-          name="type"
-          value={filters.type || ""}
-          onChange={handleChange}
-        />
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* رقم الغرفة */}
+        <div className="flex flex-col">
+          <label className="mb-2 text-sm font-medium text-gray-700">
+            رقم الغرفة
+          </label>
+          <input
+            type="text"
+            name="type"
+            value={filters.type || ""}
+            onChange={handleChange}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          المركز
-        </label>
-        <select
-          name="center"
-          value={filters.center}
-          onChange={handleChange}
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-        >
-          <option value="">الكل</option>
-          {centers.map((center) => (
-            <option key={center.id} value={center.id}>
-              {center.center_name}
-            </option>
-          ))}
-        </select>
-      </div>
+        {/* المركز */}
+        <div className="flex flex-col">
+          <label className="mb-2 text-sm font-medium text-gray-700">
+            المركز
+          </label>
+          <select
+            name="center"
+            value={filters.center || ""}
+            onChange={handleChange}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">الكل</option>
+            {centers.map((center) => (
+              <option key={center.id} value={center.id}>
+                {center.center_name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          تاريخ الاختبار
-        </label>
-        <select
-          name="exam"
-          value={filters.exam}
-          onChange={handleChange}
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-        >
-          <option value="">الكل</option>
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.id}>
-              {exam.exam_date}
-            </option>
-          ))}
-        </select>
-      </div>
+        {/* تاريخ الاختبار */}
+        <div className="flex flex-col">
+          <label className="mb-2 text-sm font-medium text-gray-700">
+            تاريخ الاختبار
+          </label>
+          <select
+            name="exam"
+            value={filters.exam || ""}
+            onChange={handleChange}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">الكل</option>
+            {exams.map((exam) => (
+              <option key={exam.id} value={exam.id}>
+                {exam.exam_date}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          وقت بدأ الاختبار
-        </label>
-        <select
-          name="exam_start_time"
-          value={filters.exam_start_time || ""}
-          onChange={handleChange}
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-        >
-          <option value="">الكل</option>
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.exam_start_time}>
-              {exam.exam_start_time}
-            </option>
-          ))}
-        </select>
-      </div>
+        {/* وقت بدأ الاختبار */}
+        <div className="flex flex-col">
+          <label className="mb-2 text-sm font-medium text-gray-700">
+            وقت بدأ الاختبار
+          </label>
+          <select
+            name="exam_start_time"
+            value={filters.exam_start_time || ""}
+            onChange={handleChange}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">الكل</option>
+            {exams.map((exam) => (
+              <option key={exam.id} value={exam.exam_start_time}>
+                {exam.exam_start_time}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          وقت نهاية الاختبار
-        </label>
-        <select
-          name="exam_end_time"
-          value={filters.exam_end_time || ""}
-          onChange={handleChange}
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-        >
-          <option value="">الكل</option>
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.exam_end_time}>
-              {exam.exam_end_time}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="self-end">
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          تطبيق الفلترة
-        </button>
+        {/* وقت نهاية الاختبار */}
+        <div className="flex flex-col">
+          <label className="mb-2 text-sm font-medium text-gray-700">
+            وقت نهاية الاختبار
+          </label>
+          <select
+            name="exam_end_time"
+            value={filters.exam_end_time || ""}
+            onChange={handleChange}
+            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">الكل</option>
+            {exams.map((exam) => (
+              <option key={exam.id} value={exam.exam_end_time}>
+                {exam.exam_end_time}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* قسم الأزرار */}
+        <div className="flex justify-center items-center mt-6 p-2 w-full col-span-1  gap-4">
+          <button
+            type="submit"
+            className="w-full md:w-1/2 bg-blue-300 text-white px-4 py-2 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Filter
+          </button>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="w-full md:w-1/2 bg-gray-300 text-white px-4 py-2 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Clear
+          </button>
+        </div>
       </div>
     </form>
   );
