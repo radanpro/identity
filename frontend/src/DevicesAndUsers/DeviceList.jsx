@@ -117,6 +117,45 @@ const DeviceList = ({ isLoggedIn }) => {
     setCurrentPage(1);
   };
 
+  const toggleDeviceStatus = async (deviceId) => {
+    try {
+      const response = await axios.patch(
+        `http://127.0.0.1:3000/api/devices/toggle/${deviceId}/status`
+      );
+
+      if (response.status === 200) {
+        // بعد التحديث، حدث الواجهة بدون إعادة جلب الكل
+        setDevices((prevDevices) =>
+          prevDevices.map((device) =>
+            device.id === deviceId
+              ? {
+                  ...device,
+                  status: response.data.new_status,
+                  statusText:
+                    response.data.new_status === 1 ? "Active" : "Inactive",
+                }
+              : device
+          )
+        );
+        setFilteredDevices((prevDevices) =>
+          prevDevices.map((device) =>
+            device.id === deviceId
+              ? {
+                  ...device,
+                  status: response.data.new_status,
+                  statusText:
+                    response.data.new_status === 1 ? "Active" : "Inactive",
+                }
+              : device
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling status:", error);
+      setError("حدث خطأ أثناء تبديل حالة الجهاز.");
+    }
+  };
+
   return (
     <div className="flex-col">
       <div>
@@ -286,15 +325,19 @@ const DeviceList = ({ isLoggedIn }) => {
                             </h3>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleDeviceStatus(device.id);
+                              }}
+                              className={`px-3 py-1 rounded-full text-sm font-semibold focus:outline-none ${
                                 device.status === 1
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
+                                  ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                  : "bg-red-100 text-red-800 hover:bg-red-200"
                               }`}
                             >
                               {device.statusText}
-                            </span>
+                            </button>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <Button
