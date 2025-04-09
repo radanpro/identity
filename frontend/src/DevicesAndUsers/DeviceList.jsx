@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useOutletContext, useNavigate } from "react-router-dom";
+import { useOutletContext, useNavigate, useLocation } from "react-router-dom";
 import { Pagination } from "../shared/Pagination";
 import axios from "axios";
 import SearchAddBar from "../components/SearchAddBar";
@@ -13,6 +13,8 @@ const DeviceList = ({ isLoggedIn }) => {
   const [filteredDevices, setFilteredDevices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [filters, setFilters] = useState({
@@ -61,6 +63,19 @@ const DeviceList = ({ isLoggedIn }) => {
     setFilteredDevices(filtered);
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+        window.history.replaceState({}, document.title);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.state?.message]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -139,7 +154,16 @@ const DeviceList = ({ isLoggedIn }) => {
             </div>
           </div>
         </div>
-
+        {successMessage && (
+          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+            {successMessage}
+          </div>
+        )}
+        {/* {errorMessage && (
+          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+            {errorMessage}
+          </div>
+        )} */}
         <div>
           <SearchAddBar
             onSearch={handleSearch}

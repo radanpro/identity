@@ -44,6 +44,7 @@ import NewExamForm from "./exam/NewExamForm";
 import AlertForm from "./Alert/AlertForm";
 import AlertTypeList from "./Alert/AlertTypeList";
 import AlertTypeForm from "./Alert/AlertTypeForm";
+import AddDevice from "./DevicesAndUsers/AddDevice";
 
 function App() {
   const isLoggedIn = true;
@@ -140,6 +141,10 @@ function App() {
                 <Route
                   path="register"
                   element={<DevicePage isLoggedIn={isLoggedIn} />}
+                />
+                <Route
+                  path="add"
+                  element={<AddDevice isLoggedIn={isLoggedIn} />}
                 />
                 <Route
                   path="update/:id"
