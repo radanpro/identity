@@ -245,6 +245,17 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
         ) : null}
       </div>
+      {isLoggedIn && (
+        <div className="border-t-2 border-red-300 mt-4 pt-2">
+          <NavLink
+            to="/users/logout"
+            className="flex items-center gap-2 p-2 rounded-lg text-red-600 hover:bg-red-100"
+          >
+            <FaUser />
+            <span>تسجيل الخروج</span>
+          </NavLink>
+        </div>
+      )}
     </aside>
   );
 };
