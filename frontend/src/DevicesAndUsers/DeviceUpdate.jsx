@@ -111,94 +111,111 @@ const DeviceUpdate = ({ isLoggedIn, isRegisterIn }) => {
         isLoggedIn={isLoggedIn}
         isRegisterIn={isRegisterIn}
       />
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="w-full max-w-3xl bg-white p-6 shadow m-6 rounded-md">
-          <h1 className="text-2xl font-bold mb-4 text-center">Update Device</h1>
-          {error && (
-            <div className="bg-red-100 text-red-700 p-2 mb-4 rounded">
-              {error}
-            </div>
-          )}
-          {successMessage && (
-            <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-              {successMessage}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-            {/* Center */}
-            <div>
-              <label className="block mb-1 font-semibold">Center</label>
-              <select
-                name="center_id"
-                value={formData.center_id}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-md p-2"
-              >
-                <option value="">Select Center</option>
-                {centers.map((center) => (
-                  <option key={center.id} value={center.id}>
-                    {center.center_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {/* Token */}
-            <div>
-              <label className="block mb-1 font-semibold">Token</label>
-              <input
-                type="text"
-                name="device_token"
-                value={formData.device_token}
-                disabled
-                className="w-full border border-gray-300 rounded-md p-2 bg-gray-200 cursor-not-allowed"
-              />
-            </div>
+      <div className="flex justify-center w-full h-screen bg-gray-50 p-8 pb-0">
+        <div className="flex w-full m-4 mb-0 p-4 h-2/3 bg-inhirit rounded-lg shadow-lg overflow-hidden">
+          {/* Left Section */}
+          <div className="w-1/2 p-8 bg-white rounded-md  shadow-md shadow-sky-200">
+            <div className="w-full max-w-3xl bg-white p-6 shadow m-6 rounded-md">
+              <h1 className="text-2xl font-bold mb-4 text-center">
+                Update Device
+              </h1>
+              {error && (
+                <div className="bg-red-100 text-red-700 p-2 mb-4 rounded">
+                  {error}
+                </div>
+              )}
+              {successMessage && (
+                <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+                  {successMessage}
+                </div>
+              )}
+              <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+                {/* Center */}
+                <div>
+                  <label className="block mb-1 font-semibold">Center</label>
+                  <select
+                    name="center_id"
+                    value={formData.center_id}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2"
+                  >
+                    <option value="">Select Center</option>
+                    {centers.map((center) => (
+                      <option key={center.id} value={center.id}>
+                        {center.center_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Token */}
+                <div>
+                  <label className="block mb-1 font-semibold">Token</label>
+                  <input
+                    type="text"
+                    name="device_token"
+                    value={formData.device_token}
+                    disabled
+                    className="w-full border border-gray-300 rounded-md p-2 bg-gray-200 cursor-not-allowed"
+                  />
+                </div>
 
-            {/* Device Number */}
-            <div>
-              <label className="block mb-1 font-semibold">Device Number</label>
-              <input
-                type="number"
-                name="device_number"
-                value={formData.device_number}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-md p-2"
-              />
-            </div>
+                {/* Device Number */}
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Device Number
+                  </label>
+                  <input
+                    type="number"
+                    name="device_number"
+                    value={formData.device_number}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2"
+                  />
+                </div>
 
-            {/* Room Number */}
-            <div>
-              <label className="block mb-1 font-semibold">Room Number</label>
-              <input
-                type="text"
-                name="room_number"
-                value={formData.room_number}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-md p-2"
-              />
-            </div>
+                {/* Room Number */}
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Room Number
+                  </label>
+                  <input
+                    type="text"
+                    name="room_number"
+                    value={formData.room_number}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2"
+                  />
+                </div>
 
-            {/* Control Buttons */}
-            <div className="col-span-2 flex justify-center space-x-4 mt-4">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-              >
-                {isSubmitting ? "Updating..." : "Update Device"}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/devices/index")}
-                className="px-6 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition"
-              >
-                Cancel
-              </button>
+                {/* Control Buttons */}
+                <div className="col-span-2 flex justify-center space-x-4 mt-4">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                  >
+                    {isSubmitting ? "Updating..." : "Update Device"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/devices/index")}
+                    className="px-6 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
+          {/* Right Section */}
+          <div className="flex flex-col justify-center w-1/2 p-2 bg-inherit items-center rounded-md">
+            <h1 className="text-4xl font-bold mb-4 text-blue-800">
+              AI Exam Proctoring System
+            </h1>
+          </div>
         </div>
       </div>
     </div>
