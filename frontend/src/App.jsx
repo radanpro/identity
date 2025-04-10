@@ -47,7 +47,7 @@ import AlertTypeForm from "./Alert/AlertTypeForm";
 import AddDevice from "./DevicesAndUsers/AddDevice";
 
 import { useEffect, useState } from "react";
-import { validateDeviceToken, isUserLoggedIn } from "./utils/auth";
+import { validateDeviceToken, isUserLoggedIn, printToken } from "./utils/auth";
 
 import {
   NotRequireDeviceRegister,
@@ -66,6 +66,8 @@ function App() {
       setIsLoggedIn(userLogged);
       setIsRegisterIn(deviceValid);
     }
+    const token = printToken();
+    console.log(token);
 
     checkAuth();
     // sessionStorage.setItem("userToken", tokenFromAPI);
@@ -91,6 +93,7 @@ function App() {
             </Route>
             <Route path="/" element={<Layout />}>
               <Route
+                path="dashboard"
                 index
                 element={
                   <RequireDeviceRegister>
@@ -140,7 +143,7 @@ function App() {
                 }
               />
               <Route
-                path="camera"
+                index
                 element={
                   <CaptureInterface
                     setCapturedImage={() => {}}
@@ -177,7 +180,7 @@ function App() {
                 }
               />
               {/* model Alerts */}
-              <Route path="/alerts">
+              <Route path="alerts">
                 <Route
                   path="alert-list"
                   element={
@@ -198,7 +201,7 @@ function App() {
                 />
               </Route>
               {/* AlertyType */}
-              <Route path="/alertsType">
+              <Route path="alertsType">
                 <Route
                   path="alert-list"
                   element={
@@ -228,7 +231,7 @@ function App() {
                 />
               </Route>
               <Route
-                path="/models-list"
+                path="models-list"
                 element={
                   <ModelList
                     isLoggedIn={isLoggedIn}
@@ -237,7 +240,7 @@ function App() {
                 }
               />
               <Route
-                path="/control-model"
+                path="control-model"
                 element={
                   <ControlModel
                     isLoggedIn={isLoggedIn}
@@ -246,7 +249,7 @@ function App() {
                 }
               />
               <Route
-                path="/monitoring-model"
+                path="monitoring-model"
                 element={
                   <Monitoring
                     isLoggedIn={isLoggedIn}
@@ -255,7 +258,7 @@ function App() {
                 }
               />
               {/* devices and users */}
-              <Route path="/devices">
+              <Route path="devices">
                 <Route
                   path="register"
                   element={
@@ -295,7 +298,7 @@ function App() {
                 />
               </Route>
               {/* Exam */}
-              <Route path="/exam">
+              <Route path="exam">
                 <Route
                   path="index"
                   element={
@@ -325,7 +328,7 @@ function App() {
                 />
               </Route>
               {/* NewExam */}
-              <Route path="/newexam">
+              <Route path="newexam">
                 <Route
                   path="index"
                   element={
@@ -355,7 +358,7 @@ function App() {
                 />
               </Route>
               {/* College */}
-              <Route path="/college">
+              <Route path="college">
                 <Route
                   path="index"
                   element={
@@ -385,7 +388,7 @@ function App() {
                 />
               </Route>
               {/* academic */}
-              <Route path="/academic/majors">
+              <Route path="academic/majors">
                 <Route
                   path="college/:college_id"
                   element={
@@ -415,7 +418,7 @@ function App() {
                 />
               </Route>
               {/* Centers */}
-              <Route path="/centers">
+              <Route path="centers">
                 <Route
                   path="index"
                   element={
@@ -445,7 +448,7 @@ function App() {
                 />
               </Route>
               {/* users */}
-              <Route path="/users">
+              <Route path="users">
                 <Route
                   path="index"
                   element={
@@ -475,7 +478,7 @@ function App() {
                 />
               </Route>
               {/* Courses */}
-              <Route path="/courses">
+              <Route path="courses">
                 <Route
                   path="index"
                   element={
@@ -505,7 +508,7 @@ function App() {
                 />
               </Route>
               {/* Livels */}
-              <Route path="/levels">
+              <Route path="levels">
                 <Route
                   path="index"
                   element={
@@ -535,7 +538,7 @@ function App() {
                 />
               </Route>
               {/* semesters */}
-              <Route path="/semesters">
+              <Route path="semesters">
                 <Route
                   path="index"
                   element={
@@ -565,7 +568,7 @@ function App() {
                 />
               </Route>
               {/* years */}
-              <Route path="/years">
+              <Route path="years">
                 <Route
                   path="index"
                   element={

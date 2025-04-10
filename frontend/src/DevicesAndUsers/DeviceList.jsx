@@ -15,7 +15,6 @@ const DeviceList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const location = useLocation();
-
   const [isLoading, setIsLoading] = useState(false);
   const [devices, setDevices] = useState([]);
   const [filteredDevices, setFilteredDevices] = useState([]);

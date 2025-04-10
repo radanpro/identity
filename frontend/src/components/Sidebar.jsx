@@ -45,7 +45,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   // تعريف عناصر القائمة الرئيسية كمصفوفة من الكائنات
   const mainNav = [
-    isLoggedIn ? { label: "Dashboard", to: "/", icon: <FaHome /> } : null,
+    isLoggedIn
+      ? { label: "Dashboard", to: "/dashboard", icon: <FaHome /> }
+      : null,
     isLoggedIn
       ? { label: "Users", to: "/users/index", icon: <FaUsers /> }
       : null,
@@ -53,7 +55,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       ? { label: "Vectors", to: "/vectors", icon: <FaVectorSquare /> }
       : null,
     isRegisterIn
-      ? { label: "Search Real Time", to: "/camera", icon: <FaCamera /> }
+      ? { label: "Search Real Time", to: "/", icon: <FaCamera /> }
       : null,
   ].filter(Boolean);
 
@@ -61,14 +63,28 @@ const Sidebar = ({ isOpen, onClose }) => {
     group: "University",
     items: [
       isLoggedIn
-        ? ({ label: "Student", to: "/students", icon: <FaUser /> },
-          { label: "Exams", to: "/newexam/index", icon: <FaClipboardList /> },
-          { label: "Colleges", to: "/college/index", icon: <FaUniversity /> },
-          { label: "Centers", to: "/centers/index", icon: <FaSchool /> },
-          { label: "Courses", to: "/courses/index", icon: <FaBook /> },
-          { label: "Levels", to: "/levels/index", icon: <FaBook /> },
-          { label: "Semesters", to: "/semesters/index", icon: <FaBook /> },
-          { label: "Years", to: "/years/index", icon: <FaBook /> })
+        ? { label: "Student", to: "/students", icon: <FaUser /> }
+        : null,
+      isLoggedIn
+        ? { label: "Exams", to: "/newexam/index", icon: <FaClipboardList /> }
+        : null,
+      isLoggedIn
+        ? { label: "Colleges", to: "/college/index", icon: <FaUniversity /> }
+        : null,
+      isLoggedIn
+        ? { label: "Centers", to: "/centers/index", icon: <FaSchool /> }
+        : null,
+      isLoggedIn
+        ? { label: "Courses", to: "/courses/index", icon: <FaBook /> }
+        : null,
+      isLoggedIn
+        ? { label: "Levels", to: "/levels/index", icon: <FaBook /> }
+        : null,
+      isLoggedIn
+        ? { label: "Semesters", to: "/semesters/index", icon: <FaBook /> }
+        : null,
+      isLoggedIn
+        ? { label: "Years", to: "/years/index", icon: <FaBook /> }
         : null,
     ].filter(Boolean),
   };

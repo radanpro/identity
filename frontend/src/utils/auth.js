@@ -30,3 +30,13 @@ export function isUserLoggedIn() {
 export function isDeviceRegistered() {
   return !!localStorage.getItem("deviceToken");
 }
+export function printToken() {
+  const token = localStorage.getItem("deviceToken");
+  return token;
+}
+
+// دالة لاسترجاع بيانات الجهاز المحفوظة:
+export function getDeviceData() {
+  const deviceData = localStorage.getItem("deviceData");
+  return deviceData ? JSON.parse(deviceData) : null;
+}
