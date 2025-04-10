@@ -103,69 +103,80 @@ const UserForm = ({ isLoggedIn, isRegisterIn }) => {
         isLoggedIn={isLoggedIn}
         isRegisterIn={isRegisterIn}
       />
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isEdit ? "تعديل المستخدم" : "إضافة مستخدم جديد"}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="اسم المستخدم"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          {!isEdit && (
-            <input
-              type="password"
-              placeholder="كلمة المرور"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          )}
-
-          {isEdit && (
-            <input
-              type="password"
-              placeholder="كلمة المرور الجديدة (اتركها فارغة إذا لم ترغب في التغيير)"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          )}
-
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="User">مستخدم عادي</option>
-            <option value="Admin">مدير</option>
-          </select>
-
-          <div className="flex justify-between pt-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-300"
-            >
-              رجوع
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
-            >
-              {isEdit ? "تحديث المستخدم" : "إضافة المستخدم"}
-            </button>
+      <div className="flex  justify-center w-full h-screen bg-gray-50 p-8 pb-0">
+        <div className="flex w-full m-4 mb-0 p-4 h-2/3 bg-inhirit rounded-lg shadow-lg overflow-hidden">
+          {/* Left Section */}
+          <div className="flex flex-col justify-center w-1/2 p-2 bg-inherit items-center rounded-md">
+            <h1 className="text-4xl font-bold mb-4 text-blue-800">
+              AI Exam Proctoring System
+            </h1>
           </div>
-        </form>
+          {/* Right Section - User Form */}
+          <div className="w-1/2 p-8 bg-white rounded-md lg:m-8 shadow-md shadow-sky-200 ">
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              {isEdit ? "تعديل المستخدم" : "إضافة مستخدم جديد"}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="text"
+                placeholder="اسم المستخدم"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              {!isEdit && (
+                <input
+                  type="password"
+                  placeholder="كلمة المرور"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              )}
+
+              {isEdit && (
+                <input
+                  type="password"
+                  placeholder="كلمة المرور الجديدة (اتركها فارغة إذا لم ترغب في التغيير)"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
+
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="User">مستخدم عادي</option>
+                <option value="Admin">مدير</option>
+              </select>
+
+              <div className="flex justify-between pt-4">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-300"
+                >
+                  رجوع
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
+                >
+                  {isEdit ? "تحديث المستخدم" : "إضافة المستخدم"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
