@@ -53,9 +53,15 @@ const AddStudent = ({ isLoggedIn, isRegisterIn }) => {
     }
   };
 
-  const handleCameraToggle = () => {
-    setUseCamera(!useCamera);
-    setImage(null); // إعادة تعيين الصورة عند تغيير الخيار
+  // ضع هذان بدلًا منها:
+  const handleUseUploadImage = () => {
+    setUseCamera(false);
+    setImage(null);
+  };
+
+  const handleUseCamera = () => {
+    setUseCamera(true);
+    setImage(null);
   };
 
   const handleCapturedImage = (capturedData) => {
@@ -85,89 +91,115 @@ const AddStudent = ({ isLoggedIn, isRegisterIn }) => {
         isLoggedIn={isLoggedIn}
         isRegisterIn={isRegisterIn}
       />
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Add New Student</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Registration Number"
-            value={number}
-            onChange={(e) => setRegistrationNumber(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            placeholder="Student Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            placeholder="College"
-            value={college}
-            onChange={(e) => setCollege(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            placeholder="Level"
-            value={level}
-            onChange={(e) => setLevel(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            placeholder="Specialization"
-            value={specialization}
-            onChange={(e) => setSpecialization(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <select
-            value={gender}
-            onChange={(e) => setGender(parseInt(e.target.value))}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={0}>Female</option>
-            <option value={1}>Male</option>
-          </select>
-
-          <div className="flex gap-4 mb-4">
-            <Button
-              type="button"
-              onClick={handleCameraToggle}
-              className={`w-1/2 ${!useCamera ? "bg-blue-500" : "bg-gray-200"}`}
-            >
-              Choose Image
-            </Button>
-            <Button
-              type="button"
-              onClick={handleCameraToggle}
-              className={`w-1/2 ${useCamera ? "bg-blue-500" : "bg-gray-200"}`}
-            >
-              Use Camera
-            </Button>
+      <div className="flex  justify-center w-full h-fit bg-gray-50 p-8 pb-0">
+        <div className="flex w-full m-4 mb-0 p-4  bg-inhirit rounded-lg shadow-lg overflow-hidden">
+          {/* Left Section */}
+          <div className="flex flex-col justify-center w-1/2 p-2 bg-inherit items-center rounded-md">
+            <h1 className="text-4xl font-bold mb-4 text-blue-800">
+              AI Exam Proctoring System
+            </h1>
           </div>
+          {/* Right Section - Add Student Form */}
+          <div className="w-1/2 p-8 bg-white rounded-md lg:m-8 shadow-md shadow-sky-200 ">
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Add New Student
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="text"
+                placeholder="Registration Number"
+                value={number}
+                onChange={(e) => setRegistrationNumber(e.target.value)}
+                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="Student Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="College"
+                value={college}
+                onChange={(e) => setCollege(e.target.value)}
+                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="Level"
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="Specialization"
+                value={specialization}
+                onChange={(e) => setSpecialization(e.target.value)}
+                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                value={gender}
+                onChange={(e) => setGender(parseInt(e.target.value))}
+                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={0}>Female</option>
+                <option value={1}>Male</option>
+              </select>
 
-          {!useCamera && (
-            <input
-              type="file"
-              onChange={(e) => setImage(e.target.files[0])}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          )}
+              <div className="flex gap-4 mb-4">
+                <Button
+                  type="button"
+                  onClick={handleUseUploadImage}
+                  className={`w-1/2 ${
+                    !useCamera ? "bg-blue-500" : "bg-gray-200"
+                  }`}
+                >
+                  Choose Image
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleUseCamera}
+                  className={`w-1/2 ${
+                    useCamera ? "bg-blue-500" : "bg-gray-200"
+                  }`}
+                >
+                  Use Camera
+                </Button>
+              </div>
 
-          {useCamera && (
-            <CameraCaptureOnly setCapturedImage={handleCapturedImage} />
-          )}
+              {!useCamera && (
+                <input
+                  type="file"
+                  onChange={(e) => setImage(e.target.files[0])}
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500  relative inline-flex  border-gray-300 text-sm font-medium  text-gray-700 bg-white hover:bg-gray-50 items-center"
+                />
+              )}
 
-          <Button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600"
-          >
-            Add Student
-          </Button>
-        </form>
+              {useCamera && (
+                <CameraCaptureOnly setCapturedImage={handleCapturedImage} />
+              )}
+
+              <div className="w-full space-x-3 flex justify-center mt-4">
+                <button
+                  type="submit"
+                  className="w-1/3 relative items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-blue-400 hover:bg-gray-300 "
+                >
+                  Add Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/students")}
+                  className="w-1/3 px-6 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
