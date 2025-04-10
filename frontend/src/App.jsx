@@ -45,6 +45,7 @@ import AlertForm from "./Alert/AlertForm";
 import AlertTypeList from "./Alert/AlertTypeList";
 import AlertTypeForm from "./Alert/AlertTypeForm";
 import AddDevice from "./DevicesAndUsers/AddDevice";
+import CheatingDashboard from "./dashboard/CheatingDashboard";
 
 import { useEffect, useState } from "react";
 import { validateDeviceToken, isUserLoggedIn } from "./utils/auth";
@@ -93,12 +94,26 @@ function App() {
             </Route>
             <Route path="/" element={<Layout />}>
               <Route
-                path="dashboard"
+                path="new-dashboard"
                 index
                 element={
                   <RequireDeviceRegister>
                     <RequireUserLogin>
                       <Dashboard
+                        isLoggedIn={isLoggedIn}
+                        isRegisterIn={isRegisterIn}
+                      />
+                    </RequireUserLogin>
+                  </RequireDeviceRegister>
+                }
+              />
+              <Route
+                path="dashboard"
+                index
+                element={
+                  <RequireDeviceRegister>
+                    <RequireUserLogin>
+                      <CheatingDashboard
                         isLoggedIn={isLoggedIn}
                         isRegisterIn={isRegisterIn}
                       />
