@@ -265,7 +265,7 @@ const DeviceList = ({ isLoggedIn, isRegisterIn }) => {
         <div>
           <SearchAddBar
             onSearch={handleSearch}
-            onAdd="Device"
+            onAdd="جهاز   "
             link="/devices/add"
           />
         </div>
