@@ -88,42 +88,53 @@ const YearForm = ({ isLoggedIn, isRegisterIn }) => {
         isLoggedIn={isLoggedIn}
         isRegisterIn={isRegisterIn}
       />
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isEdit ? "تعديل السنة الأكاديمية" : "إضافة سنة أكاديمية جديدة"}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              اسم السنة الأكاديمية
-            </label>
-            <input
-              type="text"
-              placeholder="أدخل اسم السنة الأكاديمية (مثال: 2023-2024)"
-              name="year_name"
-              value={formData.year_name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+      <div className="flex  justify-center w-full h-screen bg-gray-50 p-8 pb-0">
+        <div className="flex w-full m-4 mb-0 p-4 h-2/3 bg-inhirit rounded-lg shadow-lg overflow-hidden">
+          {/* Left Section */}
+          <div className="flex flex-col justify-center w-1/2 p-2 bg-inherit items-center rounded-md">
+            <h1 className="text-4xl mb-4 ">YEAR</h1>
+            <h1 className="text-4xl font-bold mb-4 text-blue-800">
+              AI Exam Proctoring System
+            </h1>
           </div>
+          <div className="w-1/2 p-8 bg-white rounded-md lg:m-8 shadow-md shadow-sky-200 ">
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              {isEdit ? "تعديل السنة الأكاديمية" : "إضافة سنة أكاديمية جديدة"}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  اسم السنة الأكاديمية
+                </label>
+                <input
+                  type="text"
+                  placeholder="أدخل اسم السنة الأكاديمية (مثال: 2023-2024)"
+                  name="year_name"
+                  value={formData.year_name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
 
-          <div className="flex justify-between pt-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-300"
-            >
-              رجوع
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
-            >
-              {isEdit ? "تحديث السنة" : "إضافة السنة"}
-            </button>
+              <div className="flex justify-between pt-4">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="w-1/2 mx-2 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-300"
+                >
+                  رجوع
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 mx-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
+                >
+                  {isEdit ? "تحديث السنة" : "إضافة السنة"}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

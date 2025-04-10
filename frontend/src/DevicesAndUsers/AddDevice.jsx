@@ -180,14 +180,14 @@ const AddDevice = ({ isLoggedIn, isRegisterIn }) => {
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600"
+                  className="w-1/2 mx-2 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600"
                   disabled={isSubmitting}
                 >
                   رجوع
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                  className="w-1/2 mx-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "جاري الإرسال..." : "تسجيل الجهاز"}

@@ -95,52 +95,62 @@ const AlertTypeForm = ({ isLoggedIn, isRegisterIn }) => {
         isLoggedIn={isLoggedIn}
         isRegisterIn={isRegisterIn}
       />
+      <div className="flex  justify-center w-full h-screen bg-gray-50 p-8 pb-0">
+        <div className="flex w-full m-4 mb-0 p-4 h-2/3 bg-inhirit rounded-lg shadow-lg overflow-hidden">
+          {/* Left Section */}
+          <div className="flex flex-col justify-center w-1/2 p-2 bg-inherit items-center rounded-md">
+            <h1 className="text-4xl mb-4 ">ALERT TYPE</h1>
+            <h1 className="text-4xl font-bold mb-4 text-blue-800">
+              AI Exam Proctoring System
+            </h1>
+          </div>
+          <div className="w-1/2 p-8 bg-white rounded-md lg:m-8 shadow-md shadow-sky-200 ">
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              {isEdit ? "تعديل نوع التنبيه" : "إضافة نوع تنبيه جديد"}
+            </h2>
+            {successMessage && (
+              <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+                {successMessage}
+              </div>
+            )}
+            {errorMessage && (
+              <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+                {errorMessage}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  اسم نوع التنبيه
+                </label>
+                <input
+                  type="text"
+                  name="type_name"
+                  placeholder="مثال: Cheating Attempt"
+                  value={formData.type_name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-md"
+                />
+              </div>
 
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isEdit ? "تعديل نوع التنبيه" : "إضافة نوع تنبيه جديد"}
-        </h2>
-        {successMessage && (
-          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-            {successMessage}
+              <div className="flex justify-between pt-4">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="w-1/2 mx-2 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600"
+                >
+                  رجوع
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 mx-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+                >
+                  {isEdit ? "تحديث" : "إنشاء"}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-        {errorMessage && (
-          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
-            {errorMessage}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              اسم نوع التنبيه
-            </label>
-            <input
-              type="text"
-              name="type_name"
-              placeholder="مثال: Cheating Attempt"
-              value={formData.type_name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md"
-            />
-          </div>
-
-          <div className="flex justify-between pt-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600"
-            >
-              رجوع
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
-            >
-              {isEdit ? "تحديث" : "إنشاء"}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -151,7 +151,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
       />
       <div className="p-4 max-w-4xl mx-auto">
         <h1 className="text-3xl mb-6 text-center">Edit Configuration</h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 ">
           {/* Face Mesh Options */}
           <div className="p-4 bg-white rounded shadow">
             <h2 className="text-2xl mb-4">Face Mesh Options</h2>

@@ -47,7 +47,7 @@ import AlertTypeForm from "./Alert/AlertTypeForm";
 import AddDevice from "./DevicesAndUsers/AddDevice";
 
 import { useEffect, useState } from "react";
-import { validateDeviceToken, isUserLoggedIn, printToken } from "./utils/auth";
+import { validateDeviceToken, isUserLoggedIn } from "./utils/auth";
 
 import {
   NotRequireDeviceRegister,
@@ -66,8 +66,8 @@ function App() {
       setIsLoggedIn(userLogged);
       setIsRegisterIn(deviceValid);
     }
-    const token = printToken();
-    console.log(token);
+    // const token = printToken();
+    // console.log(token);
 
     checkAuth();
     // sessionStorage.setItem("userToken", tokenFromAPI);
