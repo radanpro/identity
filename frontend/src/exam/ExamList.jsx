@@ -1,245 +1,296 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useOutletContext, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { NavLink, useLocation } from "react-router-dom";
 import Header from "../components/Header";
-import SearchAddBar from "../components/SearchAddBar";
-import { Button } from "../shared/Button";
-import { Pagination } from "../shared/Pagination";
-import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
-import useDelete from "../hooks/useDelete";
-import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import { Button } from "../shared/Button";
+import SearchAddBar from "../components/SearchAddBar";
+import { Pagination } from "../shared/Pagination";
+import PopupMessage from "../components/PopupMessage";
 
 const ExamList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
-  const [exams, setExams] = useState([]);
-  const [filteredExams, setFilteredExams] = useState([]);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const { examId } = useParams();
+  const navigate = useNavigate();
+  const [distributionReport, setDistributionReport] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  const location = useLocation();
-  const mapExams = (data) => {
-    return data.map((exam) => ({
-      id: exam[0],
-      student_number: exam[1],
-      subject: exam[2],
-      seat_number: exam[3],
-      exam_room: exam[4],
-      exam_center: exam[5],
-      exam_datetime: exam[6],
-      duration: exam[7],
-    }));
-  };
-
-  // جلب بيانات الامتحانات من الخادم
-  const fetchExams = useCallback(async () => {
-    try {
-      const response = await axios.get("http://127.0.0.1:3000/exams");
-      if (response.status === 200) {
-        const mappedExams = mapExams(response.data);
-        setExams(mappedExams);
-        setFilteredExams(mappedExams);
-      }
-    } catch (error) {
-      console.error("فشل في جلب بيانات الامتحانات", error);
-    }
-  }, [setExams, setFilteredExams]);
-
-  useEffect(() => {
-    if (location.state?.message) {
-      setSuccessMessage(location.state.message);
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-        window.history.replaceState({}, document.title);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state?.message]);
-
-  useEffect(() => {
-    fetchExams();
-  }, [fetchExams]);
-
-  // دالة البحث: يتم البحث عبر رقم الطالب أو المادة
-  const handleSearch = (query) => {
-    const filtered = exams.filter(
-      (exam) =>
-        exam.student_number.toLowerCase().includes(query.toLowerCase()) ||
-        exam.subject.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredExams(filtered);
-    setCurrentPage(1); // العودة إلى الصفحة الأولى بعد البحث
-  };
-
-  // استخدام hook الحذف
-  const {
-    deleteModal,
-    openDeleteModal,
-    closeDeleteModal,
-    handleDelete,
-    feedback,
-    setFeedback,
-  } = useDelete({
-    baseUrl: "http://127.0.0.1:3000/exam/id",
-    successDeleteMessageText: "تم حذف الاختبار بنجاح",
-    errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف الاختبار",
-    refreshData: fetchExams,
+  const [itemsPerPage] = useState(5);
+  const [popup, setPopup] = useState({
+    show: false,
+    message: "",
+    type: "success",
   });
 
+  const showPopup = (message, type = "success") => {
+    setPopup({
+      show: true,
+      message,
+      type,
+    });
+  };
+
+  const closePopup = () => {
+    setPopup({
+      show: false,
+      message: "",
+      type: "success",
+    });
+  };
+
   useEffect(() => {
-    if (feedback.success || feedback.error) {
-      const timer = setTimeout(() => {
-        setFeedback({ success: null, error: null });
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [feedback, setFeedback]);
-  // حساب العناصر المعروضة للصفحة الحالية
+    const fetchDistributionReport = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `http://127.0.0.1:3000/api/exam-distributions/report/${examId}`
+        );
+        setDistributionReport(response.data.groups || []);
+      } catch (err) {
+        console.error(err);
+        setError("فشل في تحميل التقرير");
+        showPopup("فشل في تحميل التقرير", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDistributionReport();
+  }, [examId]);
+
+  // Handle pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredExams.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = distributionReport.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
-  // تغيير الصفحة
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
+  const handleBack = () => {
+    navigate("/newexam/index");
+  };
+
   return (
     <div className="flex-col">
-      <Header
-        page="Exam"
-        onToggleSidebar={onToggleSidebar}
-        isLoggedIn={isLoggedIn}
-        isRegisterIn={isRegisterIn}
-      />
       <div>
-        <SearchAddBar
-          onSearch={handleSearch}
-          onAdd="امتحان "
-          link="/exam/add"
+        <Header
+          page="تقرير توزيع الطلاب"
+          onToggleSidebar={onToggleSidebar}
+          isLoggedIn={isLoggedIn}
+          isRegisterIn={isRegisterIn}
         />
-      </div>
-      {successMessage && (
-        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-          {successMessage}
-        </div>
-      )}
-      {feedback.success && (
-        <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-          {feedback.success}
-        </div>
-      )}
-      {feedback.error && (
-        <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
-          {feedback.error}
-        </div>
-      )}
-      <div className="mt-2 flex flex-col">
-        <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      رقم الامتحان
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      رقم الطالب
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      المادة
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      رقم المقعد
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      قاعة الامتحان
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      مركز الامتحان
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      تاريخ الامتحان
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      المدة
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      الإجراءات
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentItems.map((exam) => (
-                    <tr key={exam.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.student_number}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.subject}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.seat_number}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.exam_room}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.exam_center}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(exam.exam_datetime).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exam.duration}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <NavLink
-                          to={`/exam/edit-exam/${exam.student_number}`}
-                          className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
-                        >
-                          تعديل
-                        </NavLink>
-                        <Button
-                          onClick={() =>
-                            openDeleteModal(exam.id, exam.student_number)
-                          }
-                          className="ml-2 text-red-600 hover:text-red-900"
-                        >
-                          حذف
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        {/* Pagination */}
-        {Math.ceil(filteredExams.length / itemsPerPage) > 1 && (
-          <div className="mt-4 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={Math.ceil(filteredExams.length / itemsPerPage)}
-              onPageChange={handlePageChange}
-            />
-          </div>
+
+        {popup.show && (
+          <PopupMessage
+            message={popup.message}
+            type={popup.type}
+            onClose={closePopup}
+          />
         )}
+
+        <div className="px-4">
+          <SearchAddBar
+            onAdd="توزيع"
+            link={`/exam/add-exam-distributions/${examId}`}
+            showBackButton={true}
+            onBack={handleBack}
+          >
+            {/* يمكنك إضافة أي عناصر إضافية هنا */}
+            <Button
+              onClick={() => navigate("/newexam/index")}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              رجوع
+            </Button>
+          </SearchAddBar>
+        </div>
+
+        <div className="flex flex-col h-screen bg-gray-50 p-4">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center items-center h-64">
+              <p className="text-red-500 text-xl">{error}</p>
+            </div>
+          ) : currentItems.length === 0 ? (
+            <div className="flex justify-center items-center h-64">
+              <p className="text-gray-500 text-xl">لا توجد بيانات متاحة</p>
+            </div>
+          ) : (
+            currentItems.map((group, index) => (
+              <div
+                key={index}
+                className="mb-8 bg-white rounded-lg shadow-md overflow-hidden"
+              >
+                <div className="bg-blue-50 px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-xl font-bold text-blue-800">
+                    تفاصيل المجموعة {index + 1}
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-700 mb-2">
+                      المعلومات الأكاديمية
+                    </h3>
+                    <p>
+                      <span className="text-gray-500">العام الدراسي:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.academic_year}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">الكلية:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.college_name}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">القسم:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.major_name}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">المستوى:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.level_name}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">المقرر:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.course_name}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">الفصل:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.semester_name}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-700 mb-2">
+                      معلومات الامتحان
+                    </h3>
+                    <p>
+                      <span className="text-gray-500">تاريخ الامتحان:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.exam_date}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">الوقت:</span>{" "}
+                      <span className="font-medium">
+                        من {group.header.exam_start_time} إلى{" "}
+                        {group.header.exam_end_time}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">المركز:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.center_name}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-gray-500">رقم القاعة:</span>{" "}
+                      <span className="font-medium">
+                        {group.header.room_number}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-700 mb-2">
+                      إحصائيات
+                    </h3>
+                    <p>
+                      <span className="text-gray-500">عدد الطلاب:</span>{" "}
+                      <span className="font-medium">
+                        {group.students.length}
+                      </span>
+                    </p>
+                    <div className="mt-4">
+                      <Button
+                        onClick={() =>
+                          navigate(
+                            `/exam-distributions/edit/${examId}/${index}`
+                          )
+                        }
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        تعديل التوزيع
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-6 pb-6">
+                  <h3 className="text-lg font-semibold mb-4">قائمة الطلاب</h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            #
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            رقم الطالب
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            اسم الطالب
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            رقم الجهاز
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {group.students.map((student, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {idx + 1}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {student.student_id}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {student.student_name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
+                              {student.device_number}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+
+          {/* Pagination */}
+          {Math.ceil(distributionReport.length / itemsPerPage) > 1 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(distributionReport.length / itemsPerPage)}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
+        </div>
       </div>
-      <DeleteConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={closeDeleteModal}
-        onConfirm={handleDelete}
-        title="تأكيد حذف الاختبار"
-        message={`هل أنت متأكد من رغبتك في حذف الاختبار "${deleteModal.name}"؟`}
-        confirmText="حذف"
-        cancelText="إلغاء"
-      />
     </div>
   );
 };

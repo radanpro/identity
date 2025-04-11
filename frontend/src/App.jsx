@@ -316,9 +316,9 @@ function App() {
               />
             </Route>
             {/* Exam */}
-            <Route path="exam">
+            <Route path="/exam">
               <Route
-                path="index"
+                path="distributions/:examId"
                 element={
                   <ExamList
                     isLoggedIn={isLoggedIn}
@@ -327,7 +327,7 @@ function App() {
                 }
               />
               <Route
-                path="add"
+                path="add-exam-distributions/:examId"
                 element={
                   <ExamForm
                     isLoggedIn={isLoggedIn}

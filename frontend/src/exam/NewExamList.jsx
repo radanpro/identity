@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { NavLink, useLocation } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import SearchAddBar from "../components/SearchAddBar";
 import { Button } from "../shared/Button";
@@ -12,6 +12,7 @@ import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 const NewExamList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
+  const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [filteredExams, setFilteredExams] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -95,6 +96,11 @@ const NewExamList = ({ isLoggedIn, isRegisterIn }) => {
   // دالة لدمج التاريخ والوقت لعرضهما معًا
   const formatExamDateTime = (exam) => {
     return `${exam.exam_date} من ${exam.exam_start_time} إلى ${exam.exam_end_time}`;
+  };
+  // دالة التنقل لعرض تقرير توزيع الطلاب للامتحان
+  const handleViewDistribution = (examId) => {
+    // هنا نقوم بتوجيه المستخدم إلى صفحة exam/index مع تمرير الـ examId عبر الرابط
+    navigate(`/exam/distributions/${examId}`);
   };
 
   return (
@@ -191,6 +197,12 @@ const NewExamList = ({ isLoggedIn, isRegisterIn }) => {
                         {formatExamDateTime(exam)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <Button
+                          onClick={() => handleViewDistribution(exam.exam_id)}
+                          className="m-2 text-blue-600 hover:text-blue-900 px-4 p-2"
+                        >
+                          عرض التوزيعات
+                        </Button>
                         <NavLink
                           to={`/newexam/edit-exam/${exam.exam_id}`}
                           className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
