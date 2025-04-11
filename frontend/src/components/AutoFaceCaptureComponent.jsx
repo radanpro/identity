@@ -23,20 +23,22 @@ const AutoFaceCaptureComponent = ({ threshold, limit }) => {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
+
       if (response.status === 200 && response.data.results) {
         setResult(response.data.results);
       } else {
         setError(response.data.message || "لم يتم العثور على نتائج.");
       }
     } catch (err) {
-      setError("حدث خطأ أثناء معالجة الصورة.", err);
+      console.error(err);
+      setError("حدث خطأ أثناء معالجة الصورة.");
     }
   };
 
   const { videoRef, canvasRef, overlayRef, startCamera } = useAutoFaceCapture(
     handleCapture,
     5000
-  );
+  ); // 5 ثواني
 
   const retryDetection = () => {
     setCapturedImage(null);
@@ -53,7 +55,6 @@ const AutoFaceCaptureComponent = ({ threshold, limit }) => {
       {!capturedImage && (
         <div className="relative w-full max-w-lg mx-auto">
           <video ref={videoRef} autoPlay className="w-full border rounded" />
-          {/* لوحة التراكب لرسم معالم الوجه */}
           <canvas
             ref={overlayRef}
             className="absolute top-0 left-0 w-full h-full pointer-events-none"
@@ -71,8 +72,6 @@ const AutoFaceCaptureComponent = ({ threshold, limit }) => {
           />
         </div>
       )}
-      {result && <SearchResults imageResults={result} errorMessage={error} />}
-      {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
       {capturedImage && (
         <div className="mt-4 flex justify-center">
           <button
@@ -83,6 +82,8 @@ const AutoFaceCaptureComponent = ({ threshold, limit }) => {
           </button>
         </div>
       )}
+      {result && <SearchResults imageResults={result} errorMessage={error} />}
+      {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
     </div>
   );
 };

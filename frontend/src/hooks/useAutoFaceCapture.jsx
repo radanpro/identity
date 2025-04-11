@@ -3,14 +3,14 @@ import * as faceapi from "face-api.js";
 
 const useAutoFaceCapture = (onCapture, captureDelay = 5000) => {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null); // لالتقاط الصورة
-  const overlayRef = useRef(null); // لرسم معالم الوجه
+  const canvasRef = useRef(null);
+  const overlayRef = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
 
-  // تحميل نماذج face-api.js
   useEffect(() => {
     const loadModels = async () => {
-      const MODEL_URL = "/models"; // تأكد من أن النماذج موجودة في هذا المسار
+      const MODEL_URL = "/models";
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
       await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
     };
@@ -30,42 +30,60 @@ const useAutoFaceCapture = (onCapture, captureDelay = 5000) => {
   }, []);
 
   const stopCamera = useCallback(() => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+    const video = videoRef.current;
+    if (video && video.srcObject) {
+      const stream = video.srcObject;
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+      video.srcObject = null;
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
       setIsCameraActive(false);
+      console.log("🎥 الكاميرا توقفت بالكامل");
     }
   }, []);
 
   const captureImage = useCallback(() => {
+    if (isCapturing) return;
+    setIsCapturing(true);
+
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
+
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/jpeg", 1.0);
-      onCapture(imageData);
-      stopCamera();
-    }
-  }, [onCapture, stopCamera]);
 
-  // دالة لرسم معالم الوجه باستخدام face-api.js
+      stopCamera(); // إيقاف الكاميرا بعد الالتقاط
+
+      const imageData = canvas.toDataURL("image/jpeg", 1.0);
+      try {
+        onCapture(imageData);
+      } finally {
+        setIsCapturing(false);
+      }
+    } else {
+      setIsCapturing(false);
+    }
+  }, [onCapture, stopCamera, isCapturing]);
+
   const drawMarkers = useCallback(async () => {
-    if (videoRef.current && overlayRef.current) {
+    if (videoRef.current && overlayRef.current && !isCapturing) {
       const video = videoRef.current;
       const overlay = overlayRef.current;
       overlay.width = video.videoWidth;
       overlay.height = video.videoHeight;
       const ctx = overlay.getContext("2d");
       ctx.clearRect(0, 0, overlay.width, overlay.height);
-      // استخدام TinyFaceDetector للحصول على الكائنات التي تحتوي على معالم الوجه
       const detections = await faceapi
         .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks();
       detections.forEach((detection) => {
-        const landmarks = detection.landmarks.positions;
-        landmarks.forEach((point) => {
+        detection.landmarks.positions.forEach((point) => {
           ctx.fillStyle = "red";
           ctx.beginPath();
           ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
@@ -73,44 +91,38 @@ const useAutoFaceCapture = (onCapture, captureDelay = 5000) => {
         });
       });
     }
-  }, []);
+  }, [isCapturing]);
 
-  // بدء الكاميرا عند تحميل hook
   useEffect(() => {
     startCamera();
-  }, [startCamera]);
+    return () => {
+      stopCamera();
+    };
+  }, [startCamera, stopCamera]);
 
-  // تحديث معالم الوجه كل ثانية
   useEffect(() => {
     let markerInterval;
-    if (isCameraActive) {
+    if (isCameraActive && !isCapturing) {
       markerInterval = setInterval(() => {
         drawMarkers();
       }, 1000);
     }
     return () => {
-      if (markerInterval) clearInterval(markerInterval);
+      clearInterval(markerInterval);
     };
-  }, [isCameraActive, drawMarkers]);
+  }, [isCameraActive, drawMarkers, isCapturing]);
 
-  // التقاط الصورة بعد captureDelay (مثلاً 5 ثوانٍ)
   useEffect(() => {
     let timeoutId;
-    if (isCameraActive) {
+    if (isCameraActive && !isCapturing) {
       timeoutId = setTimeout(() => {
         captureImage();
       }, captureDelay);
     }
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
     };
-  }, [isCameraActive, captureDelay, captureImage]);
-
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, [stopCamera]);
+  }, [isCameraActive, captureDelay, captureImage, isCapturing]);
 
   return {
     videoRef,
