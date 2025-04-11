@@ -7,12 +7,19 @@ import AutoFaceCaptureComponent from "./AutoFaceCaptureComponent";
 import PropTypes from "prop-types";
 
 const CaptureInterface = ({ isLoggedIn, isRegisterIn }) => {
-  // captureMode يمكن أن تكون "upload", "manual", أو "auto"
   const [captureMode, setCaptureMode] = useState("upload");
+  const [componentKey, setComponentKey] = useState(0); // مفتاح لإعادة تحميل المكون
   const { onToggleSidebar } = useOutletContext();
+
   // إعدادات مشتركة
   const [threshold, setThreshold] = useState(0.5);
   const [limit, setLimit] = useState(5);
+
+  // تغيير الوضع وإعادة تعيين المفتاح لإعادة تحميل المكون
+  const handleModeChange = (mode) => {
+    setCaptureMode(mode);
+    setComponentKey((prevKey) => prevKey + 1);
+  };
 
   return (
     <div className="flex flex-col p-5 border border-gray-300 rounded-lg shadow-md">
@@ -29,19 +36,19 @@ const CaptureInterface = ({ isLoggedIn, isRegisterIn }) => {
         </h2>
         <div className="flex justify-center gap-2 mt-4">
           <button
-            onClick={() => setCaptureMode("upload")}
+            onClick={() => handleModeChange("upload")}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
           >
             تحميل صورة
           </button>
           <button
-            onClick={() => setCaptureMode("manual")}
+            onClick={() => handleModeChange("manual")}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
           >
             التقاط يدوي
           </button>
           <button
-            onClick={() => setCaptureMode("auto")}
+            onClick={() => handleModeChange("auto")}
             className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
           >
             التقاط تلقائي
@@ -88,19 +95,33 @@ const CaptureInterface = ({ isLoggedIn, isRegisterIn }) => {
       </div>
 
       {captureMode === "upload" && (
-        <UploadImageComponent threshold={threshold} limit={limit} />
+        <UploadImageComponent
+          key={componentKey}
+          threshold={threshold}
+          limit={limit}
+        />
       )}
       {captureMode === "manual" && (
-        <ManualCameraComponent threshold={threshold} limit={limit} />
+        <ManualCameraComponent
+          key={componentKey}
+          threshold={threshold}
+          limit={limit}
+        />
       )}
       {captureMode === "auto" && (
-        <AutoFaceCaptureComponent threshold={threshold} limit={limit} />
+        <AutoFaceCaptureComponent
+          key={componentKey}
+          threshold={threshold}
+          limit={limit}
+        />
       )}
     </div>
   );
 };
+
 CaptureInterface.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
   isRegisterIn: PropTypes.bool.isRequired,
 };
+
 export default CaptureInterface;
