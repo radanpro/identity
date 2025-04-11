@@ -12,9 +12,9 @@ const ManualCameraComponent = ({ threshold, limit }) => {
   const [error, setError] = useState(null);
   const [devices, setDevices] = useState([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null); // حالة جديدة للصورة الملتقطة
 
   useEffect(() => {
-    // جلب أجهزة الفيديو
     navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
       const videoDevices = deviceInfos.filter(
         (device) => device.kind === "videoinput"
@@ -27,6 +27,7 @@ const ManualCameraComponent = ({ threshold, limit }) => {
   }, []);
 
   const startCamera = async () => {
+    setCapturedImage(null); // إعادة تعيين الصورة عند بدء الكاميرا
     if (!cameraActive && selectedDeviceId) {
       setError(null);
       try {
@@ -64,6 +65,9 @@ const ManualCameraComponent = ({ threshold, limit }) => {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const imageData = canvas.toDataURL("image/jpeg", 1.0);
 
+    setCapturedImage(imageData); // حفظ الصورة الملتقطة
+    stopCamera(); // إيقاف الكاميرا
+
     try {
       const blob = await (await fetch(imageData)).blob();
       const formData = new FormData();
@@ -73,8 +77,7 @@ const ManualCameraComponent = ({ threshold, limit }) => {
 
       setError(null);
       setImageResult(null);
-      // إيقاف الكاميرا قبل الإرسال (حسب الرغبة)
-      stopCamera();
+
       const response = await axios.post(
         "http://127.0.0.1:3000/vectors/vectors/search",
         formData,
@@ -99,12 +102,13 @@ const ManualCameraComponent = ({ threshold, limit }) => {
   return (
     <div className="p-4 border rounded shadow-sm">
       <h3 className="text-xl font-bold mb-2 text-center">التقاط صورة يدويًا</h3>
-      {/* اختيار الجهاز إن وُجد */}
+
       <DeviceSelector
         devices={devices}
         selectedDeviceId={selectedDeviceId}
         setSelectedDeviceId={setSelectedDeviceId}
       />
+
       {!cameraActive && (
         <button
           onClick={startCamera}
@@ -113,6 +117,7 @@ const ManualCameraComponent = ({ threshold, limit }) => {
           بدء الكاميرا
         </button>
       )}
+
       {cameraActive && (
         <div className="mt-2 flex flex-col gap-2">
           <button
@@ -129,14 +134,24 @@ const ManualCameraComponent = ({ threshold, limit }) => {
           </button>
         </div>
       )}
+
       <div className="mt-4 flex flex-col items-center">
-        <video
-          ref={videoRef}
-          autoPlay
-          className="w-full max-w-lg border rounded"
-        ></video>
+        {capturedImage ? (
+          <img
+            src={capturedImage}
+            className="w-full max-w-lg border rounded"
+            alt="الصورة الملتقطة"
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            className="w-full max-w-lg border rounded"
+          ></video>
+        )}
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </div>
+
       {imageResult && (
         <SearchResults imageResults={imageResult} errorMessage={error} />
       )}
