@@ -42,7 +42,7 @@ The Identity System is a user-friendly React-based frontend designed to support 
 1. **Run the Application:**
 
    ```bash
-   npm start
+   npm run dev
    ```
 
    This will start the React development server on `http://localhost:3000`.
