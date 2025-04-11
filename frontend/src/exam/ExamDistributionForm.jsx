@@ -114,7 +114,7 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
 
       if (response.status === 201) {
         alert("تم توزيع الامتحان على الطالب بنجاح!");
-        navigate(`/exam-distributions/report/${formData.exam_id}`);
+        navigate(`/exam/distributions/${formData.exam_id}`);
       }
     } catch (error) {
       console.error("خطأ أثناء إرسال البيانات:", error);
