@@ -23,6 +23,9 @@ const ExamList = ({ isLoggedIn, isRegisterIn }) => {
     type: "success",
   });
 
+  // حالة لتخزين حالة التمدد/الطي لكل مجموعة
+  const [expandedGroups, setExpandedGroups] = useState({});
+
   const showPopup = (message, type = "success") => {
     setPopup({
       show: true,
@@ -75,6 +78,14 @@ const ExamList = ({ isLoggedIn, isRegisterIn }) => {
     navigate("/newexam/index");
   };
 
+  // دالة لتبديل حالة المجموعة (تمديد/طي)
+  const toggleGroup = (index) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
   return (
     <div className="flex-col">
       <div>
@@ -110,7 +121,7 @@ const ExamList = ({ isLoggedIn, isRegisterIn }) => {
           </SearchAddBar>
         </div>
 
-        <div className="flex flex-col h-screen bg-gray-50 p-4">
+        <div className="flex flex-col h-fit bg-gray-50 p-4 ">
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -129,152 +140,166 @@ const ExamList = ({ isLoggedIn, isRegisterIn }) => {
                 key={index}
                 className="mb-8 bg-white rounded-lg shadow-md overflow-hidden"
               >
-                <div className="bg-blue-50 px-6 py-4 border-b border-gray-200">
+                {/* رأس المجموعة مع زر التمدد/الطي */}
+                <div className="bg-blue-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold text-blue-800">
                     تفاصيل المجموعة {index + 1}
                   </h2>
+                  <Button
+                    onClick={() => toggleGroup(index)}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-2 py-1 rounded"
+                  >
+                    {expandedGroups[index] ? "طي" : "تمديد"}
+                  </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-700 mb-2">
-                      المعلومات الأكاديمية
-                    </h3>
-                    <p>
-                      <span className="text-gray-500">العام الدراسي:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.academic_year}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">الكلية:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.college_name}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">القسم:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.major_name}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">المستوى:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.level_name}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">المقرر:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.course_name}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">الفصل:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.semester_name}
-                      </span>
-                    </p>
-                  </div>
+                {/* تفاصيل المجموعة: يتم عرضها فقط إذا كانت المجموعة مفتوحة */}
+                {expandedGroups[index] && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="font-semibold text-gray-700 mb-2">
+                          المعلومات الأكاديمية
+                        </h3>
+                        <p>
+                          <span className="text-gray-500">العام الدراسي:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.academic_year}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">الكلية:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.college_name}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">القسم:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.major_name}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">المستوى:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.level_name}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">المقرر:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.course_name}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">الفصل:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.semester_name}
+                          </span>
+                        </p>
+                      </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-700 mb-2">
-                      معلومات الامتحان
-                    </h3>
-                    <p>
-                      <span className="text-gray-500">تاريخ الامتحان:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.exam_date}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">الوقت:</span>{" "}
-                      <span className="font-medium">
-                        من {group.header.exam_start_time} إلى{" "}
-                        {group.header.exam_end_time}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">المركز:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.center_name}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="text-gray-500">رقم القاعة:</span>{" "}
-                      <span className="font-medium">
-                        {group.header.room_number}
-                      </span>
-                    </p>
-                  </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="font-semibold text-gray-700 mb-2">
+                          معلومات الامتحان
+                        </h3>
+                        <p>
+                          <span className="text-gray-500">تاريخ الامتحان:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.exam_date}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">الوقت:</span>{" "}
+                          <span className="font-medium">
+                            من {group.header.exam_start_time} إلى{" "}
+                            {group.header.exam_end_time}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">المركز:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.center_name}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="text-gray-500">رقم القاعة:</span>{" "}
+                          <span className="font-medium">
+                            {group.header.room_number}
+                          </span>
+                        </p>
+                      </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-700 mb-2">
-                      إحصائيات
-                    </h3>
-                    <p>
-                      <span className="text-gray-500">عدد الطلاب:</span>{" "}
-                      <span className="font-medium">
-                        {group.students.length}
-                      </span>
-                    </p>
-                    <div className="mt-4">
-                      <Button
-                        onClick={() =>
-                          navigate(
-                            `/exam-distributions/edit/${examId}/${index}`
-                          )
-                        }
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        تعديل التوزيع
-                      </Button>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="font-semibold text-gray-700 mb-2">
+                          إحصائيات
+                        </h3>
+                        <p>
+                          <span className="text-gray-500">عدد الطلاب:</span>{" "}
+                          <span className="font-medium">
+                            {group.students.length}
+                          </span>
+                        </p>
+                        <div className="mt-4">
+                          <Button
+                            onClick={() =>
+                              navigate(
+                                `/exam-distributions/edit/${examId}/${index}`
+                              )
+                            }
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            تعديل التوزيع
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="px-6 pb-6">
-                  <h3 className="text-lg font-semibold mb-4">قائمة الطلاب</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            #
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            رقم الطالب
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            اسم الطالب
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            رقم الجهاز
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {group.students.map((student, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {idx + 1}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {student.student_id}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {student.student_name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
-                              {student.device_number}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                    <div className="px-6 pb-6">
+                      <h3 className="text-lg font-semibold mb-4">
+                        قائمة الطلاب
+                      </h3>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                #
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                رقم الطالب
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                اسم الطالب
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                رقم الجهاز
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {group.students.map((student, idx) => (
+                              <tr key={idx} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {idx + 1}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                  {student.student_id}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {student.student_name}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
+                                  {student.device_number}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ))
           )}
