@@ -1,23 +1,26 @@
 import PropTypes from "prop-types";
+
 const SearchResults = ({ imageResults, errorMessage }) => {
+  const results = imageResults?.results || [];
+
   return (
     <div className="mt-4 flex w-full justify-center">
-      {errorMessage && ( // عرض رسالة الخطأ إذا كانت موجودة
+      {errorMessage && (
         <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
           {errorMessage}
         </div>
       )}
 
-      {imageResults.length > 0 ? (
+      {results.length > 0 ? (
         <div className="w-full max-w-6xl">
           <h2 className="text-2xl font-bold mb-4 text-center">نتائج البحث</h2>
           <div className="flex gap-6">
-            {/* الجهة اليسرى: بيانات الطالب */}
+            {/* بيانات الطالب */}
             <div className="w-1/2 p-2 border border-gray-300 rounded-lg bg-gray-50 text-center">
               <h3 className="text-lg font-bold mb-4 p-4 border border-sky-200 rounded-sm shadow-md">
                 بيانات الطالب
               </h3>
-              {imageResults.map((student, index) => (
+              {results.map((student, index) => (
                 <div
                   key={index}
                   className="mb-4 p-2 border-2 border-sky-400 rounded-lg bg-gray-50 h-64 "
@@ -42,20 +45,20 @@ const SearchResults = ({ imageResults, errorMessage }) => {
                         </p>
                       </div>
                       <div className="flex justify-between w-full">
-                        <p className="text-left">{student.College}</p>
-                        <p className="text-right">
+                        <p>{student.College}</p>
+                        <p>
                           <strong>الكلية</strong>
                         </p>
                       </div>
                       <div className="flex justify-between w-full">
-                        <p className="text-left">{student.Specialization}</p>
-                        <p className="text-right">
+                        <p>{student.Specialization}</p>
+                        <p>
                           <strong>التخصص</strong>
                         </p>
                       </div>
                       <div className="flex justify-between w-full">
-                        <p className="text-left">{student.Level}</p>
-                        <p className="text-right">
+                        <p>{student.Level}</p>
+                        <p>
                           <strong>المستوى</strong>
                         </p>
                       </div>
@@ -65,59 +68,79 @@ const SearchResults = ({ imageResults, errorMessage }) => {
                           <strong>درجة التشابه</strong>
                         </p>
                       </div>
+                      <div className="flex justify-between w-full">
+                        <p>{new Date(student.created_at).toLocaleString()}</p>
+                        <p>
+                          <strong> Date</strong>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* الجهة اليمنى: بيانات الاختبار */}
-            <div
-              className={`w-1/2 p-4 border-4 rounded-lg bg-gray-50 text-center`}
-            >
+            {/* بيانات الاختبار */}
+            <div className="w-1/2 p-4 border-4 rounded-lg bg-gray-50 text-center">
               <h3 className="text-lg font-bold mb-4 p-4 border border-sky-200 rounded-sm shadow-md">
                 بيانات الاختبار
               </h3>
-              {imageResults.map((student, index) => (
+              {results.map((student, index) => (
                 <div
                   key={index}
-                  className={`mb-4 p-2 h-64 border-4 rounded-lg bg-gray-50 text-center  ${
-                    imageResults[0] ? "border-green-500" : "border-red-500"
+                  className={`mb-4 p-2 h-64 border-4 rounded-lg bg-gray-50 text-center ${
+                    student.isExamTimeValid
+                      ? "border-green-500"
+                      : "border-red-500"
                   }`}
                 >
                   <p>
-                    <strong>المادة:</strong> رياضيات
+                    {student.exam_data.exam_date}{" "}
+                    <strong>: تاريخ الاختبار</strong>
                   </p>
                   <p>
-                    <strong>التاريخ:</strong> 2025-01-25
+                    <strong>الفترة :</strong>{" "}
+                    {student.exam_data.exam_start_time} -{" "}
+                    {student.exam_data.exam_end_time}
                   </p>
                   <p>
-                    <strong>الوقت:</strong> 10:00 صباحًا
+                    {student.College} <strong> : الكلية</strong>
                   </p>
                   <p>
-                    <strong>القاعة:</strong> 101
+                    {student.Level} <strong>: المستوى</strong>
                   </p>
                   <p>
-                    {/* <strong>المستوى:</strong> 4 */}
-                    <strong>المستوى:</strong> {student.Level}
+                    {student.Specialization} <strong>: التخصص</strong>
                   </p>
                   <p>
-                    <strong>التخصص:</strong> {student.Specialization}
+                    <strong>الحالة:</strong>{" "}
+                    {student.isExamTimeValid ? "ضمن الوقت" : "خارج الوقت"}
                   </p>
                   <p>
-                    {/* <strong>الحالة:</strong> {student.status} */}
-                    <strong>الحالة:</strong> active
+                    <strong>رقم الجهاز:</strong>{" "}
+                    {student.exam_distribution.device_id}
                   </p>
-                  <p>
-                    <strong>رقم الجهاز:</strong> 5
-                  </p>
+                  <div>
+                    <p>
+                      <strong> : current_time </strong>{" "}
+                      {student.time_window.current_time}
+                    </p>
+                    <p>
+                      <strong>valid_end :</strong>{" "}
+                      {student.time_window.valid_end}
+                    </p>
+                    <p>
+                      <strong> valid_start :</strong>{" "}
+                      {student.time_window.valid_start}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
       ) : (
-        !errorMessage && ( // عرض رسالة إذا لم تكن هناك نتائج
+        !errorMessage && (
           <div className="bg-yellow-100 text-yellow-700 p-4 mb-4 rounded-md">
             لا توجد نتائج للعرض.
           </div>
@@ -128,8 +151,10 @@ const SearchResults = ({ imageResults, errorMessage }) => {
 };
 
 SearchResults.propTypes = {
-  imageResults: PropTypes.array.isRequired,
-  errorMessage: PropTypes.string, // إضافة PropTypes لـ errorMessage
+  imageResults: PropTypes.shape({
+    results: PropTypes.arrayOf(PropTypes.object),
+  }).isRequired,
+  errorMessage: PropTypes.string,
 };
 
 export default SearchResults;

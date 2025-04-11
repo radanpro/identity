@@ -25,6 +25,7 @@ const AutoFaceCaptureComponent = ({ threshold, limit }) => {
       );
 
       if (response.status === 200 && response.data.results) {
+        // console.log(response.data.results);
         setResult(response.data.results);
       } else {
         setError(response.data.message || "لم يتم العثور على نتائج.");
@@ -82,7 +83,12 @@ const AutoFaceCaptureComponent = ({ threshold, limit }) => {
           </button>
         </div>
       )}
-      {result && <SearchResults imageResults={result} errorMessage={error} />}
+      {result && (
+        <SearchResults
+          imageResults={{ results: result }}
+          errorMessage={error}
+        />
+      )}
       {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
     </div>
   );

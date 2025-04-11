@@ -58,7 +58,10 @@ const UploadImageComponent = ({ threshold, limit }) => {
       </button>
       {loading && <p className="mt-2 text-center">جاري الرفع...</p>}
       {uploadResult && (
-        <SearchResults imageResults={uploadResult} errorMessage={error} />
+        <SearchResults
+          imageResults={{ results: uploadResult }}
+          errorMessage={error}
+        />
       )}
       {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
     </div>

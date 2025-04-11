@@ -153,7 +153,10 @@ const ManualCameraComponent = ({ threshold, limit }) => {
       </div>
 
       {imageResult && (
-        <SearchResults imageResults={imageResult} errorMessage={error} />
+        <SearchResults
+          imageResults={{ results: imageResult }}
+          errorMessage={error}
+        />
       )}
       {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
     </div>
