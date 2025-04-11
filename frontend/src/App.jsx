@@ -22,7 +22,6 @@ import DeviceUpdate from "./DevicesAndUsers/DeviceUpdate";
 import DeviceList from "./DevicesAndUsers/DeviceList";
 import CaptureInterface from "./components/CaptureInterface";
 import ExamList from "./exam/ExamList";
-import ExamForm from "./exam/AddExam";
 import CollegeForm from "./Colleges/AddCollege";
 import CollegeList from "./Colleges/CollegesList";
 import CenterForm from "./Centers/AddCenter";
@@ -46,7 +45,7 @@ import AlertTypeList from "./Alert/AlertTypeList";
 import AlertTypeForm from "./Alert/AlertTypeForm";
 import AddDevice from "./DevicesAndUsers/AddDevice";
 import CheatingDashboard from "./dashboard/CheatingDashboard";
-
+import ExamDistributionForm from "./exam/ExamDistributionForm";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { validateDeviceToken, isUserLoggedIn } from "./utils/auth";
@@ -329,7 +328,7 @@ function App() {
               <Route
                 path="add-exam-distributions/:examId"
                 element={
-                  <ExamForm
+                  <ExamDistributionForm
                     isLoggedIn={isLoggedIn}
                     isRegisterIn={isRegisterIn}
                   />
@@ -338,7 +337,7 @@ function App() {
               <Route
                 path="edit-exam/:examId"
                 element={
-                  <ExamForm
+                  <ExamDistributionForm
                     isLoggedIn={isLoggedIn}
                     isRegisterIn={isRegisterIn}
                   />
