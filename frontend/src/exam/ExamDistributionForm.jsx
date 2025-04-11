@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import Header from "../components/Header";
+import PopupMessage from "../components/PopupMessage"; // استيراد مكوّن PopupMessage
 import PropTypes from "prop-types";
 
 const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
@@ -20,6 +21,22 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // حالة لإظهار رسالة الـ Popup
+  const [popup, setPopup] = useState(null);
+
+  // دالة مساعدة لإظهار رسالة الـ Popup
+  const showPopup = (message, type, callback = null) => {
+    setPopup({ message, type, callback, visible: true });
+  };
+
+  // دالة الإغلاق الخاصة بالـ Popup
+  const handlePopupClose = () => {
+    if (popup && popup.callback) {
+      popup.callback();
+    }
+    setPopup(null);
+  };
 
   // جلب بيانات الطلاب
   useEffect(() => {
@@ -83,11 +100,11 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
     const selectedStudent = students.find((s) => s.id === selectedId);
 
     if (selectedStudent) {
-      setFormData({
-        ...formData,
+      setFormData((prev) => ({
+        ...prev,
         student_id: selectedStudent.id,
         student_name: selectedStudent.name,
-      });
+      }));
     }
   };
 
@@ -101,7 +118,7 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
       !formData.student_id ||
       !formData.student_name
     ) {
-      alert("من فضلك قم بملء جميع الحقول المطلوبة");
+      showPopup("من فضلك قم بملء جميع الحقول المطلوبة", "error");
       return;
     }
 
@@ -117,30 +134,35 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
       );
 
       if (response.status === 201) {
-        alert("تم توزيع الامتحان على الطالب بنجاح!");
-        navigate(`/exam/distributions/${formData.exam_id}`);
+        // عرض رسالة نجاح ثم التنقل بعد إغلاقها
+        showPopup("تم توزيع الامتحان على الطالب بنجاح!", "success", () => {
+          navigate(`/exam/distributions/${formData.exam_id}`);
+        });
       }
     } catch (error) {
       console.error("خطأ أثناء إرسال البيانات:", error);
       if (error.response) {
         switch (error.response.status) {
           case 400:
-            alert("بيانات غير صالحة: " + error.response.data.detail);
+            showPopup(
+              "بيانات غير صالحة: " + error.response.data.detail,
+              "error"
+            );
             break;
           case 404:
-            alert("الجهاز أو الطالب غير موجود");
+            showPopup("الجهاز أو الطالب غير موجود", "error");
             break;
           case 409:
-            alert("هذا الامتحان مسجل بالفعل لهذا الطالب");
+            showPopup("هذا الامتحان مسجل بالفعل لهذا الطالب", "error");
             break;
           case 500:
-            alert("خطأ في الخادم الداخلي");
+            showPopup("خطأ في الخادم الداخلي", "error");
             break;
           default:
-            alert("حدث خطأ غير متوقع");
+            showPopup("حدث خطأ غير متوقع", "error");
         }
       } else {
-        alert("فشل في الاتصال بالخادم");
+        showPopup("فشل في الاتصال بالخادم", "error");
       }
     }
   };
@@ -254,6 +276,15 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
           </div>
         </form>
       </div>
+
+      {/* عرض الـ PopupMessage عند الحاجة */}
+      {popup && popup.visible && (
+        <PopupMessage
+          message={popup.message}
+          type={popup.type}
+          onClose={handlePopupClose}
+        />
+      )}
     </div>
   );
 };
