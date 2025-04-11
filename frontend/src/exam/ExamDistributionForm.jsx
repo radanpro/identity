@@ -17,6 +17,7 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
   });
 
   const [students, setStudents] = useState([]);
+  const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,30 +44,33 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
     fetchStudents();
   }, []);
 
-  // جلب بيانات الجهاز عند تحميل المكون
+  // جلب بيانات الأجهزة
   useEffect(() => {
-    const fetchDeviceData = async () => {
+    const fetchDevices = async () => {
       try {
-        // استرجاع البيانات من localStorage
-        const storedDeviceData = localStorage.getItem("deviceData");
-        const parsedDeviceData = JSON.parse(storedDeviceData);
-        // console.log("Stored Device Data:", parsedDeviceData.id);
-
-        // إذا كنت تريد استخدامها في state
-        if (parsedDeviceData && parsedDeviceData.id) {
-          setFormData((prev) => ({
-            ...prev,
-            device_id: parsedDeviceData.id,
-            room_number: parsedDeviceData.room_number, // مثال: يمكنك إضافة المزيد من الحقول
-          }));
+        const response = await axios.get(
+          "http://127.0.0.1:3000/api/devices/index"
+        );
+        if (response.status === 200) {
+          setDevices(response.data.devices);
         }
-      } catch (error) {
-        console.error("Error validating token:", error);
+      } catch (err) {
+        console.error("فشل في جلب بيانات الأجهزة", err);
+        setError("فشل في جلب بيانات الأجهزة");
       }
     };
 
-    fetchDeviceData();
+    fetchDevices();
   }, []);
+
+  // تحديث القائمة المنسدلة للأجهزة
+  const handleDeviceChange = (e) => {
+    const selectedDeviceId = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      device_id: selectedDeviceId,
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -172,17 +176,22 @@ const ExamDistributionForm = ({ isLoggedIn, isRegisterIn }) => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* رقم الجهاز (يتم تعبئته تلقائياً) */}
           <div>
             <label className="block text-gray-700 mb-2">رقم الجهاز</label>
-            <input
-              type="text"
+            <select
               name="device_id"
               value={formData.device_id}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md bg-gray-100"
-              readOnly
-            />
+              onChange={handleDeviceChange}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">اختر الجهاز...</option>
+              {devices.map((device) => (
+                <option key={device.id} value={device.id}>
+                  {device.device_number} - {device.room_number}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* رقم الامتحان (يتم تعبئته تلقائياً إذا كان موجوداً في الرابط) */}
