@@ -56,6 +56,7 @@ import {
 } from "./components/RequireDeviceRegister";
 import RequireUserLogin from "./components/RequireUserLogin";
 import UserLogout from "./DevicesAndUsers/UserLogout";
+import IdentityVerificationComponent from "./monitoring/IdentityVerificationComponent";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -173,6 +174,15 @@ function App() {
               path="search-image"
               element={
                 <SearchImage
+                  isLoggedIn={isLoggedIn}
+                  isRegisterIn={isRegisterIn}
+                />
+              }
+            />
+            <Route
+              path="identity-verification"
+              element={
+                <IdentityVerificationComponent
                   isLoggedIn={isLoggedIn}
                   isRegisterIn={isRegisterIn}
                 />

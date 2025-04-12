@@ -57,6 +57,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     isRegisterIn
       ? { label: "Search Real Time", to: "/", icon: <FaCamera /> }
       : null,
+    isRegisterIn
+      ? {
+          label: "Identity Verification",
+          to: "/identity-verification",
+          icon: <FaCamera />,
+        }
+      : null,
   ].filter(Boolean);
 
   const universityGroup = {
