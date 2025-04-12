@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { getDeviceData } from "../utils/auth"; // تأكد من مسار الاستيراد الصحيح
+import VerificationResults from "./VerificationResults";
 
 const IdentityVerificationComponent = () => {
   const [studentId, setStudentId] = useState("");
@@ -8,6 +9,7 @@ const IdentityVerificationComponent = () => {
   const [verificationResult, setVerificationResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [deviceId, setDeviceId] = useState("");
 
   // دالة لتغيير الملف عند الاختيار
   const handleFileChange = (event) => {
@@ -22,14 +24,12 @@ const IdentityVerificationComponent = () => {
 
     // استرجاع بيانات الجهاز المُحفَظة
     const deviceData = getDeviceData();
-    // console.log("Device Data:", deviceData);
-
     if (!deviceData || !deviceData.device_number) {
       setError("بيانات الجهاز غير متوفرة. يرجى التأكد من تسجيل الجهاز.");
       return;
     }
-    const deviceId = deviceData.device_number;
-    console.log("Device ID:", deviceId); // طباعة الـ device_id في وحدة التحكم
+    const currentDeviceId = deviceData.device_number;
+    setDeviceId(currentDeviceId);
 
     // التحقق من صحة المدخلات
     if (!studentId || !selectedFile) {
@@ -42,7 +42,7 @@ const IdentityVerificationComponent = () => {
       const formData = new FormData();
       formData.append("image", selectedFile);
       formData.append("student_id", studentId);
-      formData.append("device_id", deviceId);
+      formData.append("device_id", currentDeviceId);
 
       const response = await axios.post(
         "http://127.0.0.1:3000/identity/verify",
@@ -105,10 +105,12 @@ const IdentityVerificationComponent = () => {
       </form>
 
       {verificationResult && (
-        <div className="mt-4 p-4 border rounded bg-green-100">
-          <h3 className="font-bold">نتائج التحقق:</h3>
-          <pre>{JSON.stringify(verificationResult, null, 2)}</pre>
-        </div>
+        <VerificationResults
+          result={verificationResult}
+          studentId={studentId}
+          selectedFile={selectedFile}
+          deviceId={deviceId}
+        />
       )}
 
       {error && (
