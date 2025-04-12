@@ -1,10 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { getDeviceData } from "../utils/auth"; // تأكد من مسار الاستيراد الصحيح
 import VerificationResults from "./VerificationResults";
+import Header from "../components/Header";
+import PropTypes from "prop-types";
 
-const IdentityVerificationComponent = () => {
+const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
   const [studentId, setStudentId] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
@@ -14,6 +16,7 @@ const IdentityVerificationComponent = () => {
   const [id, setId] = useState("");
 
   const navigate = useNavigate();
+  const { onToggleSidebar } = useOutletContext();
 
   // دالة لتغيير الملف عند الاختيار
   const handleFileChange = (event) => {
@@ -32,7 +35,7 @@ const IdentityVerificationComponent = () => {
       setError("بيانات الجهاز غير متوفرة. يرجى التأكد من تسجيل الجهاز.");
       return;
     }
-    // console.log(deviceData.id);
+
     setId(deviceData.id);
     const currentDeviceId = deviceData.device_number;
     setDeviceId(currentDeviceId);
@@ -73,14 +76,12 @@ const IdentityVerificationComponent = () => {
 
   // دالة دخول الاختبار
   const handleEnterExam = async () => {
-    // إذا كانت نتيجة فحص الجهاز غير صحيحة يتم إرسال تنبيه
     if (
       verificationResult &&
       verificationResult.device_check &&
       !verificationResult.device_check.is_correct
     ) {
       try {
-        // بناء الجسم المرسل للتنبيه باستخدام البيانات من النتائج
         const alertPayload = {
           alert_type: 8,
           device_id: id,
@@ -88,86 +89,143 @@ const IdentityVerificationComponent = () => {
           message: "The student entered from an unauthorized device.",
           student_id: verificationResult.student_data.student_id,
         };
-        console.log("Alert Payload:", alertPayload);
 
         await axios.post("http://127.0.0.1:3000/api/alerts/", alertPayload, {
           headers: { "Content-Type": "application/json" },
         });
       } catch (alertError) {
         console.error("Error sending alert:", alertError);
-        // يمكن التعامل مع الخطأ هنا حسب الحاجة مثلاً عرض رسالة تنبيه للمستخدم
       }
     }
-    // بعد إجراء التنبيه أو إذا كانت النتيجة صحيحة يتم التوجيه للصفحة التالية
     navigate("/monitoring-model");
   };
 
   return (
-    <div className="p-4 border rounded shadow-sm">
-      <h2 className="text-2xl font-bold mb-4 text-center">التحقق من الهوية</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="studentId" className="block text-lg font-medium">
-            رقم الطالب
-          </label>
-          <input
-            type="text"
-            id="studentId"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            className="mt-1 p-2 border rounded w-full"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="image" className="block text-lg font-medium">
-            تحميل صورة الطالب (الوجه)
-          </label>
-          <input
-            type="file"
-            id="image"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="mt-1 p-2 border rounded w-full"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          disabled={loading}
-        >
-          {loading ? "جارٍ التحقق..." : "التحقق من الهوية"}
-        </button>
-      </form>
+    <div className="flex flex-col p-5 border border-gray-300 rounded-lg shadow-md">
+      <Header
+        page="Identity Verification"
+        onToggleSidebar={onToggleSidebar}
+        isLoggedIn={isLoggedIn}
+        isRegisterIn={isRegisterIn}
+      />
 
-      {verificationResult && (
-        <>
-          <VerificationResults
-            result={verificationResult}
-            studentId={studentId}
-            selectedFile={selectedFile}
-            deviceId={deviceId}
-          />
-          <div className="mt-4 flex justify-center">
+      <div className="mt-6">
+        <h2 className="text-2xl font-bold text-center mb-6">
+          التحقق من الهوية
+        </h2>
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 rounded-lg shadow-sm"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mb-4">
+              <label
+                htmlFor="studentId"
+                className="block text-lg font-medium text-gray-700 mb-2"
+              >
+                رقم الطالب
+              </label>
+              <input
+                type="text"
+                id="studentId"
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+                className="mt-1 p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+                placeholder="أدخل رقم الطالب"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="image"
+                className="block text-lg font-medium text-gray-700 mb-2"
+              >
+                تحميل صورة الطالب (الوجه)
+              </label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="mt-1 p-2 border border-gray-300 rounded-lg w-full file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-center">
             <button
-              onClick={handleEnterExam}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+              type="submit"
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
             >
-              دخول الاختبار
+              {loading ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  جارٍ التحقق...
+                </span>
+              ) : (
+                "التحقق من الهوية"
+              )}
             </button>
           </div>
-        </>
-      )}
+        </form>
 
-      {error && (
-        <div className="mt-4 p-4 border rounded bg-red-100">
-          <h3 className="font-bold">خطأ:</h3>
-          <p>{error}</p>
-        </div>
-      )}
+        {verificationResult && (
+          <div className="mt-8">
+            <VerificationResults
+              result={verificationResult}
+              studentId={studentId}
+              selectedFile={selectedFile}
+              deviceId={deviceId}
+            />
+
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleEnterExam}
+                className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300 shadow-md"
+              >
+                دخول الاختبار
+              </button>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-6 p-4 border border-red-300 rounded-lg bg-red-50">
+            <h3 className="font-bold text-red-700">خطأ:</h3>
+            <p className="text-red-600 mt-1">{error}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
+};
+
+IdentityVerificationComponent.propTypes = {
+  isLoggedIn: PropTypes.bool.isRequired,
+  isRegisterIn: PropTypes.bool.isRequired,
 };
 
 export default IdentityVerificationComponent;
