@@ -97,6 +97,8 @@ const AlertList = ({ isLoggedIn, isRegisterIn }) => {
         }
       );
       if (response.status === 200) {
+        console.log("تفاصيل التنبيه:", response.data);
+
         setSelectedAlertDetails(response.data);
         setShowModal(true);
       }
