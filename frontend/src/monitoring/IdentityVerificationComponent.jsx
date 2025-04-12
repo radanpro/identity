@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { getDeviceData } from "../utils/auth"; // تأكد من مسار الاستيراد الصحيح
 import VerificationResults from "./VerificationResults";
 
@@ -10,6 +11,9 @@ const IdentityVerificationComponent = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [deviceId, setDeviceId] = useState("");
+  const [id, setId] = useState("");
+
+  const navigate = useNavigate();
 
   // دالة لتغيير الملف عند الاختيار
   const handleFileChange = (event) => {
@@ -28,6 +32,8 @@ const IdentityVerificationComponent = () => {
       setError("بيانات الجهاز غير متوفرة. يرجى التأكد من تسجيل الجهاز.");
       return;
     }
+    // console.log(deviceData.id);
+    setId(deviceData.id);
     const currentDeviceId = deviceData.device_number;
     setDeviceId(currentDeviceId);
 
@@ -63,6 +69,37 @@ const IdentityVerificationComponent = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // دالة دخول الاختبار
+  const handleEnterExam = async () => {
+    // إذا كانت نتيجة فحص الجهاز غير صحيحة يتم إرسال تنبيه
+    if (
+      verificationResult &&
+      verificationResult.device_check &&
+      !verificationResult.device_check.is_correct
+    ) {
+      try {
+        // بناء الجسم المرسل للتنبيه باستخدام البيانات من النتائج
+        const alertPayload = {
+          alert_type: 8,
+          device_id: id,
+          exam_id: verificationResult.student_data.exam_id,
+          message: "The student entered from an unauthorized device.",
+          student_id: verificationResult.student_data.student_id,
+        };
+        console.log("Alert Payload:", alertPayload);
+
+        await axios.post("http://127.0.0.1:3000/api/alerts/", alertPayload, {
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (alertError) {
+        console.error("Error sending alert:", alertError);
+        // يمكن التعامل مع الخطأ هنا حسب الحاجة مثلاً عرض رسالة تنبيه للمستخدم
+      }
+    }
+    // بعد إجراء التنبيه أو إذا كانت النتيجة صحيحة يتم التوجيه للصفحة التالية
+    navigate("/monitoring-model");
   };
 
   return (
@@ -105,12 +142,22 @@ const IdentityVerificationComponent = () => {
       </form>
 
       {verificationResult && (
-        <VerificationResults
-          result={verificationResult}
-          studentId={studentId}
-          selectedFile={selectedFile}
-          deviceId={deviceId}
-        />
+        <>
+          <VerificationResults
+            result={verificationResult}
+            studentId={studentId}
+            selectedFile={selectedFile}
+            deviceId={deviceId}
+          />
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={handleEnterExam}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+            >
+              دخول الاختبار
+            </button>
+          </div>
+        </>
       )}
 
       {error && (
