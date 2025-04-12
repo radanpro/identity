@@ -1,10 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { getDeviceData } from "../utils/auth"; // تأكد من مسار الاستيراد الصحيح
+import { getDeviceData } from "../utils/auth";
 import VerificationResults from "./VerificationResults";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
+
+// Helper function to store data with expiration
+const setWithExpiry = (key, value, ttl) => {
+  const now = new Date();
+  const item = {
+    value: value,
+    expiry: now.getTime() + ttl,
+  };
+  console.log(`تخزين ${key}:`, item);
+  localStorage.setItem(key, JSON.stringify(item));
+};
+
+// Helper function to retrieve data with expiration check
+const getWithExpiry = (key) => {
+  const itemStr = localStorage.getItem(key);
+  if (!itemStr) return null;
+
+  const item = JSON.parse(itemStr);
+  const now = new Date();
+
+  if (now.getTime() > item.expiry) {
+    localStorage.removeItem(key);
+    return null;
+  }
+  console.log(`استرجاع ${key}:`, item);
+  return item.value;
+};
 
 const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
   const [studentId, setStudentId] = useState("");
@@ -18,18 +45,25 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
   const navigate = useNavigate();
   const { onToggleSidebar } = useOutletContext();
 
-  // دالة لتغيير الملف عند الاختيار
+  // Check for cached data on component mount
+  useEffect(() => {
+    const cachedData = getWithExpiry("verificationData");
+    if (cachedData) {
+      //   setVerificationResult(cachedData.result);
+      setStudentId(cachedData.studentId);
+      setDeviceId(cachedData.deviceId);
+    }
+  }, []);
+
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
 
-  // دالة إرسال البيانات والتحقق
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
     setVerificationResult(null);
 
-    // استرجاع بيانات الجهاز المُحفَظة
     const deviceData = getDeviceData();
     if (!deviceData || !deviceData.device_number) {
       setError("بيانات الجهاز غير متوفرة. يرجى التأكد من تسجيل الجهاز.");
@@ -40,7 +74,6 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
     const currentDeviceId = deviceData.device_number;
     setDeviceId(currentDeviceId);
 
-    // التحقق من صحة المدخلات
     if (!studentId || !selectedFile) {
       setError("يرجى إدخال رقم الطالب وتحميل صورة.");
       return;
@@ -60,27 +93,32 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
       );
 
       if (response.status === 200) {
-        setVerificationResult(response.data);
+        const result = response.data;
+        setVerificationResult(result);
+
+        // Store the data with 2-hour expiration
+        setWithExpiry(
+          "verificationData",
+          {
+            result,
+            studentId,
+            deviceId: currentDeviceId,
+          },
+          2 * 60 * 60 * 1000
+        ); // 2 hours in milliseconds
       }
     } catch (err) {
       console.error(err);
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("حدث خطأ أثناء التحقق من الهوية.");
-      }
+      setError(
+        err.response?.data?.message || "حدث خطأ أثناء التحقق من الهوية."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // دالة دخول الاختبار
   const handleEnterExam = async () => {
-    if (
-      verificationResult &&
-      verificationResult.device_check &&
-      !verificationResult.device_check.is_correct
-    ) {
+    if (verificationResult?.device_check?.is_correct === false) {
       try {
         const alertPayload = {
           alert_type: 8,
