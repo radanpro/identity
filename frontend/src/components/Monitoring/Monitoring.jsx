@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
 import Header from "../components/Header";
-import { AdvancedMonitor } from "../components/Monitoring/AdvancedMonitor";
-import { config } from "../config/config";
+import { AdvancedMonitor } from "./AdvancedMonitor";
+import { config } from "../../config/config";
 
 const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
