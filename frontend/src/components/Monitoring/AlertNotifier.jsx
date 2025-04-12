@@ -1,21 +1,35 @@
-// src/components/AlertNotifier.js
-
-/**
- * تُرسل هذه الدالة تنبيهًا إلى الباك إند.
- * يمكنك تعديل القيم الافتراضية مثل device_id أو exam_id حسب متطلباتك.
- */
 export async function notifyBackendAlert(message) {
-  // الحصول على بيانات الطالب من التخزين المؤقت (يمكنك تعديل مفتاح التخزين حسب مشروعك)
-  const studentData = JSON.parse(localStorage.getItem("studentData")); // أو استخدم getWithExpiry من وحدة التخزين أدناه
-  const student_id = studentData ? studentData.student_id : 0; // تأكد من أن بيانات الطالب متاحة
-  console.log(studentData);
+  // جلب البيانات من verificationData
+  const verificationDataRaw = localStorage.getItem("verificationData");
+  const verificationData = JSON.parse(verificationDataRaw);
+  //   console.log("التحقق من البيانات:", verificationData);
+
+  const deviceData = JSON.parse(localStorage.getItem("deviceData"));
+  //   console.log("التحقق من البيانات:", deviceData);
+  //   console.log(deviceData.id);
+  // تأكد إن البيانات موجودة
+  const studentData =
+    verificationData &&
+    verificationData.value &&
+    verificationData.value.result &&
+    verificationData.value.result.student_data
+      ? verificationData.value.result.student_data
+      : null;
+
+  if (!studentData) {
+    console.error("لم يتم العثور على بيانات الطالب داخل verificationData");
+    return;
+  }
+
+  //   console.log("بيانات الطالب:", studentData);
+
   // بيانات التنبيه التي نريد إرسالها
   const alertPayload = {
     alert_type: 2,
-    device_id: 23,
-    exam_id: 6,
+    device_id: deviceData ? deviceData.id : null, // من بيانات الطالب
+    exam_id: studentData.exam_id, // من بيانات الطالب
     message: message,
-    student_id: student_id,
+    student_id: studentData.student_id, // من بيانات الطالب
   };
 
   try {
@@ -28,14 +42,14 @@ export async function notifyBackendAlert(message) {
       body: JSON.stringify(alertPayload),
     });
     if (!response.ok) {
-      console.error("Error sending alert:", response.statusText);
+      console.error("فشل إرسال التنبيه:", response.statusText);
       return null;
     }
     const data = await response.json();
-    console.log("Alert sent successfully:", data);
+    console.log("تم إرسال التنبيه بنجاح:", data);
     return data;
   } catch (error) {
-    console.error("Error sending alert:", error);
+    console.error("حدث خطأ أثناء إرسال التنبيه:", error);
     return null;
   }
 }
