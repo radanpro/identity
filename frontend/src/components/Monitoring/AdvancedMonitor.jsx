@@ -38,8 +38,8 @@ export class AdvancedMonitor {
     };
 
     // متغيرات لعملية إرسال التنبيه للباك إند
-    this.alertTimestamps = []; // لتخزين توقيت كل تنبيه محليًا
-    this.lastBackendAlertTime = 0; // آخر وقت تم فيه إرسال تنبيه للباك إند
+    this.alertDetails = [];
+    this.lastBackendAlertTime = 0;
 
     this.config = config;
     this.headAngleHistory = [];
@@ -500,8 +500,11 @@ export class AdvancedMonitor {
       )}%`;
   }
 
-  // تعديل دالة showAlert لتسجيل توقيت التنبيه والتحقق من شرط إرسال التنبيه للباك إند
+  // داخل الكلاس AdvancedMonitor
+
+  // دالة عرض التنبيهات مع تجميعها
   showAlert(message, type) {
+    // عرض التنبيه للمستخدم
     if (this.alert) {
       this.alert.textContent = message;
       this.alert.style.background =
@@ -511,8 +514,12 @@ export class AdvancedMonitor {
           ? "bg-yellow-500"
           : "#c91919";
       this.alert.style.display = "block";
-      setTimeout(() => {
+      if (this.alertTimeout) {
+        clearTimeout(this.alertTimeout);
+      }
+      this.alertTimeout = setTimeout(() => {
         this.alert.style.display = "none";
+        this.alertTimeout = null;
       }, 5000);
     }
     this.logEvent(message, type);
@@ -520,22 +527,105 @@ export class AdvancedMonitor {
     if (this.warningCountEl)
       this.warningCountEl.textContent = `التحذيرات: ${this.warningCount}`;
 
-    // تسجيل توقيت التنبيه وإرسال تنبيه للباك إند إن لزم الأمر
-    const now = Date.now();
-    this.alertTimestamps.push(now);
-    // احذف التوقيتات التي مضى عليها أكثر من دقيقة (60000 مللي ثانية)
-    this.alertTimestamps = this.alertTimestamps.filter(
-      (timestamp) => now - timestamp <= 60000
-    );
-    // في حال تجاوز عدد التنبيهات خلال الدقيقة 5 تنبيهات
-    if (
-      this.alertTimestamps.length > 5 &&
-      now - this.lastBackendAlertTime > 60000
-    ) {
-      // إرسال التنبيه للباك إند باستخدام AlertNotifier
-      notifyBackendAlert("Student using phone");
-      this.lastBackendAlertTime = now;
+    // حفظ بيانات التنبيه مع كافة التفاصيل
+    const alertDetails = {
+      timestamp: Date.now(),
+      type,
+      message,
+      headAngles:
+        this.headAngleHistory.length > 0
+          ? this.headAngleHistory[this.headAngleHistory.length - 1]
+          : null,
+      gazeDirection: this.currentGazeDirection,
+      attentionScore: this.attentionScore,
+      mouthStatus: this.mouthStatusEl?.textContent,
+    };
+
+    // إضافة التنبيه إلى المصفوفة
+    this.alertDetails.push(alertDetails);
+
+    // تحديد حد أقصى لحجم المصفوفة (مثلاً 50 تنبيه)
+    if (this.alertDetails.length > 50) {
+      this.alertDetails.splice(0, this.alertDetails.length - 50);
     }
+
+    // إذا تجاوز عدد التنبيهات 20 قبل انتهاء الدقيقة، يتم الإرسال فوراً
+    if (this.alertDetails.length > 20) {
+      this.processAndSendAlerts();
+    }
+  }
+
+  // دالة لفحص التنبيهات وإرسالها
+  processAndSendAlerts() {
+    // حساب عدد التنبيهات الحرجة (danger و warning)
+    const criticalAlerts = this.alertDetails.filter(
+      (alert) => alert.type === "danger" || alert.type === "warning"
+    );
+
+    // إذا كان العدد الكلي أقل من 10 فلا نقوم بالإرسال
+    if (this.alertDetails.length < 10) return;
+
+    // شرط الإرسال: إذا كان عدد التنبيهات الحرجة أكبر من 5 أو تجاوز العدد الإجمالي 20
+    if (criticalAlerts.length > 5 || this.alertDetails.length > 20) {
+      // دمج جميع التنبيهات في رسالة واحدة
+      const aggregatedMessage = this.generateAggregatedMessage(
+        this.alertDetails
+      );
+      notifyBackendAlert(aggregatedMessage).then((response) => {
+        if (response) {
+          // بعد الإرسال الناجح، نحذف جميع التنبيهات المخزنة
+          this.alertDetails = [];
+          this.lastBackendAlertTime = Date.now();
+        } else {
+          console.error(
+            "فشل إرسال التنبيه المجمّع، سيتم إعادة المحاولة لاحقاً"
+          );
+        }
+      });
+    }
+  }
+
+  // دالة بدء المؤقت لفحص التنبيهات كل دقيقة
+  startAlertTimer() {
+    setInterval(() => {
+      this.processAndSendAlerts();
+    }, 60000); // 60000 مللي ثانية = دقيقة واحدة
+  }
+
+  // دالة لدمج التنبيهات إلى رسالة واحدة
+  generateAggregatedMessage(alerts) {
+    let summary = `تم الكشف عن ${alerts.length} تنبيه:\n`;
+    alerts.forEach((alert) => {
+      // تنسيق الرسالة لكل تنبيه، ويمكن تعديل التفاصيل حسب الحاجة
+      let details = [];
+      if (alert.headAngles) {
+        details.push(
+          `الرأس: ${alert.headAngles.pitch.toFixed(
+            1
+          )}°/${alert.headAngles.yaw.toFixed(1)}°`
+        );
+      }
+      if (alert.gazeDirection) {
+        details.push(`النظر: ${alert.gazeDirection}`);
+      }
+      details.push(`الانتباه: ${Math.round(alert.attentionScore)}%`);
+      if (alert.mouthStatus) {
+        details.push(`الفم: ${alert.mouthStatus}`);
+      }
+      summary += `[${alert.type.toUpperCase()}] ${
+        alert.message
+      } | ${details.join(" | ")}\n`;
+    });
+    return summary;
+  }
+
+  getHighestSeverityAlert(alerts) {
+    const severityLevels = { danger: 3, warning: 2, info: 1 };
+    return alerts.reduce((highest, current) => {
+      return severityLevels[current.type] > severityLevels[highest.type]
+        ? current
+        : highest;
+    }, alerts[0]);
   }
 
   logEvent(message, type) {
