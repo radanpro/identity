@@ -15,6 +15,7 @@ import AlertList from "./Alert/AlertList";
 import ModelList from "./AIExapServer/Models/ModelsList";
 import ControlModel from "./Models/admin/ControlModel";
 import Monitoring from "./Models/Monitoring";
+import NewMonitoring from "./components/Monitoring/Monitoring";
 import DevicePage from "./DevicesAndUsers/DevicePage";
 import Register from "./login/Register";
 import Profile from "./DevicesAndUsers/Profile";
@@ -279,6 +280,15 @@ function App() {
               path="monitoring-model"
               element={
                 <Monitoring
+                  isLoggedIn={isLoggedIn}
+                  isRegisterIn={isRegisterIn}
+                />
+              }
+            />
+            <Route
+              path="monitoring"
+              element={
+                <NewMonitoring
                   isLoggedIn={isLoggedIn}
                   isRegisterIn={isRegisterIn}
                 />
