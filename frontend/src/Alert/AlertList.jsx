@@ -460,7 +460,10 @@ const AlertList = ({ isLoggedIn, isRegisterIn }) => {
       </div>
       <AlertDetailsModal
         show={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={() => {
+          setShowModal(false);
+          fetchAlerts();
+        }}
         alertDetails={selectedAlertDetails}
       />
     </div>
