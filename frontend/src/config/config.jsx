@@ -1,6 +1,5 @@
 // src/config/config.js
-
-export const config = {
+export const defaultConfig = {
   faceMeshOptions: {
     maxNumFaces: 1,
     refineLandmarks: true,
@@ -26,10 +25,10 @@ export const config = {
   // إعدادات التنبيهات
   alerts: {
     head: {
-      upThreshold: -0.5, // قيمة حركة الرأس للأعلى
-      downThreshold: 0.5, // قيمة حركة الرأس للأسفل
+      upThreshold: -0.5,
+      downThreshold: 0.5,
       lateralThreshold: 15,
-      duration: 3000, // مدة استمرار الحركة قبل التنبيه (بالمللي ثانية)
+      duration: 3000,
       enabled: {
         up: true,
         down: true,
@@ -39,12 +38,12 @@ export const config = {
       },
     },
     mouth: {
-      threshold: 0.05, // عتبة فتح الفم
-      duration: 3000, // مدة استمرار الحالة قبل التنبيه
+      threshold: 0.05,
+      duration: 3000,
       enabled: true,
     },
     gaze: {
-      duration: 3000, // مدة استمرار عدم التركيز قبل التنبيه
+      duration: 3000,
       enabled: true,
     },
     headPose: {
@@ -54,3 +53,49 @@ export const config = {
     },
   },
 };
+
+function deepMerge(target, source) {
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      if (
+        source[key] &&
+        typeof source[key] === "object" &&
+        !Array.isArray(source[key])
+      ) {
+        if (!target[key] || typeof target[key] !== "object") {
+          target[key] = {};
+        }
+        deepMerge(target[key], source[key]);
+      } else {
+        target[key] = source[key];
+      }
+    }
+  }
+  return target;
+}
+
+// دالة لجلب الإعدادات من السيرفر
+export async function fetchConfig() {
+  try {
+    const response = await fetch("http://127.0.0.1:3000/api/model-config/");
+    if (!response.ok) {
+      throw new Error("خطأ في استرجاع الإعدادات من السيرفر");
+    }
+    const serverConfig = await response.json();
+    console.log("✅ تم جلب الإعدادات من السيرفر");
+
+    // قم بعمل نسخة من الإعدادات الافتراضية للحفاظ على الأصالة
+    const mergedConfig = deepMerge(
+      JSON.parse(JSON.stringify(defaultConfig)),
+      serverConfig
+    );
+    mergedConfig._source = "server";
+    return mergedConfig;
+  } catch (error) {
+    console.warn(
+      "⚠️ تعذر الاتصال بالسيرفر، استخدام الإعدادات الافتراضية",
+      error
+    );
+    return { ...defaultConfig, _source: "default" };
+  }
+}
