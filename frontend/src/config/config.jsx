@@ -84,12 +84,13 @@ export async function fetchConfig() {
     const serverConfig = await response.json();
     console.log("✅ تم جلب الإعدادات من السيرفر");
 
-    // قم بعمل نسخة من الإعدادات الافتراضية للحفاظ على الأصالة
     const mergedConfig = deepMerge(
       JSON.parse(JSON.stringify(defaultConfig)),
       serverConfig
     );
     mergedConfig._source = "server";
+    console.log(mergedConfig);
+
     return mergedConfig;
   } catch (error) {
     console.warn(
