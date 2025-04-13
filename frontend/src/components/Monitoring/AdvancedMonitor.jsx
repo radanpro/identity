@@ -19,6 +19,7 @@ export class AdvancedMonitor {
     this.warningCountEl = refs.warningCount.current;
     this.attentionScoreEl = refs.attentionScore.current;
     this.eventLogEl = refs.eventLog.current;
+    this.startAlertTimer();
 
     // الإحصائيات والمتغيرات
     this.attentionScore = 100;
@@ -37,7 +38,6 @@ export class AdvancedMonitor {
       gaze: 0,
     };
 
-    // متغيرات لعملية إرسال التنبيه للباك إند
     this.alertDetails = [];
     this.lastBackendAlertTime = 0;
 
@@ -494,10 +494,10 @@ export class AdvancedMonitor {
         this.attentionScore - timeDiff * this.config.noFaceDecrementFactor
       );
     }
-    if (this.attentionScoreEl)
-      this.attentionScoreEl.textContent = `مؤشر الانتباه: ${Math.round(
-        this.attentionScore
-      )}%`;
+    // if (this.attentionScoreEl)
+    //   this.attentionScoreEl.textContent = `مؤشر الانتباه: ${Math.round(
+    //     this.attentionScore
+    //   )}%`;
   }
 
   // داخل الكلاس AdvancedMonitor
@@ -549,46 +549,52 @@ export class AdvancedMonitor {
       this.alertDetails.splice(0, this.alertDetails.length - 50);
     }
 
-    // إذا تجاوز عدد التنبيهات 20 قبل انتهاء الدقيقة، يتم الإرسال فوراً
-    if (this.alertDetails.length > 20) {
+    if (this.alertDetails.length > 10) {
       this.processAndSendAlerts();
     }
   }
 
   // دالة لفحص التنبيهات وإرسالها
   processAndSendAlerts() {
-    // حساب عدد التنبيهات الحرجة (danger و warning)
-    const criticalAlerts = this.alertDetails.filter(
+    // نسخ التنبيهات الحالية وحذفها فوراً لتجنب التكرار
+    const alertsToSend = [...this.alertDetails];
+    this.alertDetails = []; // تفريغ المصفوفة فوراً
+
+    // إذا كانت التنبيهات أقل من 10، لا نرسل ونعيدها للمصفوفة
+    if (alertsToSend.length < 10) {
+      this.alertDetails.push(...alertsToSend);
+      return;
+    }
+
+    // حساب التنبيهات الحرجة من النسخة
+    const criticalAlerts = alertsToSend.filter(
       (alert) => alert.type === "danger" || alert.type === "warning"
     );
 
-    // إذا كان العدد الكلي أقل من 10 فلا نقوم بالإرسال
-    if (this.alertDetails.length < 10) return;
-
-    // شرط الإرسال: إذا كان عدد التنبيهات الحرجة أكبر من 5 أو تجاوز العدد الإجمالي 20
-    if (criticalAlerts.length > 5 || this.alertDetails.length > 20) {
-      // دمج جميع التنبيهات في رسالة واحدة
-      const aggregatedMessage = this.generateAggregatedMessage(
-        this.alertDetails
-      );
+    // التحقق من شروط الإرسال
+    if (criticalAlerts.length > 5 || alertsToSend.length > 10) {
+      const aggregatedMessage = this.generateAggregatedMessage(alertsToSend);
       notifyBackendAlert(aggregatedMessage).then((response) => {
-        if (response) {
-          // بعد الإرسال الناجح، نحذف جميع التنبيهات المخزنة
-          this.alertDetails = [];
-          this.lastBackendAlertTime = Date.now();
+        if (!response) {
+          // إذا فشل الإرسال، نعيد التنبيهات للمصفوفة
+          this.alertDetails.push(...alertsToSend);
+          console.error("فشل الإرسال، سيتم إعادة المحاولة لاحقاً");
         } else {
-          console.error(
-            "فشل إرسال التنبيه المجمّع، سيتم إعادة المحاولة لاحقاً"
-          );
+          this.lastBackendAlertTime = Date.now();
         }
       });
+    } else {
+      // إذا لم تستوف الشروط، نعيد التنبيهات للمصفوفة
+      this.alertDetails.push(...alertsToSend);
     }
   }
 
   // دالة بدء المؤقت لفحص التنبيهات كل دقيقة
   startAlertTimer() {
     setInterval(() => {
-      this.processAndSendAlerts();
+      if (this.alertDetails.length > 0) {
+        this.processAndSendAlerts();
+      }
     }, 60000); // 60000 مللي ثانية = دقيقة واحدة
   }
 
@@ -596,22 +602,33 @@ export class AdvancedMonitor {
   generateAggregatedMessage(alerts) {
     let summary = `تم الكشف عن ${alerts.length} تنبيه:\n`;
     alerts.forEach((alert) => {
-      // تنسيق الرسالة لكل تنبيه، ويمكن تعديل التفاصيل حسب الحاجة
       let details = [];
+
+      // إضافة تفاصيل انحدار الرأس إذا كانت متوفرة
       if (alert.headAngles) {
         details.push(
-          `الرأس: ${alert.headAngles.pitch.toFixed(
+          `انحدار الرأس: ${Math.abs(alert.headAngles.pitch).toFixed(
             1
-          )}°/${alert.headAngles.yaw.toFixed(1)}°`
+          )}° (أعلى/أسفل), ` +
+            `${Math.abs(alert.headAngles.yaw).toFixed(1)}° (يمين/يسار)`
         );
       }
+
+      // إضافة تفاصيل اتجاه النظر إذا كان متوفراً
       if (alert.gazeDirection) {
-        details.push(`النظر: ${alert.gazeDirection}`);
+        details.push(`انحراف النظر: ${alert.gazeDirection}`);
       }
-      details.push(`الانتباه: ${Math.round(alert.attentionScore)}%`);
-      if (alert.mouthStatus) {
-        details.push(`الفم: ${alert.mouthStatus}`);
+
+      // إضافة تفاصيل حالة الفم إذا كانت متوفرة
+      if (alert.mouthStatus && alert.mouthStatus.includes("مفتوح")) {
+        details.push(`فتحة الفم: ${alert.mouthStatus.split(":")[1].trim()}`);
       }
+
+      // إضافة درجة الانتباه فقط إذا كانت فوق عتبة معينة
+      if (alert.attentionScore > 30) {
+        details.push(`الانتباه: ${Math.round(alert.attentionScore)}%`);
+      }
+
       summary += `[${alert.type.toUpperCase()}] ${
         alert.message
       } | ${details.join(" | ")}\n`;
