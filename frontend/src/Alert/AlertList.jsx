@@ -9,10 +9,10 @@ import { IoIosSunny } from "react-icons/io";
 import PropTypes from "prop-types";
 import AlertDetailsModal from "../components/AlertDetailsModal";
 import AlertFilterForm from "../components/AlertFilterForm"; // استيراد مكوّن الفلاتر
-
-import useDelete from "../hooks/useDelete";
+import useDeleteAlert from "../hooks/useDeleteAlert";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import { Button } from "../shared/Button";
+import PopupMessage from "../components/PopupMessage"; // استيراد مكون الرسالة المنبثقة
 
 const AlertList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
@@ -124,7 +124,7 @@ const AlertList = ({ isLoggedIn, isRegisterIn }) => {
     handleDelete,
     feedback,
     setFeedback,
-  } = useDelete({
+  } = useDeleteAlert({
     baseUrl: "http://127.0.0.1:3000/api/alerts",
     successDeleteMessageText: "تم حذف التنبيه بنجاح",
     errorDeleteMessageText: "حدث خطأ أثناء محاولة حذف التنبيه",
@@ -217,15 +217,20 @@ const AlertList = ({ isLoggedIn, isRegisterIn }) => {
             {successMessage}
           </div>
         )}
-        {feedback.success && (
-          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-            {feedback.success}
-          </div>
-        )}
         {feedback.error && (
           <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
             {feedback.error}
           </div>
+        )}
+
+        {/* عرض رسالة منبثقة عند نجاح الحذف */}
+        {feedback.success && (
+          <PopupMessage
+            message={feedback.success}
+            type="success"
+            onClose={() => setFeedback({ success: null, error: null })}
+            duration={5000}
+          />
         )}
 
         <div className="flex flex-col h-screen bg-gray-50">
@@ -267,7 +272,6 @@ const AlertList = ({ isLoggedIn, isRegisterIn }) => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider">
                           new Alert
                         </th>
-
                         <th
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray500 uppercase tracking-wider"
@@ -414,11 +418,14 @@ const AlertList = ({ isLoggedIn, isRegisterIn }) => {
                           </td>
                           {/* Control */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {/* <h3>{alert.control}</h3> */}
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                openDeleteModal(alert.alert_id, alert.alert_id);
+                                openDeleteModal(
+                                  alert.device_id,
+                                  alert.exam_id,
+                                  alert.student_id
+                                );
                               }}
                               className="ml-2 text-red-600 hover:text-red-900"
                             >
@@ -453,7 +460,7 @@ const AlertList = ({ isLoggedIn, isRegisterIn }) => {
           onClose={closeDeleteModal}
           onConfirm={handleDelete}
           title="تأكيد حذف التنبيه"
-          message={`هل أنت متأكد من رغبتك في حذف ${deleteModal.name}؟`}
+          message="هل أنت متأكد من رغبتك في حذف التنبيه؟"
           confirmText="حذف"
           cancelText="إلغاء"
         />
