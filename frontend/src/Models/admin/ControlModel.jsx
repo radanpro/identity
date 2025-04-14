@@ -1,88 +1,26 @@
+// src/components/EditConfig.jsx
 import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Header from "../../components/Header";
 import PropTypes from "prop-types";
-
-// Default configuration (same as the provided config)
-const defaultConfig = {
-  faceMeshOptions: {
-    maxNumFaces: 1,
-    refineLandmarks: true,
-    minDetectionConfidence: 0.7,
-    minTrackingConfidence: 0.7,
-  },
-  poseOptions: {
-    modelComplexity: 1,
-    smoothLandmarks: true,
-    enableSegmentation: false,
-    smoothSegmentation: false,
-    minDetectionConfidence: 0.7,
-    minTrackingConfidence: 0.7,
-  },
-  camera: {
-    width: 800,
-    height: 600,
-  },
-  attentionDecrementFactor: 5,
-  attentionIncrementFactor: 1,
-  noFaceDecrementFactor: 3,
-  alerts: {
-    head: {
-      upThreshold: -0.5,
-      downThreshold: 0.5,
-      lateralThreshold: 15,
-      duration: 3000,
-      enabled: {
-        up: true,
-        down: true,
-        left: true,
-        right: true,
-        forward: true,
-      },
-    },
-    mouth: {
-      threshold: 0.05,
-      duration: 3000,
-      enabled: true,
-    },
-    gaze: {
-      duration: 3000,
-      enabled: true,
-    },
-    headPose: {
-      neutralRange: 5,
-      smoothingFrames: 10,
-      referenceFrames: 30,
-    },
-  },
-};
+// استيراد الإعدادات الافتراضية ودالة جلب الإعدادات من ملف config
+import { defaultConfig, fetchConfig } from "../../config/config";
 
 const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [config, setConfig] = useState(defaultConfig);
   const [loading, setLoading] = useState(true);
 
-  // Fetch the current configuration from the backend when the component mounts
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch("/api/config");
-        if (!response.ok) {
-          throw new Error("Network error");
-        }
-        const backendConfig = await response.json();
-        setConfig(backendConfig);
-      } catch (error) {
-        console.error("Error fetching config:", error);
-        setConfig(defaultConfig);
-      } finally {
-        setLoading(false);
-      }
+    const loadConfig = async () => {
+      const mergedConfig = await fetchConfig();
+      setConfig(mergedConfig);
+      setLoading(false);
     };
-    fetchConfig();
+    loadConfig();
   }, []);
 
-  // Update a value in a given section of the config
+  // دالة لتحديث الحقول ذات المستوى الأعلى أو الكائنات البسيطة
   const handleInputChange = (section, key, value) => {
     setConfig((prevConfig) => ({
       ...prevConfig,
@@ -93,7 +31,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
     }));
   };
 
-  // Handle nested updates (for example, alerts.head.enabled)
+  // دالة لتحديث الحقول داخل الكائنات المتداخلة
   const handleNestedChange = (section, subSection, key, value) => {
     setConfig((prevConfig) => ({
       ...prevConfig,
@@ -107,36 +45,61 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
     }));
   };
 
-  // Handle form submission (save updated config to backend)
+  // إرسال التحديثات إلى الخادم باستخدام PUT مع استخدام config.id
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const configId = config.id;
+    if (!configId) {
+      alert("لم يتم العثور على معرّف الإعداد.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/config", {
-        method: "POST", // or PUT, depending on your API design
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(config),
-      });
+      const response = await fetch(
+        `http://127.0.0.1:3000/api/model-config/${configId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config),
+        }
+      );
       if (!response.ok) {
-        throw new Error("Failed to update config");
+        throw new Error("فشل تحديث الإعدادات");
       }
-      alert("Configuration updated successfully!");
+      const result = await response.json();
+      alert(result.message || "تم تحديث الإعدادات بنجاح!");
     } catch (error) {
       console.error("Error updating config:", error);
-      alert("Error updating configuration");
+      alert("خطأ في تحديث الإعدادات");
     }
   };
 
-  // Reset config to the default values
-  const handleReset = () => {
-    setConfig(defaultConfig);
+  // إعادة الضبط إلى الإعدادات الافتراضية عبر POST
+  const handleReset = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:3000/api/model-config/reset-default",
+        {
+          method: "POST",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("فشل إعادة الضبط للإعدادات الافتراضية");
+      }
+      const defaultConfigFromServer = await response.json();
+      setConfig(defaultConfigFromServer);
+      alert("تم إعادة الإعدادات إلى القيم الافتراضية!");
+    } catch (error) {
+      console.error("Error resetting config:", error);
+      alert("خطأ في إعادة ضبط الإعدادات");
+    }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Loading configuration...</p>
+        <p>تحميل الإعدادات...</p>
       </div>
     );
   }
@@ -151,7 +114,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
       />
       <div className="p-4 max-w-4xl mx-auto">
         <h1 className="text-3xl mb-6 text-center">Edit Configuration</h1>
-        <form onSubmit={handleSubmit} className="space-y-6 ">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Face Mesh Options */}
           <div className="p-4 bg-white rounded shadow">
             <h2 className="text-2xl mb-4">Face Mesh Options</h2>
@@ -413,6 +376,34 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   className="w-full border p-2 rounded"
                 />
               </div>
+              <div>
+                <label className="block mb-1">Max Alerts</label>
+                <input
+                  type="number"
+                  value={config.maxAlerts || ""}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      maxAlerts: Number(e.target.value),
+                    }))
+                  }
+                  className="w-full border p-2 rounded"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block mb-1">Send Data Interval (ms)</label>
+                <input
+                  type="number"
+                  value={config.sendDataInterval || ""}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      sendDataInterval: Number(e.target.value),
+                    }))
+                  }
+                  className="w-full border p-2 rounded"
+                />
+              </div>
             </div>
           </div>
 
@@ -424,11 +415,27 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
               <h3 className="text-xl mb-2">Head Alerts</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <label className="block mb-1">Detect Turn Only</label>
+                  <select
+                    value={config.alerts.head.detectTurnOnly ? "true" : "false"}
+                    onChange={(e) =>
+                      handleInputChange("alerts", "head", {
+                        ...config.alerts.head,
+                        detectTurnOnly: e.target.value === "true",
+                      })
+                    }
+                    className="w-full border p-2 rounded"
+                  >
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                  </select>
+                </div>
+                <div>
                   <label className="block mb-1">Up Threshold</label>
                   <input
                     type="number"
                     step="0.1"
-                    value={config.alerts.head.upThreshold}
+                    value={config.alerts.head.upThreshold || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "head", {
                         ...config.alerts.head,
@@ -443,7 +450,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <input
                     type="number"
                     step="0.1"
-                    value={config.alerts.head.downThreshold}
+                    value={config.alerts.head.downThreshold || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "head", {
                         ...config.alerts.head,
@@ -458,7 +465,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <input
                     type="number"
                     step="0.1"
-                    value={config.alerts.head.lateralThreshold}
+                    value={config.alerts.head.lateralThreshold || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "head", {
                         ...config.alerts.head,
@@ -472,7 +479,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <label className="block mb-1">Duration (ms)</label>
                   <input
                     type="number"
-                    value={config.alerts.head.duration}
+                    value={config.alerts.head.duration || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "head", {
                         ...config.alerts.head,
@@ -483,7 +490,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   />
                 </div>
               </div>
-              {/* Head Alerts Enabled Options */}
+              {/* Enabled Directions */}
               <div className="mt-4">
                 <h4 className="text-lg mb-2">Enabled Directions</h4>
                 <div className="grid grid-cols-3 gap-4">
@@ -520,7 +527,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <input
                     type="number"
                     step="0.01"
-                    value={config.alerts.mouth.threshold}
+                    value={config.alerts.mouth.threshold || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "mouth", {
                         ...config.alerts.mouth,
@@ -534,7 +541,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <label className="block mb-1">Duration (ms)</label>
                   <input
                     type="number"
-                    value={config.alerts.mouth.duration}
+                    value={config.alerts.mouth.duration || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "mouth", {
                         ...config.alerts.mouth,
@@ -571,7 +578,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <label className="block mb-1">Duration (ms)</label>
                   <input
                     type="number"
-                    value={config.alerts.gaze.duration}
+                    value={config.alerts.gaze.duration || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "gaze", {
                         ...config.alerts.gaze,
@@ -609,7 +616,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <input
                     type="number"
                     step="0.1"
-                    value={config.alerts.headPose.neutralRange}
+                    value={config.alerts.headPose?.neutralRange || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "headPose", {
                         ...config.alerts.headPose,
@@ -623,7 +630,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <label className="block mb-1">Smoothing Frames</label>
                   <input
                     type="number"
-                    value={config.alerts.headPose.smoothingFrames}
+                    value={config.alerts.headPose?.smoothingFrames || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "headPose", {
                         ...config.alerts.headPose,
@@ -637,7 +644,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
                   <label className="block mb-1">Reference Frames</label>
                   <input
                     type="number"
-                    value={config.alerts.headPose.referenceFrames}
+                    value={config.alerts.headPose?.referenceFrames || ""}
                     onChange={(e) =>
                       handleInputChange("alerts", "headPose", {
                         ...config.alerts.headPose,
@@ -677,4 +684,5 @@ EditConfig.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
   isRegisterIn: PropTypes.bool.isRequired,
 };
+
 export default EditConfig;
