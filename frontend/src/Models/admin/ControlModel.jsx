@@ -1,15 +1,18 @@
 // src/components/EditConfig.jsx
 import { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import Header from "../../components/Header";
 import PropTypes from "prop-types";
 // استيراد الإعدادات الافتراضية ودالة جلب الإعدادات من ملف config
 import { defaultConfig, fetchConfig } from "../../config/config";
+import PopupMessage from "../../components/PopupMessage";
 
 const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
+  const navigate = useNavigate();
   const { onToggleSidebar } = useOutletContext();
   const [config, setConfig] = useState(defaultConfig);
   const [loading, setLoading] = useState(true);
+  const [popup, setPopup] = useState(null);
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -44,6 +47,9 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
       },
     }));
   };
+  const showPopup = (message, type) => {
+    setPopup({ message, type });
+  };
 
   // إرسال التحديثات إلى الخادم باستخدام PUT مع استخدام config.id
   const handleSubmit = async (e) => {
@@ -51,7 +57,7 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
 
     const configId = config.id;
     if (!configId) {
-      alert("لم يتم العثور على معرّف الإعداد.");
+      showPopup("لم يتم العثور على معرّف الإعداد.", "error");
       return;
     }
 
@@ -68,10 +74,10 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
         throw new Error("فشل تحديث الإعدادات");
       }
       const result = await response.json();
-      alert(result.message || "تم تحديث الإعدادات بنجاح!");
+      showPopup(result.message || "تم تحديث الإعدادات بنجاح!", "success");
     } catch (error) {
       console.error("Error updating config:", error);
-      alert("خطأ في تحديث الإعدادات");
+      showPopup("خطأ في تحديث الإعدادات", "error");
     }
   };
 
@@ -88,11 +94,19 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
         throw new Error("فشل إعادة الضبط للإعدادات الافتراضية");
       }
       const defaultConfigFromServer = await response.json();
-      setConfig(defaultConfigFromServer);
-      alert("تم إعادة الإعدادات إلى القيم الافتراضية!");
+      showPopup(
+        [
+          "تم إعادة الإعدادات إلى القيم الافتراضية!\n",
+          defaultConfigFromServer.message,
+        ],
+        "success"
+      );
+      navigate("/control-model", {
+        state: { message: defaultConfigFromServer },
+      });
     } catch (error) {
       console.error("Error resetting config:", error);
-      alert("خطأ في إعادة ضبط الإعدادات");
+      showPopup("خطأ في إعادة ضبط الإعدادات", "error");
     }
   };
 
@@ -114,6 +128,13 @@ const EditConfig = ({ isLoggedIn, isRegisterIn }) => {
       />
       <div className="p-4 max-w-4xl mx-auto">
         <h1 className="text-3xl mb-6 text-center">Edit Configuration</h1>
+        {popup && (
+          <PopupMessage
+            message={popup.message}
+            type={popup.type}
+            onClose={() => setPopup(null)}
+          />
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Face Mesh Options */}
           <div className="p-4 bg-white rounded shadow">
