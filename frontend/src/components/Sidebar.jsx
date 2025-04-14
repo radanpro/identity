@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import DeviceLogout from "../DevicesAndUsers/DeviceLogout";
 import PropTypes from "prop-types";
 import {
   FaHome,
@@ -16,6 +17,7 @@ import {
   FaSchool,
   FaUsers,
   FaBook,
+  FaUserPlus,
   // FaGraduationCap,
 } from "react-icons/fa";
 import { useEffect } from "react";
@@ -26,6 +28,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isRegisterIn, setIsRegisterIn] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
+  const [showDeviceLogout, setShowDeviceLogout] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -129,9 +132,9 @@ const Sidebar = ({ isOpen, onClose }) => {
           }
         : null,
       // {
-      //   label: "Register Device",
-      //   to: "/devices/register",
+      //   label: "Logout Device",
       //   icon: <FaUserPlus />,
+      //   action: () => setShowDeviceLogout(true),
       // },
     ].filter(Boolean),
   };
@@ -143,127 +146,127 @@ const Sidebar = ({ isOpen, onClose }) => {
     }`;
 
   return (
-    <aside
-      className={`w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg transform transition-transform duration-300 fixed ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } lg:translate-x-0 z-50`}
-    >
-      <div className="text-2xl font-bold mb-8">AI Exam</div>
-      <button
-        onClick={onClose}
-        className="lg:hidden absolute top-4 right-4 text-gray-700 hover:text-gray-900"
+    <>
+      <aside
+        className={`w-64 bg-gray-100 p-4 h-screen rounded-lg shadow-lg transform transition-transform duration-300 fixed ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 z-50`}
       >
-        ✕
-      </button>
-      <div className="overflow-y-auto h-[80%] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-300">
-        <nav className="space-y-4">
-          {mainNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-2 p-2 rounded-lg ${
-                  isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                }`
-              }
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-        {/* مجموعة University */}
-        {universityGroup.items.length ? (
-          <div className="border-t-2 border-sky-300 mt-4 pt-2">
-            {/* عنوان المجموعة لا يتغير لونه عند تفعيل أحد الأبناء */}
-            <button
-              onClick={() => toggleMenu("university")}
-              className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
-            >
-              <FaUniversity />
-              <span>{universityGroup.group}</span>
-            </button>
-            {openMenus["university"] && (
-              <div className="pl-4 space-y-2">
-                {universityGroup.items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 p-2 rounded-lg ${
-                        isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                      }`
-                    }
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </NavLink>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : null}
-        {/* قسم النماذج */}
-        <div className="border-t-2 border-sky-300 mt-4 pt-2">
-          <p className="text-gray-400 text-center p-3">{modelsGroup.group}</p>
-          {modelsGroup.items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={getLinkClasses(item.to)}
-            >
-              <div className="flex items-center gap-2">
+        <div className="text-2xl font-bold mb-8">AI Exam</div>
+        <button
+          onClick={onClose}
+          className="lg:hidden absolute top-4 right-4 text-gray-700 hover:text-gray-900"
+        >
+          ✕
+        </button>
+        <div className="overflow-y-auto h-[80%] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-300">
+          <nav className="space-y-4">
+            {mainNav.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 p-2 rounded-lg ${
+                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                  }`
+                }
+              >
                 {item.icon}
                 <span>{item.label}</span>
-              </div>
-            </NavLink>
-          ))}
-        </div>
-
-        {/* قسم الأجهزة والمستخدمين */}
-        {devicesGroup.items.length ? (
+              </NavLink>
+            ))}
+          </nav>
+          {/* مجموعة University */}
+          {universityGroup.items.length ? (
+            <div className="border-t-2 border-sky-300 mt-4 pt-2">
+              {/* عنوان المجموعة لا يتغير لونه عند تفعيل أحد الأبناء */}
+              <button
+                onClick={() => toggleMenu("university")}
+                className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
+              >
+                <FaUniversity />
+                <span>{universityGroup.group}</span>
+              </button>
+              {openMenus["university"] && (
+                <div className="pl-4 space-y-2">
+                  {universityGroup.items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `flex items-center gap-2 p-2 rounded-lg ${
+                          isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                        }`
+                      }
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
+          {/* قسم النماذج */}
           <div className="border-t-2 border-sky-300 mt-4 pt-2">
-            {/* <p className="text-gray-400 text-center p-3">{devicesGroup.group}</p> */}
-            <button
-              onClick={() => toggleMenu("DevicesAndUsers")}
-              className="flex items-center gap-2 w-full p-2 rounded-lg text-gray-700 focus:outline-none"
-            >
-              <FaDesktop />
-              <span>{devicesGroup.group}</span>
-            </button>
-            {openMenus["DevicesAndUsers"] && (
-              <div className="pl-4 space-y-2">
-                {devicesGroup.items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 p-2 rounded-lg ${
-                        isActive ? "bg-blue-600 text-white" : "text-gray-700"
-                      }`
-                    }
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </NavLink>
-                ))}
-              </div>
-            )}
+            <p className="text-gray-400 text-center p-3">{modelsGroup.group}</p>
+            {modelsGroup.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={getLinkClasses(item.to)}
+              >
+                <div className="flex items-center gap-2">
+                  {item.icon}
+                  <span>{item.label}</span>
+                </div>
+              </NavLink>
+            ))}
           </div>
-        ) : null}
-      </div>
-      {isLoggedIn && (
-        <div className="border-t-2 border-red-300 mt-4 pt-2">
-          <NavLink
-            to="/users/logout"
-            className="flex items-center gap-2 p-2 rounded-lg text-red-600 hover:bg-red-100"
-          >
-            <FaUser />
-            <span>تسجيل الخروج</span>
-          </NavLink>
+
+          {/* قسم الأجهزة والمستخدمين */}
+          {devicesGroup.items.map((item) =>
+            item.to ? (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 p-2 rounded-lg ${
+                    isActive ? "bg-blue-600 text-white" : "text-gray-700"
+                  }`
+                }
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </NavLink>
+            ) : (
+              <button
+                key={item.label}
+                onClick={item.action}
+                className="flex items-center gap-2 p-2 rounded-lg text-gray-700 hover:bg-gray-200 w-full"
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            )
+          )}
         </div>
+        {isLoggedIn && (
+          <div className="border-t-2 border-red-300 mt-4 pt-2">
+            <NavLink
+              to="/users/logout"
+              className="flex items-center gap-2 p-2 rounded-lg text-red-600 hover:bg-red-100"
+            >
+              <FaUser />
+              <span>تسجيل الخروج</span>
+            </NavLink>
+          </div>
+        )}
+      </aside>
+      {showDeviceLogout && (
+        <DeviceLogout onClose={() => setShowDeviceLogout(false)} />
       )}
-    </aside>
+    </>
   );
 };
 
