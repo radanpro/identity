@@ -336,6 +336,19 @@ export class AdvancedMonitor {
   }
 
   calculateGazeDirection(landmarks) {
+    if (
+      !landmarks ||
+      !landmarks[468] ||
+      !landmarks[473] ||
+      !landmarks[133] ||
+      !landmarks[362]
+    ) {
+      return {
+        direction: "غير معروف",
+        confidence: 0,
+        isCentered: true,
+      };
+    }
     const leftIris = landmarks[468];
     const rightIris = landmarks[473];
     const eyeCenterX = (landmarks[133].x + landmarks[362].x) / 2;
@@ -505,6 +518,19 @@ export class AdvancedMonitor {
   // دالة عرض التنبيهات مع تجميعها
   showAlert(message, type) {
     // عرض التنبيه للمستخدم
+    let gazeInfo = {
+      direction: "غير معروف",
+      confidence: 0,
+    };
+    try {
+      if (this.faceResults?.multiFaceLandmarks?.[0]) {
+        gazeInfo = this.calculateGazeDirection(
+          this.faceResults.multiFaceLandmarks[0]
+        );
+      }
+    } catch (error) {
+      console.error("Error getting gaze info for alert:", error);
+    }
     if (this.alert) {
       this.alert.textContent = message;
       this.alert.style.background =
@@ -536,9 +562,14 @@ export class AdvancedMonitor {
         this.headAngleHistory.length > 0
           ? this.headAngleHistory[this.headAngleHistory.length - 1]
           : null,
-      gazeDirection: this.currentGazeDirection,
-      attentionScore: this.attentionScore,
+      gazeDirection: gazeInfo.direction,
+      gazeConfidence: gazeInfo.confidence,
+      focusDuration: this.currentFocusStartTime
+        ? (Date.now() - this.currentFocusStartTime) / 1000
+        : 0,
+      headPosition: this.headPositionEl?.textContent,
       mouthStatus: this.mouthStatusEl?.textContent,
+      attentionScore: this.attentionScore,
     };
 
     // إضافة التنبيه إلى المصفوفة
@@ -601,22 +632,46 @@ export class AdvancedMonitor {
   // دالة لدمج التنبيهات إلى رسالة واحدة
   generateAggregatedMessage(alerts) {
     let summary = `تم الكشف عن ${alerts.length} تنبيه:\n`;
+    let alertCounter = 1;
     alerts.forEach((alert) => {
       let details = [];
+
+      const alertTime = new Date(alert.timestamp).toLocaleTimeString();
+      details.push(`الوقت: ${alertTime}`);
 
       // إضافة تفاصيل انحدار الرأس إذا كانت متوفرة
       if (alert.headAngles) {
         details.push(
-          `انحدار الرأس: ${Math.abs(alert.headAngles.pitch).toFixed(
-            1
-          )}° (أعلى/أسفل), ` +
-            `${Math.abs(alert.headAngles.yaw).toFixed(1)}° (يمين/يسار)`
+          `انحراف الرأس:\n` +
+            `• أعلى/أسفل: ${Math.abs(alert.headAngles.pitch).toFixed(1)}°\n` +
+            `• يمين/يسار: ${Math.abs(alert.headAngles.yaw).toFixed(1)}°`
         );
       }
 
-      // إضافة تفاصيل اتجاه النظر إذا كان متوفراً
       if (alert.gazeDirection) {
-        details.push(`انحراف النظر: ${alert.gazeDirection}`);
+        const gazeElement = this.gazeDirectionEl?.textContent;
+        const gazeMatch = gazeElement?.match(/\((.*?)%/);
+        details.push(
+          `اتجاه النظر: ${alert.gazeDirection}\n` +
+            `نسبة الثقة: ${gazeMatch ? gazeMatch[1] : "غير معروف"}%`
+        );
+      }
+
+      // زمن التركيز من عنصر DOM
+      if (this.focusTimeEl) {
+        const focusTime = this.focusTimeEl.textContent.replace(
+          "زمن التركيز: ",
+          ""
+        );
+        details.push(`زمن التركيز: ${focusTime}`);
+      }
+      // وضعية الرأس من عنصر DOM
+      if (this.headPositionEl) {
+        const headPosition = this.headPositionEl.textContent
+          .replace("وضعية الرأس: ", "")
+          .replace(/\(/g, "\n• ")
+          .replace(/\)/g, "");
+        details.push(`وضعية الرأس:\n• ${headPosition}`);
       }
 
       // إضافة تفاصيل حالة الفم إذا كانت متوفرة
@@ -629,10 +684,20 @@ export class AdvancedMonitor {
         details.push(`الانتباه: ${Math.round(alert.attentionScore)}%`);
       }
 
-      summary += `[${alert.type.toUpperCase()}] ${
-        alert.message
-      } | ${details.join(" | ")}\n`;
+      summary +=
+        `[التنبيه ${alertCounter++}] ━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `[${alert.type.toUpperCase()}] ${alert.message}\n` +
+        `${details.join("\n")}\n\n`;
     });
+    // إضافة ملخص عام
+    summary +=
+      `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `إحصائيات عامة:\n` +
+      `• إجمالي التحذيرات: ${this.warningCount}\n` +
+      `• أقصى زمن تركيز: ${
+        Math.max(...Object.values(this.maxFocusTimes))?.toFixed(1) || 0
+      } ثانية\n` +
+      `• آخر تحديث: ${new Date().toLocaleString()}`;
     return summary;
   }
 

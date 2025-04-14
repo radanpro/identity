@@ -5,12 +5,13 @@ import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
 import Header from "../components/Header";
 import { AdvancedMonitor } from "../components/Monitoring/AdvancedMonitor";
-import { config } from "../config/config";
+import { fetchConfig, defaultConfig } from "../config/config";
 
 const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [isCameraOn, setIsCameraOn] = useState(false);
-
+  const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState(defaultConfig);
   // إنشاء المراجع لعناصر الـ DOM
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -24,6 +25,14 @@ const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
   const eventLogRef = useRef(null);
   const monitorRef = useRef(null);
 
+  useEffect(() => {
+    const loadConfig = async () => {
+      const mergedConfig = await fetchConfig();
+      setConfig(mergedConfig);
+      setLoading(false);
+    };
+    loadConfig();
+  }, []);
   // تهيئة AdvancedMonitor عند تركيب المكون
   useEffect(() => {
     const refs = {
@@ -38,9 +47,13 @@ const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
       attentionScore: attentionScoreRef,
       eventLog: eventLogRef,
     };
+    if (loading) {
+      // console.log("config", config);
+    }
+
     monitorRef.current = new AdvancedMonitor(refs, config);
     return () => monitorRef.current?.stopCamera();
-  }, []);
+  }, [config, loading]);
 
   // دوال تشغيل وإيقاف الكاميرا
   const handleStartCamera = async () => {
@@ -86,7 +99,14 @@ const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
         </div>
         <div
           className="video-container relative mx-auto shadow-lg rounded-lg overflow-hidden"
-          style={{ width: config.camera.width, height: config.camera.height }}
+          style={
+            loading
+              ? {
+                  width: config.camera.width,
+                  height: config.camera.height,
+                }
+              : {}
+          }
         >
           <video
             id="video"
