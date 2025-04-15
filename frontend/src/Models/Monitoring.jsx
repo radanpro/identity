@@ -1,7 +1,6 @@
-// src/components/Monitoring.jsx
-
+// src/Models/Monitoring.jsx
 import { useState, useRef, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import Header from "../components/Header";
 import { AdvancedMonitor } from "../components/Monitoring/AdvancedMonitor";
@@ -9,6 +8,10 @@ import { fetchConfig, defaultConfig } from "../config/config";
 
 const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
+  const location = useLocation();
+  // استقبل قيمة autoStartCamera من state الممررة من الراوت، واذا لم توجد فهي false
+  const autoStartCameraFlag = location.state?.autoStartCamera || false;
+
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState(defaultConfig);
@@ -33,6 +36,7 @@ const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
     };
     loadConfig();
   }, []);
+
   // تهيئة AdvancedMonitor عند تركيب المكون
   useEffect(() => {
     const refs = {
@@ -47,10 +51,8 @@ const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
       attentionScore: attentionScoreRef,
       eventLog: eventLogRef,
     };
-    if (loading) {
-      // console.log("config", config);
-    }
-
+    // يمكن عرض قيمة config للتأكد من تحميل الإعدادات
+    // console.log("config", config);
     monitorRef.current = new AdvancedMonitor(refs, config);
     return () => monitorRef.current?.stopCamera();
   }, [config, loading]);
@@ -67,6 +69,13 @@ const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
     monitorRef.current?.stopCamera();
     setIsCameraOn(false);
   };
+
+  // إذا كانت autoStartCameraFlag true فإننا نشغل الكاميرا تلقائيًا بعد تحميل المكون
+  useEffect(() => {
+    if (autoStartCameraFlag) {
+      handleStartCamera();
+    }
+  }, [autoStartCameraFlag]);
 
   return (
     <div className="flex-col min-h-screen bg-gray-100 text-gray-900">

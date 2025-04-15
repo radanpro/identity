@@ -1,4 +1,4 @@
-// src/monitoring/IdentityVerificationPage.jsx
+// src/monitoring/IdentityVerificationPage.jsx // this is from student
 
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -64,7 +64,7 @@ const IdentityVerificationPage = ({ isLoggedIn, isRegisterIn }) => {
         console.error("Error sending alert:", alertError);
       }
     }
-    navigate("/monitoring-model");
+    navigate("/monitoring-model", { state: { autoStartCamera: true } });
   };
 
   const handleDirectExamEntry = (event) => {
@@ -135,7 +135,7 @@ const IdentityVerificationPage = ({ isLoggedIn, isRegisterIn }) => {
       })
       .catch((err) => console.error("Verification failed:", err));
 
-    navigate("/monitoring-model");
+    navigate("/monitoring-model", { state: { autoStartCamera: true } });
   };
 
   return (

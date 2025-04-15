@@ -99,7 +99,7 @@ const CentersList = ({ isLoggedIn, isRegisterIn }) => {
       <div>
         <SearchAddBar
           onSearch={handleSearch}
-          onAdd="إضافة مركز "
+          onAdd=" مركز "
           link="/centers/add"
         />
       </div>
