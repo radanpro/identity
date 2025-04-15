@@ -48,20 +48,71 @@ const AlertDetailsModal = ({ show, onClose, alertDetails }) => {
   const parseMessageToColumns = (message) => {
     const lines = message.split(/\n+/);
     const columns = [];
+    let currentAlert = null;
+    let alertCount = 0;
 
     lines.forEach((line) => {
-      if (/^\[التنبيه \d+\]/.test(line.trim())) {
-        // هذا بداية تنبيه جديد، نضيف خط فاصل بعنوان
-        columns.push({ type: "header", label: line.trim() });
-      } else {
-        const [label, value] = line.split(/:\s*/);
-        if (label && value) {
-          columns.push({ type: "data", label, value });
-        } else {
-          columns.push({ type: "data", label: line, value: "" });
+      line = line.trim();
+
+      // اكتشاف بداية تنبيه جديد
+      if (/^\[التنبيه \d+\]/.test(line)) {
+        alertCount++;
+        if (currentAlert) {
+          columns.push(currentAlert);
+        }
+        currentAlert = {
+          type: "alert",
+          header: line,
+          details: [],
+          alertNumber: alertCount,
+        };
+      }
+      // معالجة سطور التفاصيل داخل التنبيه
+      else if (currentAlert) {
+        if (line.includes("━━━━━━━━")) {
+          return; // تجاهل الخطوط الفاصلة
+        }
+
+        // معالجة خاصة لسطر الوقت
+        if (line.startsWith("الوقت:")) {
+          const timeValue = line.replace("الوقت:", "").trim();
+          currentAlert.details.push({
+            label: "الوقت",
+            value: timeValue,
+            isTime: true,
+          });
+        }
+        // معالجة باقي التفاصيل
+        else if (line.includes(":")) {
+          const [label, value] = line.split(/:\s*/);
+          currentAlert.details.push({
+            label: label.trim(),
+            value: value.trim(),
+            isTime: label.trim() === "الوقت",
+          });
+        } else if (line) {
+          currentAlert.details.push({
+            label: line,
+            value: "",
+            isTime: false,
+          });
         }
       }
+      // معالجة إحصائيات النهاية
+      else if (line.startsWith("• إجمالي التحذيرات:")) {
+        columns.push({
+          type: "stats",
+          label: "إحصائيات عامة",
+          value:
+            message.split("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")[1]?.trim() || "",
+        });
+      }
     });
+
+    // إضافة آخر تنبيه إذا كان موجودًا
+    if (currentAlert) {
+      columns.push(currentAlert);
+    }
 
     return columns;
   };
@@ -139,40 +190,61 @@ const AlertDetailsModal = ({ show, onClose, alertDetails }) => {
                   {isExpanded && (
                     <div className="mt-4">
                       <h4 className="font-medium text-sm text-gray-700 mb-3">
-                        تفاصيل الرسالة:
+                        تفاصيل الرسالة (
+                        {
+                          messageColumns.filter((c) => c.type === "alert")
+                            .length
+                        }{" "}
+                        تنبيهات):
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {messageColumns.map((item, i) => {
-                          if (item.type === "header") {
-                            return (
-                              <div
-                                key={i}
-                                className="col-span-full border-b border-gray-300 text-sm font-bold text-gray-700 py-1"
-                              >
-                                {item.label}
-                              </div>
-                            );
-                          }
-
+                      {messageColumns.map((item, index) => {
+                        if (item.type === "alert") {
                           return (
-                            <div
-                              key={i}
-                              className="bg-white border border-gray-100 rounded-md p-3"
-                            >
-                              {item.label && (
-                                <div className="font-medium text-gray-600 text-xs mb-1">
-                                  {item.label}
-                                </div>
-                              )}
-                              {item.value && (
-                                <div className="text-gray-800 text-sm">
-                                  {item.value}
-                                </div>
-                              )}
+                            <div key={`alert-${index}`} className="mb-6">
+                              <div className="border-b border-gray-300 text-sm font-bold text-gray-700 py-1 mb-3">
+                                {item.header}
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {item.details.map((detail, i) => (
+                                  <div
+                                    key={`detail-${i}`}
+                                    className="bg-white border border-gray-100 rounded-md p-3"
+                                  >
+                                    <div className="font-medium text-gray-600 text-xs mb-1">
+                                      {detail.label}
+                                    </div>
+                                    <div className="text-gray-800 text-sm">
+                                      {detail.isTime ? (
+                                        <span className="font-semibold text-gray-800">
+                                          {detail.value}
+                                        </span>
+                                      ) : (
+                                        detail.value
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           );
-                        })}
-                      </div>
+                        }
+                        if (item.type === "stats") {
+                          return (
+                            <div
+                              key={`stats-${index}`}
+                              className="mt-4 pt-3 border-t border-gray-200"
+                            >
+                              <h5 className="font-bold text-gray-700 mb-2">
+                                {item.label}
+                              </h5>
+                              <div className="text-sm text-gray-600 whitespace-pre-line">
+                                {item.value}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
                     </div>
                   )}
                 </div>
