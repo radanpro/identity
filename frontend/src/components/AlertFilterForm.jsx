@@ -52,7 +52,7 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
             name="type"
             value={filters.type || ""}
             onChange={handleChange}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 p-[9px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -65,7 +65,7 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
             name="center"
             value={filters.center || ""}
             onChange={handleChange}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 p-[9px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">الكل</option>
             {centers.map((center) => (
@@ -85,7 +85,7 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
             name="exam"
             value={filters.exam || ""}
             onChange={handleChange}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 p-[9px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">الكل</option>
             {exams.map((exam) => (
@@ -105,7 +105,7 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
             name="exam_start_time"
             value={filters.exam_start_time || ""}
             onChange={handleChange}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 p-[9px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">الكل</option>
             {exams.map((exam) => (
@@ -127,7 +127,7 @@ const AlertFilterForm = ({ filters, setFilters, onSubmit }) => {
           <select
             name="exam_end_time"
             onChange={handleChange}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 p-[9px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">الكل</option>
             {exams.map((exam, index) => (
