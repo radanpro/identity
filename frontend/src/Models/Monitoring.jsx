@@ -32,7 +32,7 @@ const Monitoring = ({ isLoggedIn, isRegisterIn }) => {
     const loadConfig = async () => {
       const mergedConfig = await fetchConfig();
       setConfig(mergedConfig);
-      setLoading(false);
+      setLoading(true);
     };
     loadConfig();
   }, []);

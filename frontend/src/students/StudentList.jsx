@@ -180,16 +180,16 @@ const StudentList = ({ isLoggedIn, isRegisterIn }) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <NavLink
-                          to={`/edit-student/${student.student_id}`} // رابط التعديل مع معرف الطالب
+                          to={`/edit-student/${student.Number}`} // رابط التعديل مع معرف الطالب
                           className="text-indigo-600 hover:text-indigo-900 border border-gray-200 p-2 px-4 rounded-md"
                         >
                           تعديل
                         </NavLink>
-                        <Button className="ml-2 text-red-600 hover:text-red-900">
+                        <Button className="ml-2 text-red-600 hover:text-red-900 hidden">
                           حذف
                         </Button>
                         <Button className="ml-2 text-gray-600 hover:text-gray-900">
-                          حذف (vector)
+                          اضافة الى (vector)
                         </Button>
                       </td>
                     </tr>
