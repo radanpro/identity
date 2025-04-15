@@ -1,7 +1,7 @@
 // src/config/config.js
 export const defaultConfig = {
   faceMeshOptions: {
-    maxNumFaces: 1,
+    maxNumFaces: 2,
     refineLandmarks: true,
     minDetectionConfidence: 0.7,
     minTrackingConfidence: 0.7,
@@ -25,8 +25,8 @@ export const defaultConfig = {
   // إعدادات التنبيهات
   alerts: {
     head: {
-      upThreshold: -0.5,
-      downThreshold: 0.5,
+      upThreshold: 0.9,
+      downThreshold: 0.7,
       lateralThreshold: 15,
       duration: 3000,
       enabled: {
@@ -36,9 +36,14 @@ export const defaultConfig = {
         right: true,
         forward: true,
       },
+      detectTurnOnly: true,
+      maxDownAlerts: 5, // Maximum number of down alerts before critical warning
+      maxLeftAlerts: 5, // Maximum number of left turn alerts before critical warning
+      maxRightAlerts: 5, // Maximum number of right turn alerts before critical warning
+      resetInterval: 60000, // Reset counters after 1 minute
     },
     mouth: {
-      threshold: 0.05,
+      threshold: 0.01,
       duration: 3000,
       enabled: true,
     },
@@ -50,6 +55,11 @@ export const defaultConfig = {
       neutralRange: 5,
       smoothingFrames: 10,
       referenceFrames: 30,
+    },
+    multipleFaces: {
+      enabled: true,
+      duration: 3000, // مدة بين التنبيهات (بالمللي ثانية)
+      maxAlerts: 3, // الحد الأقصى للتنبيهات قبل إصدار تحذير حرج
     },
   },
 };

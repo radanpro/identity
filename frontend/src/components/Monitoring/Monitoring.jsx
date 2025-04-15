@@ -4,11 +4,11 @@ import Header from "../Header";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { Pose } from "@mediapipe/pose";
-import PropTypes from "prop-types";
+
 // إعدادات افتراضية يمكن تعديلها من السيرفر
 const config = {
   faceMeshOptions: {
-    maxNumFaces: 1,
+    maxNumFaces: 2, // تعديل لاكتشاف وجهين بدلاً من وجه واحد
     refineLandmarks: true,
     minDetectionConfidence: 0.7,
     minTrackingConfidence: 0.7,
@@ -32,25 +32,34 @@ const config = {
   // إعدادات التنبيهات
   alerts: {
     head: {
-      downThreshold: 0.8, // عتبة الميل للأسفل (نسبة)
-      lateralThreshold: 0.7, // عتبة الالتفاف لليمين أو اليسار (نسبة)
-      duration: 3000, // مدة استمرار الحركة قبل التنبيه (بالمللي ثانية)
+      downThreshold: 0.9, // Adjusted threshold for better sensitivity
+      lateralThreshold: 0.7,
+      duration: 3000,
       enabled: {
-        down: true, // تمكين التنبيهات للنظر للأسفل
-        left: false, // تعطيل الالتفاف لليسار
-        right: false, // تعطيل الالتفاف لليمين
+        down: true,
+        left: true, // تفعيل تنبيهات اليسار
+        right: true, // تفعيل تنبيهات اليمين
       },
-      detectTurnOnly: true, // لتفعيل أو تعطيل كشف الالتفاف فقط
+      detectTurnOnly: true,
+      maxDownAlerts: 5, // Maximum number of down alerts before critical warning
+      maxLeftAlerts: 5, // Maximum number of left turn alerts before critical warning
+      maxRightAlerts: 5, // Maximum number of right turn alerts before critical warning
+      resetInterval: 60000, // Reset counters after 1 minute
     },
     mouth: {
       threshold: 0.01, // عتبة فتح الفم (يمكنك تعديل القيمة حسب الحاجة)
       duration: 10000, // مدة استمرار فتح الفم قبل التنبيه (بالمللي ثانية)
       enabled: true, // تمكين أو تعطيل تنبيهات الفم
     },
+    multipleFaces: {
+      enabled: true,
+      duration: 3000, // مدة بين التنبيهات (بالمللي ثانية)
+      maxAlerts: 3, // الحد الأقصى للتنبيهات قبل إصدار تحذير حرج
+    },
   },
 };
 
-const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
+const Monitoring = () => {
   const { onToggleSidebar } = useOutletContext();
   const [isCameraOn, setIsCameraOn] = useState(false);
   const videoRef = useRef(null);
@@ -98,6 +107,12 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
       this.attentionScoreEl = refs.attentionScore.current;
       this.eventLogEl = refs.eventLog.current;
 
+      // إضافة مراجع لعناصر عدادات التنبيهات
+      this.headDownAlertCountEl = null;
+      this.headLeftAlertCountEl = null;
+      this.headRightAlertCountEl = null;
+      this.mouthAlertCountEl = null;
+
       // مرشحات كالمان
       this.yawFilter = new KalmanFilter();
       this.pitchFilter = new KalmanFilter();
@@ -106,7 +121,13 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
       this.attentionScore = 100;
       this.warningCount = 0;
       this.mouthAlertCount = 0;
+      this.headDownAlertCount = 0;
+      this.headLeftAlertCount = 0; // إضافة عداد لحركات الرأس لليسار
+      this.headRightAlertCount = 0; // إضافة عداد لحركات الرأس لليمين
+      this.multipleFacesAlertCount = 0; // إضافة عداد لتنبيهات تعدد الوجوه
       this.lastUpdate = Date.now();
+      this.lastResetTime = Date.now(); // وقت آخر إعادة تعيين للعدادات
+
       this.faceResults = null;
       this.poseResults = null;
       this.currentGazeDirection = null;
@@ -121,6 +142,7 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
         head: { up: 0, down: 0, left: 0, right: 0, forward: 0 },
         mouth: 0,
         gaze: 0,
+        multipleFaces: 0, // إضافة وقت آخر تنبيه لتعدد الوجوه
       };
 
       this.config = config;
@@ -172,6 +194,12 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
 
     processFaceResults(results) {
       this.faceResults = results;
+
+      // اكتشاف تعدد الوجوه
+      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 1) {
+        this.detectMultipleFaces(results.multiFaceLandmarks.length);
+      }
+
       if (
         results.multiFaceLandmarks?.length > 0 &&
         results.multiFaceTransformationMatrixes?.length > 0
@@ -233,29 +261,50 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
       this.checkHeadPositionAlerts(angles); // التحقق من التنبيهات
     }
     updateHeadPositionDisplay(angles) {
-      const { pitch, yaw } = angles;
-
-      // تصفية القيم باستخدام مرشحات كالمان
-      const filteredYaw = this.yawFilter.update(yaw);
+      const { pitch } = angles;
       const filteredPitch = this.pitchFilter.update(pitch);
 
-      console.log("Pitch:", pitch);
-
       let status = "مستقيم";
+      const now = Date.now();
 
-      if (filteredYaw > this.config.alerts.head.lateralThreshold) {
-        status = "متجه لليمين";
-      } else if (filteredYaw < -this.config.alerts.head.lateralThreshold) {
-        status = "متجه لليسار";
-      } else if (filteredPitch > this.config.alerts.head.downThreshold) {
-        console.log("Pitch exceeds threshold:", pitch); // سجل للتحقق من القيم
+      // Reset counters if reset interval has passed
+      // إعادة تعيين العدادات إذا مر وقت إعادة التعيين
+      if (now - this.lastResetTime > this.config.alerts.head.resetInterval) {
+        this.headDownAlertCount = 0;
+        this.headLeftAlertCount = 0;
+        this.headRightAlertCount = 0;
+        this.multipleFacesAlertCount = 0; // إضافة إعادة تعيين عداد تعدد الوجوه
+        this.lastResetTime = now;
+
+        // تحديث واجهة المستخدم بعد إعادة تعيين العدادات
+        if (this.headDownAlertCount) {
+          this.headDownAlertCountEl.textContent = `تنبيهات النظر للأسفل: ${this.headDownAlertCount}`;
+        }
+        if (this.headLeftAlertCount) {
+          this.headLeftAlertCountEl.textContent = `تنبيهات النظر لليسار: ${this.headLeftAlertCount}`;
+        }
+        if (this.headRightAlertCount) {
+          this.headRightAlertCountEl.textContent = `تنبيهات النظر لليمين: ${this.headRightAlertCount}`;
+        }
+      }
+
+      if (filteredPitch > this.config.alerts.head.downThreshold) {
         status = "متجه للأسفل";
-        const now = Date.now();
         if (
           this.config.alerts.head.enabled.down &&
           now - this.lastAlertTimes.head.down > this.config.alerts.head.duration
         ) {
-          this.showAlert("⚠️ الرأس مائل للأسفل بشكل مريب!", "warning");
+          this.headDownAlertCount++;
+
+          if (
+            this.headDownAlertCount >= this.config.alerts.head.maxDownAlerts
+          ) {
+            this.showAlert("تحذير حرج: حركات رأس متكررة للأسفل!", "danger");
+            this.headDownAlertCount = 0;
+          } else {
+            this.showAlert("⚠️ الرأس متجه للأسفل!", "warning");
+          }
+
           this.lastAlertTimes.head.down = now;
         }
       }
@@ -266,11 +315,10 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
     }
 
     checkHeadPositionAlerts(angles) {
-      const { pitch, yaw } = angles;
+      const { pitch } = angles;
       const now = Date.now();
 
       // تصفية القيم باستخدام مرشحات كالمان
-      const filteredYaw = this.yawFilter.update(yaw);
       const filteredPitch = this.pitchFilter.update(pitch);
 
       // التحقق من النظر للأسفل فقط
@@ -552,35 +600,195 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
       }
     }
 
+    // إضافة دالة جديدة لاكتشاف تعدد الوجوه
+    detectMultipleFaces(faceCount) {
+      const now = Date.now();
+
+      if (
+        now - this.lastAlertTimes.multipleFaces >
+        this.config.alerts.multipleFaces.duration
+      ) {
+        // تحديث عداد تنبيهات تعدد الوجوه
+        this.multipleFacesAlertCount++;
+
+        // تحديث عنصر واجهة المستخدم إن وجد
+        if (this.multipleFacesAlertCountEl) {
+          this.multipleFacesAlertCountEl.textContent = `تنبيهات تعدد الوجوه: ${this.multipleFacesAlertCount}`;
+        }
+
+        if (
+          this.multipleFacesAlertCount >=
+          this.config.alerts.multipleFaces.maxAlerts
+        ) {
+          // إصدار تحذير حرج عند وصول العداد إلى الحد الأقصى
+          this.showAlert(
+            `تحذير حرج: تم اكتشاف ${faceCount} وجوه في الكاميرا! محاولة غش محتملة!`,
+            "danger"
+          );
+          this.multipleFacesAlertCount = 0; // إعادة تعيين العداد بعد التحذير الحرج
+
+          // تحديث واجهة المستخدم بعد إعادة تعيين العداد
+          if (this.multipleFacesAlertCountEl) {
+            this.multipleFacesAlertCountEl.textContent = `تنبيهات تعدد الوجوه: ${this.multipleFacesAlertCount}`;
+          }
+        } else {
+          // إصدار تنبيه بسيط
+          this.showAlert(
+            `⚠️ تم اكتشاف ${faceCount} وجوه في الكاميرا!`,
+            "warning"
+          );
+        }
+
+        this.lastAlertTimes.multipleFaces = now;
+      }
+    }
+
     detectHeadTurnOnly(landmarks) {
       const noseTip = landmarks[1]; // طرف الأنف
       const leftEye = landmarks[33]; // العين اليسرى
       const rightEye = landmarks[263]; // العين اليمنى
+      const forehead = landmarks[10]; // الجبهة
+      const chin = landmarks[152]; // الذقن
 
-      if (!noseTip || !leftEye || !rightEye) return;
+      if (!noseTip || !leftEye || !rightEye || !forehead || !chin) return;
 
+      // حساب الالتفات الأفقي (يمين/يسار)
       const eyeCenterX = (leftEye.x + rightEye.x) / 2;
       const faceWidth = Math.abs(leftEye.x - rightEye.x);
       const turnRatio = (noseTip.x - eyeCenterX) / faceWidth;
       const yaw = this.yawFilter.update(turnRatio);
 
+      // حساب الالتفات العمودي (للأسفل)
+      const faceHeight = Math.abs(forehead.y - chin.y);
+      const noseVerticalPosition = (noseTip.y - forehead.y) / faceHeight;
+      const pitch = this.pitchFilter.update(noseVerticalPosition);
+
       const yawThreshold = 0.2;
+      const pitchThreshold = 0.7; // عتبة الالتفات للأسفل
       const now = Date.now();
 
-      // Issue alert only for head turns (yaw), ignoring tilts
+      // إعادة تعيين العدادات إذا مر وقت إعادة التعيين
+      if (now - this.lastResetTime > this.config.alerts.head.resetInterval) {
+        this.headDownAlertCount = 0;
+        this.headLeftAlertCount = 0;
+        this.headRightAlertCount = 0;
+        this.multipleFacesAlertCount = 0; // إضافة إعادة تعيين عداد تعدد الوجوه
+        this.lastResetTime = now;
+
+        // تحديث واجهة المستخدم بعد إعادة تعيين العدادات
+        if (this.headDownAlertCount) {
+          this.headDownAlertCountEl.textContent = `تنبيهات النظر للأسفل: ${this.headDownAlertCount}`;
+        }
+        if (this.headLeftAlertCount) {
+          this.headLeftAlertCountEl.textContent = `تنبيهات النظر لليسار: ${this.headLeftAlertCount}`;
+        }
+        if (this.headRightAlertCount) {
+          this.headRightAlertCountEl.textContent = `تنبيهات النظر لليمين: ${this.headRightAlertCount}`;
+        }
+      }
+
+      // التحقق من الالتفات للأسفل
+      if (
+        pitch > pitchThreshold &&
+        now - this.lastAlertTimes.head.down > this.config.alerts.head.duration
+      ) {
+        // تحديث عداد حركات الرأس للأسفل
+        this.headDownAlertCount++;
+
+        // تحديث عنصر واجهة المستخدم إن وجد
+        if (this.headDownAlertCount) {
+          this.headDownAlertCountEl.textContent = `تنبيهات النظر للأسفل: ${this.headDownAlertCount}`;
+        }
+
+        if (this.headDownAlertCount >= this.config.alerts.head.maxDownAlerts) {
+          // إصدار تحذير حرج عند وصول العداد إلى الحد الأقصى
+          this.showAlert(
+            "تحذير حرج: النظر للأسفل بشكل متكرر، محاولة غش محتملة!",
+            "danger"
+          );
+          this.headDownAlertCount = 0; // إعادة تعيين العداد بعد التحذير الحرج
+
+          // تحديث واجهة المستخدم بعد إعادة تعيين العداد
+          if (this.headDownAlertCount) {
+            this.headDownAlertCountEl.textContent = `تنبيهات النظر للأسفل: ${this.headDownAlertCount}`;
+          }
+        } else {
+          // إصدار تنبيه بسيط
+          this.showAlert("⚠️ الرأس مائل للأسفل بشكل مريب!", "warning");
+        }
+
+        this.lastAlertTimes.head.down = now;
+      }
+
+      // التحقق من الالتفات لليمين
       if (
         yaw > yawThreshold &&
-        now - this.lastAlertTimes.head.right > this.config.alerts.head.duration
+        now - this.lastAlertTimes.head.right >
+          this.config.alerts.head.duration &&
+        this.config.alerts.head.enabled.right
       ) {
-        this.showAlert("⚠️ يلتفت لليمين، هل ينظر إلى زميله؟", "warning");
+        // تحديث عداد حركات الرأس لليمين
+        this.headRightAlertCount++;
+
+        // تحديث عنصر واجهة المستخدم إن وجد
+        if (this.headRightAlertCountEl) {
+          this.headRightAlertCountEl.textContent = `تنبيهات النظر لليمين: ${this.headRightAlertCount}`;
+        }
+
+        if (
+          this.headRightAlertCount >= this.config.alerts.head.maxRightAlerts
+        ) {
+          // إصدار تحذير حرج عند وصول العداد إلى الحد الأقصى
+          this.showAlert(
+            "تحذير حرج: النظر لليمين بشكل متكرر، محاولة غش محتملة!",
+            "danger"
+          );
+          this.headRightAlertCount = 0; // إعادة تعيين العداد بعد التحذير الحرج
+
+          // تحديث واجهة المستخدم بعد إعادة تعيين العداد
+          if (this.headRightAlertCountEl) {
+            this.headRightAlertCountEl.textContent = `تنبيهات النظر لليمين: ${this.headRightAlertCount}`;
+          }
+        } else {
+          // إصدار تنبيه بسيط
+          this.showAlert("⚠️ يلتفت لليمين، هل ينظر إلى زميله؟", "warning");
+        }
+
         this.lastAlertTimes.head.right = now;
       }
 
+      // التحقق من الالتفات لليسار
       if (
         yaw < -yawThreshold &&
-        now - this.lastAlertTimes.head.left > this.config.alerts.head.duration
+        now - this.lastAlertTimes.head.left >
+          this.config.alerts.head.duration &&
+        this.config.alerts.head.enabled.left
       ) {
-        this.showAlert("⚠️ يلتفت لليسار، هل يحاول الغش؟", "warning");
+        // تحديث عداد حركات الرأس لليسار
+        this.headLeftAlertCount++;
+
+        // تحديث عنصر واجهة المستخدم إن وجد
+        if (this.headLeftAlertCountEl) {
+          this.headLeftAlertCountEl.textContent = `تنبيهات النظر لليسار: ${this.headLeftAlertCount}`;
+        }
+
+        if (this.headLeftAlertCount >= this.config.alerts.head.maxLeftAlerts) {
+          // إصدار تحذير حرج عند وصول العداد إلى الحد الأقصى
+          this.showAlert(
+            "تحذير حرج: النظر لليسار بشكل متكرر، محاولة غش محتملة!",
+            "danger"
+          );
+          this.headLeftAlertCount = 0; // إعادة تعيين العداد بعد التحذير الحرج
+
+          // تحديث واجهة المستخدم بعد إعادة تعيين العداد
+          if (this.headLeftAlertCountEl) {
+            this.headLeftAlertCountEl.textContent = `تنبيهات النظر لليسار: ${this.headLeftAlertCount}`;
+          }
+        } else {
+          // إصدار تنبيه بسيط
+          this.showAlert("⚠️ يلتفت لليسار، هل يحاول الغش؟", "warning");
+        }
+
         this.lastAlertTimes.head.left = now;
       }
     }
@@ -732,12 +940,7 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
 
   return (
     <div className="flex-col min-h-screen bg-gray-100 text-gray-900">
-      <Header
-        page="controller model"
-        onToggleSidebar={onToggleSidebar}
-        isLoggedIn={isLoggedIn}
-        isRegisterIn={isRegisterIn}
-      />
+      <Header page="controller model" onToggleSidebar={onToggleSidebar} />
       <div className="dashboard mx-auto p-4">
         <h1 className="text-3xl text-center mb-4">
           نظام مراقبة الامتحانات الذكي 🎓
@@ -820,6 +1023,36 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
             >
               تنبيهات الفم: 0
             </p>
+            <p
+              id="head-down-alert-count"
+              ref={(el) => {
+                if (monitorRef.current) {
+                  monitorRef.current.headDownAlertCountEl = el;
+                }
+              }}
+            >
+              تنبيهات النظر للأسفل: 0
+            </p>
+            <p
+              id="head-left-alert-count"
+              ref={(el) => {
+                if (monitorRef.current) {
+                  monitorRef.current.headLeftAlertCountEl = el;
+                }
+              }}
+            >
+              تنبيهات النظر لليسار: 0
+            </p>
+            <p
+              id="head-right-alert-count"
+              ref={(el) => {
+                if (monitorRef.current) {
+                  monitorRef.current.headRightAlertCountEl = el;
+                }
+              }}
+            >
+              تنبيهات النظر لليمين: 0
+            </p>
           </div>
         </div>
         <div className="history-log bg-white mt-6 p-4 rounded shadow max-h-80 overflow-y-auto">
@@ -831,8 +1064,4 @@ const NewMonitoring = ({ isLoggedIn, isRegisterIn }) => {
   );
 };
 
-NewMonitoring.propTypes = {
-  isLoggedIn: PropTypes.bool.isRequired,
-  isRegisterIn: PropTypes.bool.isRequired,
-};
-export default NewMonitoring;
+export default Monitoring;

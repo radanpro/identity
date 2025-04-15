@@ -1,9 +1,27 @@
-// src/components/AdvancedMonitor.js
-
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { Pose } from "@mediapipe/pose";
 import { notifyBackendAlert } from "./AlertNotifier";
+
+// مرشح كالمان لتنعيم القياسات
+export class KalmanFilter {
+  constructor() {
+    this.q = 0.01; // الضوضاء العملية
+    this.r = 0.1; // ضوضاء القياس
+    this.p = 1;
+    this.x = 0;
+    this.k = 0;
+  }
+
+  update(measurement) {
+    // تحديث مرشح كالمان
+    this.p += this.q;
+    this.k = this.p / (this.p + this.r);
+    this.x += this.k * (measurement - this.x);
+    this.p *= 1 - this.k;
+    return this.x;
+  }
+}
 
 export class AdvancedMonitor {
   constructor(refs, config) {
@@ -18,39 +36,71 @@ export class AdvancedMonitor {
     this.mouthStatusEl = refs.mouthStatus.current;
     this.warningCountEl = refs.warningCount.current;
     this.attentionScoreEl = refs.attentionScore.current;
-    this.eventLogEl = refs.eventLog.current;
-    this.startAlertTimer();
+    this.eventLogEl = refs.eventLog ? refs.eventLog.current : null;
 
-    // الإحصائيات والمتغيرات
+    // مراجع إضافية للعدادات (إذا كانت متاحة في DOM)
+    this.headDownAlertCountEl = refs.headDownAlertCount
+      ? refs.headDownAlertCount.current
+      : null;
+    this.headLeftAlertCountEl = refs.headLeftAlertCount
+      ? refs.headLeftAlertCount.current
+      : null;
+    this.headRightAlertCountEl = refs.headRightAlertCount
+      ? refs.headRightAlertCount.current
+      : null;
+    this.mouthAlertCountEl = refs.mouthAlertCount
+      ? refs.mouthAlertCount.current
+      : null;
+    this.multipleFacesAlertCountEl = refs.multipleFacesAlertCount
+      ? refs.multipleFacesAlertCount.current
+      : null;
+
+    // متغيرات مرشحات كالمان
+    this.yawFilter = new KalmanFilter();
+    this.pitchFilter = new KalmanFilter();
+
+    // الإحصائيات والمتغيرات الأساسية
     this.attentionScore = 100;
     this.warningCount = 0;
+    this.mouthAlertCount = 0;
+    this.headDownAlertCount = 0;
+    this.headLeftAlertCount = 0;
+    this.headRightAlertCount = 0;
+    this.multipleFacesAlertCount = 0;
     this.lastUpdate = Date.now();
+    this.lastResetTime = Date.now();
+
     this.faceResults = null;
     this.poseResults = null;
     this.currentGazeDirection = null;
     this.currentFocusStartTime = null;
     this.maxFocusTimes = {};
+    this.headAngleHistory = [];
+    this.referenceAngles = null;
+    this.isCalibrating = true;
+    this.counters = { left: 0, right: 0, up: 0, down: 0 };
 
     // لتخزين أوقات التنبيه الأخيرة لكل نوع
     this.lastAlertTimes = {
       head: { up: 0, down: 0, left: 0, right: 0, forward: 0 },
       mouth: 0,
       gaze: 0,
+      multipleFaces: 0,
     };
 
+    // تجميع تفاصيل التنبيهات لإرسالها للخلفية
     this.alertDetails = [];
     this.lastBackendAlertTime = 0;
 
     this.config = config;
-    this.headAngleHistory = [];
-    this.referenceAngles = null;
-    this.isCalibrating = true;
 
     this.initFaceMesh();
     this.initPose();
     this.setupEventHandlers();
+    this.startAlertTimer();
   }
 
+  // تهيئة مكتبة FaceMesh
   initFaceMesh() {
     this.faceMesh = new FaceMesh({
       locateFile: (file) =>
@@ -60,6 +110,7 @@ export class AdvancedMonitor {
     this.faceMesh.onResults(this.processFaceResults.bind(this));
   }
 
+  // تهيئة مكتبة Pose
   initPose() {
     this.pose = new Pose({
       locateFile: (file) =>
@@ -90,6 +141,12 @@ export class AdvancedMonitor {
 
   processFaceResults(results) {
     this.faceResults = results;
+
+    // التحقق من تعدد الوجوه
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 1) {
+      this.detectMultipleFaces(results.multiFaceLandmarks.length);
+    }
+
     if (
       results.multiFaceLandmarks?.length > 0 &&
       results.multiFaceTransformationMatrixes?.length > 0
@@ -111,6 +168,7 @@ export class AdvancedMonitor {
   matrixToAngles(matrix) {
     const rotation = matrix.data;
     const [m00, m01, m02, m10, m11, m12, m20, m21, m22] = rotation;
+    // حساب الزوايا بالدرجات (pitch, yaw, roll)
     const pitch =
       Math.atan2(-m12, Math.sqrt(m22 * m22 + m02 * m02)) * (180 / Math.PI);
     const yaw = Math.atan2(m20, m00) * (180 / Math.PI);
@@ -129,11 +187,13 @@ export class AdvancedMonitor {
         }),
         { pitch: 0, yaw: 0, roll: 0 }
       );
+
       this.referenceAngles = {
         pitch: sum.pitch / this.config.headPose.referenceFrames,
         yaw: sum.yaw / this.config.headPose.referenceFrames,
         roll: sum.roll / this.config.headPose.referenceFrames,
       };
+
       this.isCalibrating = false;
       this.headAngleHistory = [];
       this.showAlert("المعايرة اكتملت!", "info");
@@ -141,10 +201,12 @@ export class AdvancedMonitor {
   }
 
   processHeadPose(angles) {
+    // في النسخة المدمجة يتم تطبيق تنعيم بواسطة قائمة التاريخ
     this.headAngleHistory.push(angles);
     if (this.headAngleHistory.length > this.config.headPose.smoothingFrames) {
       this.headAngleHistory.shift();
     }
+    // حساب المتوسط وتطبيق انحراف الزوايا عن قيم المعايرة
     const smoothed = this.headAngleHistory.reduce(
       (acc, curr) => ({
         pitch: acc.pitch + curr.pitch,
@@ -163,11 +225,13 @@ export class AdvancedMonitor {
         smoothed.roll / this.headAngleHistory.length -
         this.referenceAngles.roll,
     };
+
     this.updateHeadPositionDisplay(current);
     this.checkHeadPositionAlerts(current);
   }
 
   updateHeadPositionDisplay(angles) {
+    // تحديث عرض وضعية الرأس في واجهة المستخدم
     const { pitch, yaw, roll } = angles;
     let directions = [];
     if (Math.abs(pitch) > this.config.headPose.neutralRange) {
@@ -193,45 +257,35 @@ export class AdvancedMonitor {
   checkHeadPositionAlerts(angles) {
     const { pitch, yaw } = angles;
     const now = Date.now();
-    const absoluteYaw = Math.abs(yaw);
-    const direction = yaw > 0 ? "right" : "left";
-    if (Math.abs(pitch) < this.config.alerts.head.upThreshold) {
-      this.handleHeadAlert(
-        direction,
-        now,
-        `الميل الحاد للأعلى (${absoluteYaw.toFixed(1)}°)`
-      );
-    } else if (Math.abs(pitch) > this.config.alerts.head.downThreshold) {
-      this.handleHeadAlert(
-        "down",
-        now,
-        `الميل الحاد للأسفل (${absoluteYaw.toFixed(1)}°)`
-      );
-    }
-    if (yaw > this.config.alerts.head.lateralThreshold) {
-      this.handleHeadAlert(
-        "right",
-        now,
-        `الميل الحاد لليمين (${yaw.toFixed(1)}°)`
-      );
-    } else if (yaw < -this.config.alerts.head.lateralThreshold) {
-      this.handleHeadAlert(
-        "left",
-        now,
-        `الميل الحاد لليسار (${yaw.toFixed(1)}°)`
-      );
-    }
-  }
 
-  handleHeadAlert(direction, currentTime, message) {
-    if (
-      this.config.alerts.head.enabled[direction] &&
-      currentTime - this.lastAlertTimes.head[direction] >
-        this.config.alerts.head.duration
-    ) {
-      this.showAlert(message, "warning");
-      this.lastAlertTimes.head[direction] = currentTime;
-      this.updateAttentionScore(true);
+    // مثال على الكشف عن ميل الرأس للأسفل أو الصعود بناءً على العتبات
+    if (pitch > this.config.alerts.head.downThreshold) {
+      if (
+        this.config.alerts.head.enabled.down &&
+        now - this.lastAlertTimes.head.down > this.config.alerts.head.duration
+      ) {
+        this.showAlert("تنبيه: الرأس مائل للأسفل!", "warning");
+        this.lastAlertTimes.head.down = now;
+      }
+    }
+
+    // الكشف عن اتجاه الرأس لليمين أو لليسار
+    if (yaw > this.config.alerts.head.lateralThreshold) {
+      if (
+        this.config.alerts.head.enabled.right &&
+        now - this.lastAlertTimes.head.right > this.config.alerts.head.duration
+      ) {
+        this.showAlert("تنبيه: الرأس متجه لليمين!", "warning");
+        this.lastAlertTimes.head.right = now;
+      }
+    } else if (yaw < -this.config.alerts.head.lateralThreshold) {
+      if (
+        this.config.alerts.head.enabled.left &&
+        now - this.lastAlertTimes.head.left > this.config.alerts.head.duration
+      ) {
+        this.showAlert("تنبيه: الرأس متجه لليسار!", "warning");
+        this.lastAlertTimes.head.left = now;
+      }
     }
   }
 
@@ -278,6 +332,11 @@ export class AdvancedMonitor {
     this.updateAttentionScore(true);
     this.trackGaze(landmarks);
     this.detectMouthActions(landmarks);
+
+    // خيار إضافي إذا كان مطلوب كشف الالتفاف فقط
+    if (this.config.alerts.head.detectTurnOnly) {
+      this.detectHeadTurnOnly(landmarks);
+    }
   }
 
   analyzePoseLandmarks(faceLandmarks, poseLandmarks) {
@@ -303,6 +362,7 @@ export class AdvancedMonitor {
     const gaze = this.calculateGazeDirection(landmarks);
     if (this.gazeDirectionEl)
       this.gazeDirectionEl.textContent = `الاتجاه: ${gaze.direction} (${gaze.confidence}%)`;
+
     if (
       !this.currentGazeDirection ||
       this.currentGazeDirection !== gaze.direction
@@ -323,6 +383,7 @@ export class AdvancedMonitor {
     let focusElapsed = (Date.now() - this.currentFocusStartTime) / 1000;
     if (this.focusTimeEl)
       this.focusTimeEl.textContent = `زمن التركيز: ${focusElapsed.toFixed(1)}s`;
+
     if (
       gaze.confidence > 75 &&
       !gaze.isCentered &&
@@ -376,10 +437,11 @@ export class AdvancedMonitor {
   }
 
   detectHeadPosition(landmarks) {
+    // طريقة بديلة لحساب وضعية الرأس باستخدام معالم محددة (مثل الجبين والذقن)
     const forehead = landmarks[10];
     const chin = landmarks[152];
     if (!forehead || !chin) {
-      console.warn("Forehead or chin landmarks not detected!");
+      console.warn("لم يتم اكتشاف معالم الجبين أو الذقن!");
       return;
     }
     const verticalRatio = chin.y - forehead.y;
@@ -460,19 +522,118 @@ export class AdvancedMonitor {
     const lowerLip = landmarks[14];
     const mouthOpen = lowerLip.y - upperLip.y;
     if (mouthOpen > this.config.alerts.mouth.threshold) {
+      const now = Date.now();
       if (
         this.config.alerts.mouth.enabled &&
-        Date.now() - this.lastAlertTimes.mouth >
-          this.config.alerts.mouth.duration
+        now - this.lastAlertTimes.mouth > this.config.alerts.mouth.duration
       ) {
-        this.showAlert("الفم مفتوح!", "danger");
-        this.lastAlertTimes.mouth = Date.now();
+        // تحديث عداد التنبيهات للفم في حال توفر العنصر في الـ DOM
+        this.mouthAlertCount++;
+        if (this.mouthAlertCountEl) {
+          this.mouthAlertCountEl.textContent = `تنبيهات الفم: ${this.mouthAlertCount}`;
+        }
+        if (this.mouthAlertCount === 5) {
+          this.showAlert("تحذير: الفم مفتوح بشكل متكرر!", "danger");
+          this.mouthAlertCount = 0;
+          if (this.mouthAlertCountEl) {
+            this.mouthAlertCountEl.textContent = `تنبيهات الفم: ${this.mouthAlertCount}`;
+          }
+        } else {
+          this.showAlert("تنبيه: يرجى إغلاق الفم!", "warning");
+        }
+        this.lastAlertTimes.mouth = now;
       }
       if (this.mouthStatusEl)
         this.mouthStatusEl.textContent = "حالة الفم: مفتوح";
     } else {
       if (this.mouthStatusEl)
         this.mouthStatusEl.textContent = "حالة الفم: مغلق";
+    }
+  }
+
+  // دالة اختيارية للكشف عن حركة الالتفاف فقط (يمين/يسار/أسفل)
+  detectHeadTurnOnly(landmarks) {
+    const noseTip = landmarks[1];
+    const leftEye = landmarks[33];
+    const rightEye = landmarks[263];
+    const forehead = landmarks[10];
+    const chin = landmarks[152];
+
+    if (!noseTip || !leftEye || !rightEye || !forehead || !chin) return;
+
+    const eyeCenterX = (leftEye.x + rightEye.x) / 2;
+    const faceWidth = Math.abs(leftEye.x - rightEye.x);
+    const turnRatio = (noseTip.x - eyeCenterX) / faceWidth;
+    const yaw = this.yawFilter.update(turnRatio);
+
+    const faceHeight = Math.abs(forehead.y - chin.y);
+    const noseVerticalPosition = (noseTip.y - forehead.y) / faceHeight;
+    const pitch = this.pitchFilter.update(noseVerticalPosition);
+
+    const yawThreshold = 0.2;
+    const pitchThreshold = 0.7;
+    const now = Date.now();
+
+    if (
+      pitch > pitchThreshold &&
+      now - this.lastAlertTimes.head.down > this.config.alerts.head.duration
+    ) {
+      this.headDownAlertCount++;
+      if (this.headDownAlertCountEl) {
+        this.headDownAlertCountEl.textContent = `تنبيهات النظر للأسفل: ${this.headDownAlertCount}`;
+      }
+      if (this.headDownAlertCount >= this.config.alerts.head.maxDownAlerts) {
+        this.showAlert(
+          "تحذير حرج: النظر للأسفل بشكل متكرر، محاولة غش محتملة!",
+          "danger"
+        );
+        this.headDownAlertCount = 0;
+      } else {
+        this.showAlert("⚠️ الرأس مائل للأسفل بشكل مريب!", "warning");
+      }
+      this.lastAlertTimes.head.down = now;
+    }
+
+    if (
+      yaw > yawThreshold &&
+      now - this.lastAlertTimes.head.right > this.config.alerts.head.duration &&
+      this.config.alerts.head.enabled.right
+    ) {
+      this.headRightAlertCount++;
+      if (this.headRightAlertCountEl) {
+        this.headRightAlertCountEl.textContent = `تنبيهات النظر لليمين: ${this.headRightAlertCount}`;
+      }
+      if (this.headRightAlertCount >= this.config.alerts.head.maxRightAlerts) {
+        this.showAlert(
+          "تحذير حرج: النظر لليمين بشكل متكرر، محاولة غش محتملة!",
+          "danger"
+        );
+        this.headRightAlertCount = 0;
+      } else {
+        this.showAlert("⚠️ يلتفت لليمين، هل ينظر إلى زميله؟", "warning");
+      }
+      this.lastAlertTimes.head.right = now;
+    }
+
+    if (
+      yaw < -yawThreshold &&
+      now - this.lastAlertTimes.head.left > this.config.alerts.head.duration &&
+      this.config.alerts.head.enabled.left
+    ) {
+      this.headLeftAlertCount++;
+      if (this.headLeftAlertCountEl) {
+        this.headLeftAlertCountEl.textContent = `تنبيهات النظر لليسار: ${this.headLeftAlertCount}`;
+      }
+      if (this.headLeftAlertCount >= this.config.alerts.head.maxLeftAlerts) {
+        this.showAlert(
+          "تحذير حرج: النظر لليسار بشكل متكرر، محاولة غش محتملة!",
+          "danger"
+        );
+        this.headLeftAlertCount = 0;
+      } else {
+        this.showAlert("⚠️ يلتفت لليسار، هل يحاول الغش؟", "warning");
+      }
+      this.lastAlertTimes.head.left = now;
     }
   }
 
@@ -507,21 +668,16 @@ export class AdvancedMonitor {
         this.attentionScore - timeDiff * this.config.noFaceDecrementFactor
       );
     }
-    // if (this.attentionScoreEl)
-    //   this.attentionScoreEl.textContent = `مؤشر الانتباه: ${Math.round(
-    //     this.attentionScore
-    //   )}%`;
+    if (this.attentionScoreEl) {
+      this.attentionScoreEl.textContent = `مؤشر الانتباه: ${Math.round(
+        this.attentionScore
+      )}%`;
+    }
   }
 
-  // داخل الكلاس AdvancedMonitor
-
-  // دالة عرض التنبيهات مع تجميعها
+  // دوال التنبيه وتجميعها وإرسالها للبنية الخلفية
   showAlert(message, type) {
-    // عرض التنبيه للمستخدم
-    let gazeInfo = {
-      direction: "غير معروف",
-      confidence: 0,
-    };
+    let gazeInfo = { direction: "غير معروف", confidence: 0 };
     try {
       if (this.faceResults?.multiFaceLandmarks?.[0]) {
         gazeInfo = this.calculateGazeDirection(
@@ -540,9 +696,7 @@ export class AdvancedMonitor {
           ? "bg-yellow-500"
           : "#c91919";
       this.alert.style.display = "block";
-      if (this.alertTimeout) {
-        clearTimeout(this.alertTimeout);
-      }
+      if (this.alertTimeout) clearTimeout(this.alertTimeout);
       this.alertTimeout = setTimeout(() => {
         this.alert.style.display = "none";
         this.alertTimeout = null;
@@ -574,40 +728,32 @@ export class AdvancedMonitor {
 
     // إضافة التنبيه إلى المصفوفة
     this.alertDetails.push(alertDetails);
-
-    // تحديد حد أقصى لحجم المصفوفة (مثلاً 50 تنبيه)
     if (this.alertDetails.length > 50) {
       this.alertDetails.splice(0, this.alertDetails.length - 50);
     }
-
     if (this.alertDetails.length > 10) {
       this.processAndSendAlerts();
     }
   }
 
-  // دالة لفحص التنبيهات وإرسالها
   processAndSendAlerts() {
-    // نسخ التنبيهات الحالية وحذفها فوراً لتجنب التكرار
+    // نسخ التنبيهات الحالية ثم تفريغ المصفوفة
     const alertsToSend = [...this.alertDetails];
-    this.alertDetails = []; // تفريغ المصفوفة فوراً
+    this.alertDetails = [];
 
-    // إذا كانت التنبيهات أقل من 10، لا نرسل ونعيدها للمصفوفة
     if (alertsToSend.length < 10) {
       this.alertDetails.push(...alertsToSend);
       return;
     }
 
-    // حساب التنبيهات الحرجة من النسخة
     const criticalAlerts = alertsToSend.filter(
       (alert) => alert.type === "danger" || alert.type === "warning"
     );
 
-    // التحقق من شروط الإرسال
     if (criticalAlerts.length > 5 || alertsToSend.length > 10) {
       const aggregatedMessage = this.generateAggregatedMessage(alertsToSend);
       notifyBackendAlert(aggregatedMessage).then((response) => {
         if (!response) {
-          // إذا فشل الإرسال، نعيد التنبيهات للمصفوفة
           this.alertDetails.push(...alertsToSend);
           console.error("فشل الإرسال، سيتم إعادة المحاولة لاحقاً");
         } else {
@@ -615,49 +761,31 @@ export class AdvancedMonitor {
         }
       });
     } else {
-      // إذا لم تستوف الشروط، نعيد التنبيهات للمصفوفة
       this.alertDetails.push(...alertsToSend);
     }
   }
 
-  // دالة بدء المؤقت لفحص التنبيهات كل دقيقة
-  startAlertTimer() {
-    setInterval(() => {
-      if (this.alertDetails.length > 0) {
-        this.processAndSendAlerts();
-      }
-    }, 60000); // 60000 مللي ثانية = دقيقة واحدة
-  }
-
-  // دالة لدمج التنبيهات إلى رسالة واحدة
   generateAggregatedMessage(alerts) {
     let summary = `تم الكشف عن ${alerts.length} تنبيه:\n`;
     let alertCounter = 1;
     alerts.forEach((alert) => {
       let details = [];
-
       const alertTime = new Date(alert.timestamp).toLocaleTimeString();
       details.push(`الوقت: ${alertTime}`);
-
-      // إضافة تفاصيل انحدار الرأس إذا كانت متوفرة
       if (alert.headAngles) {
         details.push(
-          `انحراف الرأس:\n` +
-            `• أعلى/أسفل: ${Math.abs(alert.headAngles.pitch).toFixed(1)}°\n` +
-            `• يمين/يسار: ${Math.abs(alert.headAngles.yaw).toFixed(1)}°`
+          `انحراف الرأس:\n• أعلى/أسفل: ${Math.abs(
+            alert.headAngles.pitch
+          ).toFixed(1)}°\n• يمين/يسار: ${Math.abs(alert.headAngles.yaw).toFixed(
+            1
+          )}°`
         );
       }
-
       if (alert.gazeDirection) {
-        const gazeElement = this.gazeDirectionEl?.textContent;
-        const gazeMatch = gazeElement?.match(/\((.*?)%/);
         details.push(
-          `اتجاه النظر: ${alert.gazeDirection}\n` +
-            `نسبة الثقة: ${gazeMatch ? gazeMatch[1] : "غير معروف"}%`
+          `اتجاه النظر: ${alert.gazeDirection}\nنسبة الثقة: ${alert.gazeConfidence}%`
         );
       }
-
-      // زمن التركيز من عنصر DOM
       if (this.focusTimeEl) {
         const focusTime = this.focusTimeEl.textContent.replace(
           "زمن التركيز: ",
@@ -665,49 +793,33 @@ export class AdvancedMonitor {
         );
         details.push(`زمن التركيز: ${focusTime}`);
       }
-      // وضعية الرأس من عنصر DOM
-      if (this.headPositionEl) {
-        const headPosition = this.headPositionEl.textContent
-          .replace("وضعية الرأس: ", "")
-          .replace(/\(/g, "\n• ")
-          .replace(/\)/g, "");
-        details.push(`وضعية الرأس:\n• ${headPosition}`);
+      if (alert.headPosition) {
+        details.push(`وضعية الرأس: ${alert.headPosition}`);
       }
-
-      // إضافة تفاصيل حالة الفم إذا كانت متوفرة
       if (alert.mouthStatus && alert.mouthStatus.includes("مفتوح")) {
         details.push(`فتحة الفم: ${alert.mouthStatus.split(":")[1].trim()}`);
       }
-
-      // إضافة درجة الانتباه فقط إذا كانت فوق عتبة معينة
       if (alert.attentionScore > 30) {
         details.push(`الانتباه: ${Math.round(alert.attentionScore)}%`);
       }
-
-      summary +=
-        `[التنبيه ${alertCounter++}] ━━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `[${alert.type.toUpperCase()}] ${alert.message}\n` +
-        `${details.join("\n")}\n\n`;
+      summary += `[التنبيه ${alertCounter++}] ━━━━━━━━━━━━━━━━━━━━━━━\n[${alert.type.toUpperCase()}] ${
+        alert.message
+      }\n${details.join("\n")}\n\n`;
     });
-    // إضافة ملخص عام
-    summary +=
-      `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `إحصائيات عامة:\n` +
-      `• إجمالي التحذيرات: ${this.warningCount}\n` +
-      `• أقصى زمن تركيز: ${
-        Math.max(...Object.values(this.maxFocusTimes))?.toFixed(1) || 0
-      } ثانية\n` +
-      `• آخر تحديث: ${new Date().toLocaleString()}`;
+    summary += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nإحصائيات عامة:\n• إجمالي التحذيرات: ${
+      this.warningCount
+    }\n• أقصى زمن تركيز: ${
+      Math.max(...Object.values(this.maxFocusTimes))?.toFixed(1) || 0
+    } ثانية\n• آخر تحديث: ${new Date().toLocaleString()}`;
     return summary;
   }
 
-  getHighestSeverityAlert(alerts) {
-    const severityLevels = { danger: 3, warning: 2, info: 1 };
-    return alerts.reduce((highest, current) => {
-      return severityLevels[current.type] > severityLevels[highest.type]
-        ? current
-        : highest;
-    }, alerts[0]);
+  startAlertTimer() {
+    setInterval(() => {
+      if (this.alertDetails.length > 0) {
+        this.processAndSendAlerts();
+      }
+    }, 60000);
   }
 
   logEvent(message, type) {
