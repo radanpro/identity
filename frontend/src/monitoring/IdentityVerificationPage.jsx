@@ -29,14 +29,31 @@ const IdentityVerificationPage = ({ isLoggedIn, isRegisterIn }) => {
     }
   }, []);
 
+  const formatAlertMessage = (result, currentDeviceId) => {
+    const student = result.student_data;
+
+    return `تم الكشف عن تنبيه:\n[التنبيه] ━━━━━━━━━━━━━━━━━━━━━━━
+            [WARNING] الدخول من جهاز غير مصرح به!
+            الطالب: ${student.student_id}
+            رقم القيد: ${student.student_id}
+            الاختبار: ${student.exam_id}
+            الجهاز الحالي: ${currentDeviceId}
+            الجهاز المخصص: ${student.device_number || "غير معروف"}
+            الوقت: ${new Date().toLocaleTimeString()}
+            التاريخ: ${new Date().toLocaleDateString()}
+            ━━━━━━━━━━━━━━━━━━━━━━━`;
+  };
+
   const handleEnterExam = async () => {
     if (verificationResult?.device_check?.is_correct === false) {
       try {
+        const deviceData = getDeviceData();
+        const currentDeviceId = deviceData?.device_number || "غير معروف";
         const alertPayload = {
           alert_type: 8,
           device_id: deviceId,
           exam_id: verificationResult.student_data.exam_id,
-          message: "The student entered from an unauthorized device.",
+          message: formatAlertMessage(verificationResult, currentDeviceId),
           student_id: verificationResult.student_data.student_id,
         };
 
@@ -98,7 +115,7 @@ const IdentityVerificationPage = ({ isLoggedIn, isRegisterIn }) => {
             alert_type: 8,
             device_id: deviceData.id,
             exam_id: result.student_data.exam_id,
-            message: "The student entered from an unauthorized device.",
+            message: formatAlertMessage(result, currentDeviceId),
             student_id: result.student_data.student_id,
           };
           axios
