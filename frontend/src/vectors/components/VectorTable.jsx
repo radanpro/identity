@@ -1,7 +1,13 @@
 import PropTypes from "prop-types";
 import { Button } from "../../shared/Button";
+import { useNavigate } from "react-router-dom";
 
 const VectorTable = ({ currentVectors, truncateVector, onDelete }) => {
+  // داخل الكومبوننت
+  const navigate = useNavigate();
+  const handleEditClick = (vectorId) => {
+    navigate(`/vectors/edit-vector?id=${vectorId}`);
+  };
   return (
     <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
       <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -48,11 +54,14 @@ const VectorTable = ({ currentVectors, truncateVector, onDelete }) => {
                     {truncateVector(vector.vector)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button className="text-indigo-600 hover:text-indigo-900 hidden">
+                    <Button
+                      className="text-indigo-600 hover:text-indigo-900"
+                      onClick={() => handleEditClick(vector.id)}
+                    >
                       تعديل
                     </Button>
                     <Button
-                      className="ml-2 text-red-600 hover:text-red-900 "
+                      className="ml-2 text-red-600 hover:text-red-900"
                       onClick={() =>
                         onDelete(vector.student_id, vector.student_id)
                       }

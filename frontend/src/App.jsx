@@ -58,6 +58,7 @@ import {
 import RequireUserLogin from "./components/RequireUserLogin";
 import UserLogout from "./DevicesAndUsers/UserLogout";
 import IdentityVerificationComponent from "./monitoring/IdentityVerificationComponent";
+import EditVector from "./vectors/components/EditVector";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -198,6 +199,16 @@ function App() {
                 />
               }
             />
+            <Route
+              path="vectors/edit-vector"
+              element={
+                <EditVector
+                  isLoggedIn={isLoggedIn}
+                  isRegisterIn={isRegisterIn}
+                />
+              }
+            />
+
             <Route
               path="add-vector"
               element={
