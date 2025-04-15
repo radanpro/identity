@@ -6,7 +6,7 @@ import VerificationResults from "./VerificationResults";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
 
-// Helper function to store data with expiration
+// دالة لتخزين البيانات مع صلاحية محددة
 const setWithExpiry = (key, value, ttl) => {
   const now = new Date();
   const item = {
@@ -17,7 +17,7 @@ const setWithExpiry = (key, value, ttl) => {
   localStorage.setItem(key, JSON.stringify(item));
 };
 
-// Helper function to retrieve data with expiration check
+// دالة لاسترجاع البيانات مع التحقق من انتهاء الصلاحية
 const getWithExpiry = (key) => {
   const itemStr = localStorage.getItem(key);
   if (!itemStr) return null;
@@ -45,11 +45,10 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
   const navigate = useNavigate();
   const { onToggleSidebar } = useOutletContext();
 
-  // Check for cached data on component mount
+  // عند تحميل المكون يتم التحقق من وجود بيانات محفوظة سابقاً
   useEffect(() => {
     const cachedData = getWithExpiry("verificationData");
     if (cachedData) {
-      //   setVerificationResult(cachedData.result);
       setStudentId(cachedData.studentId);
       setDeviceId(cachedData.deviceId);
     }
@@ -59,6 +58,7 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
     setSelectedFile(event.target.files[0]);
   };
 
+  // دالة التحقق التقليدية التي تنتظر استجابة السيرفر
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
@@ -96,7 +96,7 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
         const result = response.data;
         setVerificationResult(result);
 
-        // Store the data with 2-hour expiration
+        // تخزين النتيجة مع صلاحية لمدة ساعتين
         setWithExpiry(
           "verificationData",
           {
@@ -105,7 +105,7 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
             deviceId: currentDeviceId,
           },
           2 * 60 * 60 * 1000
-        ); // 2 hours in milliseconds
+        );
       }
     } catch (err) {
       console.error(err);
@@ -117,6 +117,7 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
     }
   };
 
+  // دالة دخول الاختبار التي تنتظر استجابة السيرفر قبل إرسال التنبيه
   const handleEnterExam = async () => {
     if (verificationResult?.device_check?.is_correct === false) {
       try {
@@ -135,6 +136,93 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
         console.error("Error sending alert:", alertError);
       }
     }
+    navigate("/monitoring-model");
+  };
+
+  // دالة دخول الاختبار مباشرة دون الانتظار لاستجابة عملية التحقق
+  const handleDirectExamEntry = (event) => {
+    event.preventDefault();
+
+    // التحقق من إدخال بيانات الطالب والصورة
+    if (!studentId || !selectedFile) {
+      setError("يرجى إدخال رقم الطالب وتحميل صورة.");
+      return;
+    }
+
+    const deviceData = getDeviceData();
+    if (!deviceData || !deviceData.device_number) {
+      console.error("بيانات الجهاز غير متوفرة.");
+      setError("بيانات الجهاز غير متوفرة. يرجى التأكد من تسجيل الجهاز.");
+      return;
+    }
+    const currentDeviceId = deviceData.device_number;
+
+    // تجهيز بيانات الفورم
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+    formData.append("student_id", studentId);
+    formData.append("device_id", currentDeviceId);
+
+    // إنشاء نتيجة تحقق افتراضية لتجنب حدوث خطأ في الصفحة التالية
+    const dummyResult = {
+      student_data: {
+        exam_id: "", // يمكن تعديلها بقيمة افتراضية مناسبة
+        student_id: studentId,
+      },
+      device_check: { is_correct: true },
+    };
+
+    // تخزين البيانات افتراضياً قبل الانتقال
+    setVerificationResult(dummyResult);
+    setWithExpiry(
+      "verificationData",
+      {
+        result: dummyResult,
+        studentId,
+        deviceId: currentDeviceId,
+      },
+      2 * 60 * 60 * 1000
+    );
+
+    // إطلاق الطلب في الخلفية (fire-and-forget)
+    axios
+      .post("http://127.0.0.1:3000/identity/verify", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((response) => {
+        const result = response.data;
+        // في حال كانت نتيجة التحقق غير صحيحة، يتم إرسال تنبيه بالخلفية
+        if (result.device_check && result.device_check.is_correct === false) {
+          const alertPayload = {
+            alert_type: 8,
+            device_id: deviceData.id,
+            exam_id: result.student_data.exam_id,
+            message: "The student entered from an unauthorized device.",
+            student_id: result.student_data.student_id,
+          };
+          axios
+            .post("http://127.0.0.1:3000/api/alerts/", alertPayload, {
+              headers: { "Content-Type": "application/json" },
+            })
+            .catch((alertError) =>
+              console.error("Error sending alert:", alertError)
+            );
+        }
+        // يمكنك تحديث النتيجة في الخلفية إذا رغبت في ذلك
+        setVerificationResult(result);
+        setWithExpiry(
+          "verificationData",
+          {
+            result,
+            studentId,
+            deviceId: currentDeviceId,
+          },
+          2 * 60 * 60 * 1000
+        );
+      })
+      .catch((err) => console.error("Verification failed:", err));
+
+    // التوجيه مباشرة إلى صفحة الاختبار دون انتظار نتيجة الطلب
     navigate("/monitoring-model");
   };
 
@@ -193,10 +281,10 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
             </div>
           </div>
 
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex justify-center p-2">
             <button
               type="submit"
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed mx-2"
               disabled={loading}
             >
               {loading ? (
@@ -226,6 +314,12 @@ const IdentityVerificationComponent = ({ isLoggedIn, isRegisterIn }) => {
               ) : (
                 "التحقق من الهوية"
               )}
+            </button>
+            <button
+              onClick={handleDirectExamEntry}
+              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300 shadow-md"
+            >
+              دخول الاختبار
             </button>
           </div>
         </form>
