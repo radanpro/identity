@@ -59,6 +59,7 @@ import RequireUserLogin from "./components/RequireUserLogin";
 import UserLogout from "./DevicesAndUsers/UserLogout";
 import IdentityVerificationComponent from "./monitoring/IdentityVerificationComponent";
 import EditVector from "./vectors/components/EditVector";
+import IdentityVerificationPage from "./monitoring/IdentityVerificationPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -185,6 +186,15 @@ function App() {
               path="identity-verification"
               element={
                 <IdentityVerificationComponent
+                  isLoggedIn={isLoggedIn}
+                  isRegisterIn={isRegisterIn}
+                />
+              }
+            />
+            <Route
+              path="/enter-exam"
+              element={
+                <IdentityVerificationPage
                   isLoggedIn={isLoggedIn}
                   isRegisterIn={isRegisterIn}
                 />

@@ -17,7 +17,7 @@ import {
   FaSchool,
   FaUsers,
   FaBook,
-  FaUserPlus,
+  // FaUserPlus,
   // FaGraduationCap,
 } from "react-icons/fa";
 import { useEffect } from "react";
@@ -46,7 +46,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     setOpenMenus((prev) => ({ ...prev, [menuKey]: !prev[menuKey] }));
   };
 
-  // تعريف عناصر القائمة الرئيسية كمصفوفة من الكائنات
   const mainNav = [
     isLoggedIn
       ? { label: "Dashboard", to: "/dashboard", icon: <FaHome /> }
@@ -60,10 +59,17 @@ const Sidebar = ({ isOpen, onClose }) => {
     isRegisterIn
       ? { label: "Search Real Time", to: "/", icon: <FaCamera /> }
       : null,
-    isRegisterIn
+    isLoggedIn && isRegisterIn
       ? {
           label: "Identity Verification",
           to: "/identity-verification",
+          icon: <FaCamera />,
+        }
+      : null,
+    isRegisterIn
+      ? {
+          label: "Enter Exam",
+          to: "/enter-exam",
           icon: <FaCamera />,
         }
       : null,
@@ -117,7 +123,13 @@ const Sidebar = ({ isOpen, onClose }) => {
       isLoggedIn
         ? { label: "Control Model", to: "/control-model", icon: <FaTools /> }
         : null,
-      { label: "Monitor Model", to: "/monitoring-model", icon: <FaDesktop /> },
+      isLoggedIn
+        ? {
+            label: "Monitor Model",
+            to: "/monitoring-model",
+            icon: <FaDesktop />,
+          }
+        : null,
     ].filter(Boolean),
   };
 
