@@ -1,4 +1,4 @@
-// src/components/IdentityVerificationComponent.jsx
+// src/monitoring/IdentityVerificationPage.jsx
 
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -9,6 +9,7 @@ import { getDeviceData } from "../utils/auth";
 import { setWithExpiry, getWithExpiry } from "../utils/storage";
 import Header from "../components/Header";
 import VerificationResults from "./VerificationResults";
+import CameraInput from "./CameraInput";
 
 const IdentityVerificationPage = ({ isLoggedIn, isRegisterIn }) => {
   const [studentId, setStudentId] = useState("");
@@ -27,10 +28,6 @@ const IdentityVerificationPage = ({ isLoggedIn, isRegisterIn }) => {
       setDeviceId(cachedData.deviceId);
     }
   }, []);
-
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-  };
 
   const handleEnterExam = async () => {
     if (verificationResult?.device_check?.is_correct === false) {
@@ -148,12 +145,7 @@ const IdentityVerificationPage = ({ isLoggedIn, isRegisterIn }) => {
             onChange={(e) => setStudentId(e.target.value)}
             className="border border-gray-300 px-4 py-2 rounded w-full max-w-md"
           />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full max-w-md"
-          />
+          <CameraInput onImageCapture={setSelectedFile} />
         </div>
 
         <div className="mt-6 flex justify-center p-2">
