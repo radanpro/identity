@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { Button } from "../../shared/Button";
 
-const VectorTable = ({ currentVectors, truncateVector }) => {
+const VectorTable = ({ currentVectors, truncateVector, onDelete }) => {
   return (
     <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
       <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -48,10 +48,15 @@ const VectorTable = ({ currentVectors, truncateVector }) => {
                     {truncateVector(vector.vector)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button className="text-indigo-600 hover:text-indigo-900">
+                    <Button className="text-indigo-600 hover:text-indigo-900 hidden">
                       تعديل
                     </Button>
-                    <Button className="ml-2 text-red-600 hover:text-red-900">
+                    <Button
+                      className="ml-2 text-red-600 hover:text-red-900 "
+                      onClick={() =>
+                        onDelete(vector.student_id, vector.student_id)
+                      }
+                    >
                       حذف
                     </Button>
                   </td>
@@ -68,6 +73,7 @@ const VectorTable = ({ currentVectors, truncateVector }) => {
 VectorTable.propTypes = {
   currentVectors: PropTypes.array.isRequired,
   truncateVector: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default VectorTable;

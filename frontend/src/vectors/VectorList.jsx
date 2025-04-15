@@ -5,6 +5,8 @@ import Header from "../components/Header";
 import VectorSearchBar from "./components/VectorSearchBar";
 import VectorTable from "./components/VectorTable";
 import VectorPagination from "./components/VectorPagination";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import useDelete from "../hooks/useDelete";
 import PropTypes from "prop-types";
 
 const VectorList = ({ isLoggedIn, isRegisterIn }) => {
@@ -28,6 +30,19 @@ const VectorList = ({ isLoggedIn, isRegisterIn }) => {
       console.error("Failed to fetch vectors", error);
     }
   }, []);
+
+  const {
+    deleteModal,
+    openDeleteModal,
+    closeDeleteModal,
+    handleDelete,
+    feedback,
+  } = useDelete({
+    baseUrl: "http://127.0.0.1:3000/vectors/vectors",
+    successDeleteMessageText: "تم حذف المتجه بنجاح!",
+    errorDeleteMessageText: "حدث خطأ أثناء حذف المتجه.",
+    refreshData: fetchVectors,
+  });
 
   useEffect(() => {
     if (location.state?.message) {
@@ -88,8 +103,13 @@ const VectorList = ({ isLoggedIn, isRegisterIn }) => {
       setSuccessMessage("حدث خطأ أثناء التحقق من المتجهات.");
     }
   };
+
   const handleAddVector = () => {
     navigate("/add-vector");
+  };
+
+  const confirmDelete = (id, name) => {
+    openDeleteModal(id, name);
   };
 
   return (
@@ -101,21 +121,32 @@ const VectorList = ({ isLoggedIn, isRegisterIn }) => {
         isRegisterIn={isRegisterIn}
       />
       <div className="p-4">
+        {feedback.success && (
+          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+            {feedback.success}
+          </div>
+        )}
+        {feedback.error && (
+          <div className="bg-red-100 text-red-700 p-4 mb-4 rounded-md">
+            {feedback.error}
+          </div>
+        )}
+        {successMessage && (
+          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
+            {successMessage}
+          </div>
+        )}
         <VectorSearchBar
           onSearch={handleSearch}
           onAdd="متجه"
           onVerifyAll={handleVerifyAllVectors}
           onAddVector={handleAddVector}
         />
-        {successMessage && (
-          <div className="bg-green-100 text-green-700 p-4 mb-4 rounded-md">
-            {successMessage}
-          </div>
-        )}
         <div className="mt-2 flex flex-col">
           <VectorTable
             currentVectors={currentVectors}
             truncateVector={truncateVector}
+            onDelete={confirmDelete}
           />
           <VectorPagination
             currentPage={currentPage}
@@ -124,9 +155,16 @@ const VectorList = ({ isLoggedIn, isRegisterIn }) => {
           />
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        itemName={deleteModal.name}
+      />
     </div>
   );
 };
+
 VectorList.propTypes = {
   isLoggedIn: PropTypes.bool.isRequired,
   isRegisterIn: PropTypes.bool.isRequired,
