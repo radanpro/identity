@@ -7,6 +7,8 @@ import { Button } from "../shared/Button";
 import { Pagination } from "../shared/Pagination";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
+import PopupMessage from "../components/PopupMessage";
+
 const StudentList = ({ isLoggedIn, isRegisterIn }) => {
   const { onToggleSidebar } = useOutletContext();
   const [students, setStudents] = useState([]);
@@ -15,6 +17,55 @@ const StudentList = ({ isLoggedIn, isRegisterIn }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const location = useLocation();
+
+  const [vectorStudentIds, setVectorStudentIds] = useState([]);
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState(null);
+  const [popupType, setPopupType] = useState("info");
+
+  useEffect(() => {
+    const fetchVectorStudentIds = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:3000/vectors/vectors/all-student-ids"
+        );
+        if (response.status === 200) {
+          setVectorStudentIds(response.data);
+        }
+      } catch (error) {
+        console.error("فشل في جلب أرقام الفكتور:", error);
+      }
+    };
+
+    fetchVectorStudentIds();
+  }, []);
+
+  const handleAddToVector = async () => {
+    try {
+      console.log("Adding student ID:", selectedStudentId); // Debugging line
+
+      const response = await axios.post(
+        "http://127.0.0.1:3000/api/students-to-vectors",
+        [selectedStudentId]
+      );
+
+      if (response.status === 200 && !response.data.failure_count) {
+        setPopupMessage("تمت الإضافة بنجاح");
+        setPopupType("success");
+        setVectorStudentIds((prev) => [...prev, selectedStudentId]);
+      } else {
+        throw new Error("لم يتم الإضافة");
+      }
+    } catch (error) {
+      setPopupMessage("حدث خطأ أثناء الإضافة");
+      setPopupType("error");
+      console.error(error);
+    } finally {
+      setShowConfirmPopup(false);
+      setSelectedStudentId(null);
+    }
+  };
 
   const mapStudents = (data) => {
     return data.map((student) => ({
@@ -102,6 +153,31 @@ const StudentList = ({ isLoggedIn, isRegisterIn }) => {
           {successMessage}
         </div>
       )}
+      {showConfirmPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md text-center">
+            <p className="mb-4">هل أنت متأكد من إضافة الطالب إلى (Vector)؟</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleAddToVector}
+                className="relative  items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-green-500 hover:bg-gray-50"
+              >
+                نعم
+              </button>
+              <Button
+                onClick={() => {
+                  setShowConfirmPopup(false);
+                  setSelectedStudentId(null);
+                }}
+                className="bg-gray-300 text-black hover:bg-gray-400"
+              >
+                إلغاء
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-2 flex flex-col">
         <div className="-my-2 overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -188,9 +264,17 @@ const StudentList = ({ isLoggedIn, isRegisterIn }) => {
                         <Button className="ml-2 text-red-600 hover:text-red-900 hidden">
                           حذف
                         </Button>
-                        <Button className="ml-2 text-gray-600 hover:text-gray-900">
-                          اضافة الى (vector)
-                        </Button>
+                        {!vectorStudentIds.includes(student.Number) && (
+                          <Button
+                            className="ml-2 text-gray-600 hover:text-gray-900"
+                            onClick={() => {
+                              setSelectedStudentId(student.Number.toString());
+                              setShowConfirmPopup(true);
+                            }}
+                          >
+                            اضافة الى (vector)
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -208,6 +292,13 @@ const StudentList = ({ isLoggedIn, isRegisterIn }) => {
           />
         </div>
       </div>
+      {popupMessage && (
+        <PopupMessage
+          message={popupMessage}
+          type={popupType}
+          onClose={() => setPopupMessage(null)}
+        />
+      )}
     </div>
   );
 };

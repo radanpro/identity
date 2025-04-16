@@ -82,10 +82,13 @@ const AddStudent = ({ isLoggedIn, isRegisterIn }) => {
       return;
     }
 
+    // 🔍 الحصول على أسماء الكلية، المستوى، التخصص من الـ ID
+    const selectedCollegeName =
+      colleges.find((col) => col.college_id == college)?.name || "";
     const formData = new FormData();
     formData.append("StudentName", name);
     formData.append("Number", number);
-    formData.append("College", college);
+    formData.append("College", selectedCollegeName);
     formData.append("Level", level);
     formData.append("Specialization", specialization);
     formData.append("Gender", gender);
